@@ -1,0 +1,3458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AEGIS-SOC // CYBER_TRAINING_PLATFORM</title>
+  <style>
+    :root {
+      --bg: #0a0d12;
+      --panel: #0f131a;
+      --panel2: #07090d;
+      --border: #1f2937;
+      --green: #00ff88;
+      --cyan: #22d3ee;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --dim: #6b7280;
+      --text: #c8d8e8;
+      --gg: 0 0 8px rgba(0, 255, 136, 0.4);
+      --gr: 0 0 8px rgba(239, 68, 68, 0.4);
+      --ga: 0 0 8px rgba(245, 158, 11, 0.4);
+      --gc: 0 0 8px rgba(34, 211, 238, 0.4);
+    }
+
+    /* Global Reset & CRT Styling */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Consolas', 'Monaco', 'Courier New', Courier, monospace;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--green);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Subtle CRT Scanline overlay */
+    body::before {
+      content: " ";
+      display: block;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                  linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.04));
+      background-size: 100% 4px, 6px 100%;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0.8;
+    }
+
+    /* Glowing Borders and Text */
+    .glow-green {
+      text-shadow: var(--gg);
+    }
+    .glow-border {
+      border: 1px solid var(--border);
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.05);
+    }
+    .glow-border-alert {
+      border: 1px solid var(--red);
+      box-shadow: var(--gr);
+    }
+
+    /* Colors and Accents */
+    .color-green { color: var(--green); }
+    .color-amber { color: var(--amber); }
+    .color-red { color: var(--red); }
+    .color-cyan { color: var(--cyan); }
+    .color-gray { color: var(--dim); }
+
+    .bg-dark-panel { background-color: var(--panel); }
+    .bg-darker { background-color: var(--panel2); }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f131a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1f2937;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00ff88;
+    }
+
+    /* Header Styling */
+    header {
+      height: 55px;
+      border-bottom: 2px solid #00ff88;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      background-color: #0c1017;
+      box-shadow: 0 2px 15px rgba(0, 255, 136, 0.1);
+      z-index: 10;
+    }
+
+    .header-logo {
+      font-size: 1.2rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-logo span {
+      background: #00ff88;
+      color: #0a0d12;
+      padding: 2px 6px;
+      font-size: 0.8rem;
+      border-radius: 2px;
+    }
+
+    .header-middle {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+    }
+
+    .header-stats {
+      display: flex;
+      gap: 20px;
+      font-size: 0.9rem;
+    }
+
+    .stat-badge {
+      border: 1px solid #1f2937;
+      padding: 2px 8px;
+      border-radius: 3px;
+      background: #07090d;
+    }
+
+    .threat-badge {
+      font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+
+    .threat-low { background: rgba(0, 255, 136, 0.15); color: #00ff88; border: 1px solid #00ff88; }
+    .threat-medium { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #f59e0b; }
+    .threat-high { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; }
+    .threat-critical { background: #ef4444; color: #0a0d12; border: 1px solid #ef4444; animation: pulse-red 1s infinite alternate; }
+
+    @keyframes pulse-red {
+      0% { box-shadow: 0 0 5px #ef4444; }
+      100% { box-shadow: 0 0 20px #ef4444; }
+    }
+
+    /* Main Container Split Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 22% 53% 25%;
+      height: calc(100vh - 320px);
+      background-color: var(--bg);
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #1f2937;
+      overflow: hidden;
+    }
+
+    .panel:last-child {
+      border-right: none;
+    }
+
+    .panel-header {
+      height: 35px;
+      background: #0c1017;
+      border-bottom: 1px solid #1f2937;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+      position: relative;
+    }
+
+    /* Left Sidebar: Task Panel */
+    .task-section-title {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #22d3ee;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      border-bottom: 1px solid #1f2937;
+      padding-bottom: 4px;
+      margin-top: 10px;
+    }
+
+    .task-section-title:first-of-type {
+      margin-top: 0;
+    }
+
+    .objective-box {
+      font-size: 0.85rem;
+      line-height: 1.4;
+      background: #07090d;
+      padding: 10px;
+      border: 1px dashed #22d3ee;
+      margin-bottom: 10px;
+      color: #e5e7eb;
+      white-space: pre-wrap;
+    }
+
+    .task-checklist {
+      list-style: none;
+      margin-bottom: 10px;
+      max-height: 250px;
+      overflow-y: auto;
+      border: 1px solid #1f2937;
+      background: #07090d;
+      padding: 5px;
+    }
+
+    .task-item {
+      font-size: 0.75rem;
+      padding: 4px 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid #111827;
+    }
+
+    .task-item:last-child {
+      border-bottom: none;
+    }
+
+    .task-item.active {
+      color: #00ff88;
+      font-weight: bold;
+      background: rgba(0, 255, 136, 0.05);
+    }
+
+    .task-item.locked {
+      color: #4b5563;
+    }
+
+    .task-item.verified {
+      color: #10b981;
+    }
+
+    .hint-box {
+      font-size: 0.8rem;
+      line-height: 1.4;
+      background: #111827;
+      border-left: 3px solid #f59e0b;
+      padding: 8px;
+      margin-top: 8px;
+      color: #f3f4f6;
+    }
+
+    .hint-reveal-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px solid #f59e0b;
+      color: #f59e0b;
+      padding: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      margin-top: 8px;
+      transition: all 0.2s;
+    }
+
+    .hint-reveal-btn:hover {
+      background: rgba(245, 158, 11, 0.1);
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
+    }
+
+    /* Center Panel: Live Log Feed */
+    .log-feed-container {
+      position: relative;
+    }
+
+    .log-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.75rem;
+    }
+
+    .log-line {
+      display: flex;
+      white-space: normal;
+      word-break: break-all;
+      line-height: 1.3;
+      padding: 3px 6px;
+      border-radius: 2px;
+      transition: background 0.15s;
+    }
+
+    .log-line:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .log-line.log-info { color: #00ff88; }
+    .log-line.log-warn { color: #f59e0b; }
+    .log-line.log-crit { color: #ef4444; }
+    
+    .log-line.log-highlight {
+      border: 1px solid #22d3ee;
+      background: rgba(34, 211, 238, 0.1);
+      color: #22d3ee;
+      animation: highlight-glow 1.5s infinite alternate;
+    }
+
+    @keyframes highlight-glow {
+      0% { box-shadow: inset 0 0 5px rgba(34, 211, 238, 0.3); }
+      100% { box-shadow: inset 0 0 15px rgba(34, 211, 238, 0.6); }
+    }
+
+    .log-time { color: #6b7280; margin-right: 8px; flex-shrink: 0; }
+    .log-sev { font-weight: bold; margin-right: 8px; flex-shrink: 0; }
+    .log-ip { color: #22d3ee; margin-right: 8px; flex-shrink: 0; }
+    .log-type { font-weight: bold; margin-right: 8px; flex-shrink: 0; }
+    .log-desc { flex-grow: 1; }
+
+    .stream-status-overlay {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: rgba(34, 211, 238, 0.85);
+      color: #0a0d12;
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      border-radius: 2px;
+      pointer-events: none;
+      display: none;
+      box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+    }
+
+    .panel-content:hover .stream-status-overlay {
+      display: block;
+    }
+
+    /* Right Panel: Alert Queue */
+    .alert-queue {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .alert-card {
+      background: #0d121b;
+      border: 1px solid #1f2937;
+      border-left: 4px solid #f59e0b;
+      padding: 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .alert-card:hover {
+      border-color: #9ca3af;
+      transform: translateY(-2px);
+    }
+
+    .alert-card.selected {
+      border-color: #22d3ee;
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
+    }
+
+    .alert-card.crit {
+      border-left-color: #ef4444;
+    }
+
+    .alert-card.warn {
+      border-left-color: #f59e0b;
+    }
+
+    .alert-card.info {
+      border-left-color: #22d3ee;
+    }
+
+    .alert-card-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    .alert-card-body {
+      color: #9ca3af;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .alert-card-footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: #6b7280;
+    }
+
+    .alert-badge {
+      font-size: 0.65rem;
+      padding: 1px 4px;
+      border-radius: 2px;
+      font-weight: bold;
+    }
+
+    .badge-crit { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; }
+    .badge-warn { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #f59e0b; }
+    .badge-info { background: rgba(34, 211, 238, 0.15); color: #22d3ee; border: 1px solid #22d3ee; }
+
+    /* Bottom: Triage Console Section */
+    .bottom-section {
+      height: 240px;
+      background-color: #07090d;
+      border-top: 2px solid #1f2937;
+      display: grid;
+      grid-template-columns: 75% 25%;
+    }
+
+    .console-panel {
+      display: flex;
+      flex-direction: column;
+      padding: 10px 15px;
+      overflow: hidden;
+    }
+
+    .console-output {
+      flex: 1;
+      overflow-y: auto;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      color: #d1d5db;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 5px;
+    }
+
+    .console-log-entry {
+      white-space: pre-wrap;
+    }
+
+    .console-input-row {
+      display: flex;
+      align-items: center;
+      font-size: 0.85rem;
+      background: #0a0d12;
+      border: 1px solid #1f2937;
+      padding: 6px 10px;
+      border-radius: 3px;
+    }
+
+    .console-prompt {
+      color: #22d3ee;
+      font-weight: bold;
+      margin-right: 8px;
+      white-space: nowrap;
+    }
+
+    .console-input {
+      flex-grow: 1;
+      background: transparent;
+      border: none;
+      color: #00ff88;
+      font-size: 0.85rem;
+      outline: none;
+      caret-color: #00ff88;
+    }
+
+    /* Right Triage Controls Panel */
+    .controls-panel {
+      border-left: 1px solid #1f2937;
+      background: #0d121b;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow-y: auto;
+    }
+
+    .controls-header {
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .selected-alert-info {
+      font-size: 0.75rem;
+      line-height: 1.4;
+      color: #9ca3af;
+      margin-bottom: 12px;
+      background: #07090d;
+      padding: 8px;
+      border: 1px solid #1f2937;
+      border-radius: 3px;
+    }
+
+    .action-btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .action-btn {
+      background: #0f131a;
+      border: 1px solid #1f2937;
+      color: #d1d5db;
+      padding: 6px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      font-weight: bold;
+      border-radius: 2px;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .action-btn:hover {
+      background: #1f2937;
+      color: #00ff88;
+      border-color: #00ff88;
+    }
+
+    .action-btn:active {
+      transform: scale(0.95);
+    }
+
+    .action-btn.btn-resolve { border-color: #10b981; color: #10b981; }
+    .action-btn.btn-resolve:hover { background: rgba(16, 185, 129, 0.1); }
+    .action-btn.btn-escalate { border-color: #f59e0b; color: #f59e0b; }
+    .action-btn.btn-escalate:hover { background: rgba(245, 158, 11, 0.1); }
+    .action-btn.btn-block { border-color: #ef4444; color: #ef4444; grid-column: span 2; }
+    .action-btn.btn-block:hover { background: rgba(239, 68, 68, 0.1); }
+
+    /* Modal Overlay styling for end of session summary */
+    .summary-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(7, 9, 13, 0.95);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .summary-modal {
+      background: #0d121b;
+      border: 2px solid #00ff88;
+      box-shadow: 0 0 30px rgba(0, 255, 136, 0.25);
+      width: 100%;
+      max-width: 950px;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+    }
+
+    .summary-header {
+      padding: 15px 20px;
+      border-bottom: 2px solid #00ff88;
+      background: #07090d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .summary-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #00ff88;
+      letter-spacing: 2px;
+    }
+
+    .summary-content {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+      display: grid;
+      grid-template-columns: 45% 55%;
+      gap: 20px;
+    }
+
+    .summary-section {
+      background: #07090d;
+      border: 1px solid #1f2937;
+      border-radius: 4px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .summary-section-title {
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #22d3ee;
+      border-bottom: 1px solid #1f2937;
+      padding-bottom: 5px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .metric-card {
+      background: #0d121b;
+      border: 1px solid #1f2937;
+      padding: 10px;
+      border-radius: 3px;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #00ff88;
+      margin-bottom: 2px;
+    }
+
+    .metric-label {
+      font-size: 0.65rem;
+      color: #6b7280;
+      text-transform: uppercase;
+    }
+
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.72rem;
+      margin-top: 5px;
+    }
+
+    .summary-table th, .summary-table td {
+      padding: 6px;
+      text-align: left;
+      border-bottom: 1px solid #1f2937;
+    }
+
+    .summary-table th {
+      color: #6b7280;
+      text-transform: uppercase;
+    }
+
+    .summary-table tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .btn-restart {
+      width: 100%;
+      background: #00ff88;
+      color: #0a0d12;
+      border: none;
+      font-weight: bold;
+      padding: 10px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      border-radius: 3px;
+      transition: all 0.2s;
+    }
+
+    .btn-restart:hover {
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.6);
+      transform: translateY(-1px);
+    }
+
+    .btn-restart:active {
+      transform: translateY(0);
+    }
+
+    .summary-footer {
+      padding: 15px 20px;
+      border-top: 1px solid #1f2937;
+      background: #07090d;
+    }
+
+    /* Containment Objective Banner */
+    .contain-timer-container {
+      margin-top: 10px;
+      background: #111827;
+      border: 1px solid #ef4444;
+      padding: 8px;
+      font-size: 0.75rem;
+      border-radius: 3px;
+    }
+
+    .contain-bar {
+      height: 10px;
+      background: #1f2937;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 6px;
+      border: 1px solid #ef4444;
+    }
+
+    .contain-fill {
+      height: 100%;
+      width: 33%;
+      background: #ef4444;
+      transition: width 0.3s;
+    }
+
+    .terminal-button {
+      background: transparent;
+      border: 1px solid #00ff88;
+      color: #00ff88;
+      padding: 2px 6px;
+      cursor: pointer;
+      border-radius: 2px;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+    }
+
+    .terminal-button:hover {
+      background: rgba(0, 255, 136, 0.15);
+      box-shadow: 0 0 5px rgba(0, 255, 136, 0.3);
+    }
+
+    /* Scenario Injector & Progress Bar & Footer Styles */
+    #scenbtn:hover {
+      background: rgba(34, 211, 238, 0.1) !important;
+      box-shadow: 0 0 8px rgba(34, 211, 238, 0.3) !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header class="glow-border">
+    <div class="header-logo glow-green">
+      AEGIS-SOC <span>SIMULATOR</span>
+    </div>
+    <div class="header-middle" id="active-task-header">
+      [MODULE 1: SECURITY LOG BASICS] // Task 1: Identify Attack Type
+    </div>
+    <div class="header-stats">
+      <div class="stat-badge">SCORE: <span id="header-score" class="color-green">000/1020</span></div>
+      <div class="stat-badge">ALERTS: <span id="header-alerts" class="color-red">0</span></div>
+      <div class="stat-badge">TIME: <span id="header-timer" class="color-cyan">00:00</span></div>
+      <div class="stat-badge">THREAT: <span id="header-threat" class="threat-badge threat-low">LOW</span></div>
+      <div class="stat-badge">SAVED: <span id="header-saved" style="color: var(--dim); transition: color 0.5s; text-shadow: var(--gg);">●</span></div>
+      <button class="terminal-button" id="btn-end-session" style="border-color: #ef4444; color: #ef4444;">End Session</button>
+    </div>
+  </header>
+
+  <!-- Progress Bar -->
+  <div id="progbar" style="height: 3px; background: var(--border); flex-shrink: 0;">
+    <div id="progfill" style="height: 100%; width: 0%; background: var(--green); transition: width 0.5s; box-shadow: var(--gg);"></div>
+  </div>
+
+  <!-- Main Split Panels -->
+  <div class="main-grid">
+
+    <!-- Left Panel: Objectives, Progress, Hints -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>Task Briefing</span>
+        <span class="color-cyan" id="current-module-badge">M1</span>
+      </div>
+      <div class="panel-content bg-dark-panel">
+        
+        <div class="task-section-title">Objective</div>
+        <div class="objective-box" id="objective-desc">
+          Analyzing logs streaming in. An attacker IP is attempting brute force attacks.
+        </div>
+
+        <div class="task-section-title" style="color: #f59e0b;">CLI Command Syntax (Beginner Help)</div>
+        <div class="objective-box" id="beginner-syntax-help" style="border: 1px dashed #f59e0b; color: #f59e0b;">
+          identify ssh-brute-force
+        </div>
+
+        <div class="task-section-title">Module Progress</div>
+        <ul class="task-checklist" id="task-checklist-ui">
+          <!-- Populated by JavaScript -->
+        </ul>
+
+        <div class="task-section-title">Analyst Hints</div>
+        <div id="hints-ui-container">
+          <div class="color-gray" style="font-size: 0.75rem;">No hints revealed yet.</div>
+        </div>
+        <button class="hint-reveal-btn" id="btn-reveal-hint">Request Hint (HINT command)</button>
+        
+        <div class="task-section-title">Scenario Generator</div>
+        <select id="scensel" style="width: 100%; margin: 6px 0; padding: 5px 8px; background: var(--panel2); border: 1px solid var(--border); color: var(--text); font-family: inherit; font-size: 11px; border-radius: 2px; outline: none;">
+          <option value="">— inject scenario —</option>
+          <option value="apt">APT Campaign</option>
+          <option value="ransomware">Ransomware Outbreak</option>
+          <option value="insider">Insider Threat</option>
+          <option value="ddos">DDoS Inbound</option>
+          <option value="supply">Supply Chain Attack</option>
+        </select>
+        <button id="scenbtn" class="hint-reveal-btn" style="border-color: var(--cyan); color: var(--cyan); margin-top: 0; transition: all 0.2s;" onclick="injectScenario()">▶ INJECT SCENARIO</button>
+        
+        <!-- Task 9/41 Container status banner -->
+        <div class="contain-timer-container" id="containment-status-box" style="display: none;">
+          <div class="flex justify-between" style="display: flex; justify-content: space-between;">
+            <span class="color-red" style="font-weight: bold;">HOST COMPROMISE WARNING</span>
+            <span id="compromise-ratio" class="color-red">1/3 compromised</span>
+          </div>
+          <div class="contain-bar">
+            <div class="contain-fill" id="contain-fill-progress" style="width: 33.3%;"></div>
+          </div>
+          <div class="color-gray" style="font-size: 0.65rem; margin-top: 4px; line-height: 1.2;">
+            Attacker IP: <span class="color-red" id="containment-target-ip">203.0.113.88</span>. Type <code>block &lt;IP&gt;</code> to stop containment. Next host compromised in <span class="color-amber" id="containment-seconds">15s</span>.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Center Panel: Live Log Feed -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>SIEM Events Feed</span>
+        <span class="color-green" id="log-stream-status">• LIVE_STREAMING</span>
+      </div>
+      <div class="panel-content bg-darker log-feed-container" id="log-feed-scroll">
+        <div class="stream-status-overlay">[ STREAM PAUSED - HOVERING ]</div>
+        <div class="log-feed" id="log-feed">
+          <!-- Logs injected by LogEngine -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel: Alert Queue -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>Alert Triage Queue</span>
+        <span id="alert-queue-count" class="color-amber">0 Active</span>
+      </div>
+      <div class="panel-content bg-dark-panel alert-queue" id="alert-queue-list">
+        <!-- Alerts generated by AlertEngine -->
+        <div class="color-gray" style="text-align: center; font-size: 0.8rem; margin-top: 20px;">No alerts in queue.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom: Triage Console and Controls -->
+  <div class="bottom-section">
+    
+    <!-- Left: CLI console -->
+    <div class="console-panel">
+      <div class="console-output" id="console-output">
+        <div class="console-log-entry color-cyan">AEGIS-SOC Security Monitoring Console v1.0.4 initialized.</div>
+        <div class="console-log-entry color-gray">Type "help" to list available commands. Task progress is auto-saved.</div>
+      </div>
+      <div class="console-input-row">
+        <span class="console-prompt">ANALYST@AEGIS-SOC:~$</span>
+        <input type="text" class="console-input" id="console-input" autofocus autocomplete="off" spellcheck="false">
+      </div>
+    </div>
+
+    <!-- Right: GUI controls for clicked alert -->
+    <div class="controls-panel">
+      <div>
+        <div class="controls-header">Selected Alert Triage</div>
+        <div class="selected-alert-info" id="selected-alert-detail">
+          No alert selected.<br>Click an alert in the queue to load details and enable quick triage controls.
+        </div>
+      </div>
+      <div class="action-btn-grid">
+        <button class="action-btn" id="btn-triage-investigate">Investigate</button>
+        <button class="action-btn btn-escalate" id="btn-triage-escalate">Escalate</button>
+        <button class="action-btn" id="btn-triage-fp">False Pos</button>
+        <button class="action-btn btn-resolve" id="btn-triage-resolve">Resolve</button>
+        <button class="action-btn btn-block" id="btn-triage-block">Block Source IP</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div id="footer" style="padding: 6px 14px; background: #060810; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+    <div class="author" style="color: var(--dim); font-size: 10px; letter-spacing: 1px;">Built by <span style="color: var(--cyan);">Vijay Bhagwat Ukande</span> — not to study cybersecurity, but to practice it.</div>
+    <div class="tagline" style="color: #1e2c3a; font-size: 10px; font-style: italic;">AEGIS-SOC v2 // progress auto-saved</div>
+  </div>
+
+  <!-- Full-screen Summary Modal -->
+  <div class="summary-modal-overlay" id="summary-modal">
+    <div class="summary-modal">
+      <div class="summary-header">
+        <div class="summary-title glow-green">SESSION TRAINING BRIEFING SUMMARY</div>
+        <div class="color-cyan" id="summary-session-id">SID: AEGIS-8092-2026</div>
+      </div>
+      <div class="summary-content">
+        
+        <!-- Left: Metrics Dashboard -->
+        <div class="summary-section">
+          <div class="summary-section-title">Performance Metrics</div>
+          <div class="metric-grid">
+            <div class="metric-card">
+              <div class="metric-value" id="summary-final-score">250/1020</div>
+              <div class="metric-label">Final Score</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value color-cyan" id="summary-total-time">08:24</div>
+              <div class="metric-label">Session Duration</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="summary-hints-used" style="color: #f59e0b;">2</div>
+              <div class="metric-label">Hints Requested</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value color-green" id="summary-resolution-rate">0%</div>
+              <div class="metric-label">Completion Rate</div>
+            </div>
+          </div>
+          
+          <div style="margin-top: 15px;">
+            <div class="summary-section-title">Evaluation Summary</div>
+            <div style="font-size: 0.75rem; line-height: 1.4; color: #d1d5db;" id="summary-evaluation-text">
+              Security Operations Center evaluation completed. Analyst demonstrated baseline proficiency in threat classification and timeline reconstruction.
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Task-by-Task Details -->
+        <div class="summary-section" style="display: flex; flex-direction: column;">
+          <div class="summary-section-title">Timeline & Tasks Log</div>
+          <div style="flex: 1; overflow-y: auto;">
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th>Task</th>
+                  <th>Duration</th>
+                  <th>Hints</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody id="summary-tasks-table-body">
+                <!-- Injected by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+      <div class="summary-footer">
+        <button class="btn-restart" id="btn-restart-session">Restart New Simulator Session</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Constants & Randomized Data Pools
+    const IPS_INTERNAL = ['10.142.12.15', '10.142.12.33', '10.142.12.44', '10.142.12.78', '10.142.12.91', '10.142.12.102', '10.142.12.150', '10.142.12.201'];
+    const IPS_EXTERNAL = ['198.51.100.12', '203.0.113.45', '185.220.101.6', '82.102.23.4', '45.227.254.10', '103.241.22.9', '194.26.135.11', '91.240.118.50'];
+    const IPS_C2 = ['198.51.100.82', '203.0.113.99', '185.190.140.22', '93.184.216.34'];
+    const DOMAINS_PHISHING = ['update-payroll-portal.com', 'secure-bank-login-verify.net', 'google-account-security-alert.xyz', 'microsoft-update-assistant.com'];
+    const USER_NAMES = ['tjenkins', 'kdavids', 'rlopez', 'mwilson', 'achang', 'srogers', 'eparker', 'ncarter'];
+    const PROCESS_NAMES = ['svch0st.exe', 'nc.exe', 'mimikatz.exe', 'powershel1.exe', 'helper.bat', 'wininit-update.exe'];
+    const HOST_NAMES = ['WORKSTATION-04', 'DC-01', 'MAIL-SRV', 'HR-PC-12', 'FILE-SRV', 'DEV-BOX-09'];
+    const ATTACK_TYPES = ['ssh-brute-force', 'port-scan', 'phishing', 'malware-beacon'];
+
+    // Session State
+    let GameState = {
+      currentModule: 1, 
+      currentTask: 1,   
+      score: 0,
+      elapsedTime: 0,   
+      sessionTimerInterval: null,
+      
+      // Dynamic variables initialized on page load
+      config: {
+        attackTypeTask1: '',
+        srcIpTask2: '',
+        alertListTask3: [],
+        timelineTask4: [],
+        lateralMovementTask5: { attacker: '', targets: [], victimSrc: '' },
+        beaconingTask6: { host: '', c2: '' },
+        compromisedUserTask7: '',
+        persistenceTask8: '',
+        
+        // Dynamic properties for new tasks
+        targetVndTask5: '',
+        eqfxPortTask6: 8080,
+        compromisedUserTask9: '',
+        lateralTask12: { attacker: '', targets: [], victimSrc: '' },
+        dnsDomainTask13: '',
+        persistenceTask14: '',
+        compromisedUserTask17: '',
+        rdpSrcTask18: '',
+        internalSweepTask19: '',
+        cozyBearDomainTask21: 'update-microsoft.com',
+        fancyBearMailTask22: '',
+        apt34BeaconTask25: { host: '', c2: '' },
+        containmentTask41: { attacker: '', victimPrefix: '10.220.14.', compromisedCount: 0, maxCompromised: 3, timerLimit: 15, active: false, timerLeft: 15, intervalId: null, completed: false, bonusEarned: false },
+        darkSideExfilTask44: '',
+        summaryTask49: { attack: 'ransomware', vector: 'phishing', affected: 5, severity: 'critical', contained: 'yes' }
+      },
+      
+      tasks: {}, // Dynamically constructed
+      commandHistory: [],
+      historyIndex: -1,
+      blocklist: new Set(),
+      selectedAlertId: null,
+      logFeedPaused: false,
+      logBuffer: []
+    };
+
+    // Task brief DB
+    const taskBriefings = {
+      // MODULE 1 (1-10)
+      1: {
+        module: 1,
+        title: "Classic SSH Brute Force",
+        desc: "A brute force attack is ongoing. Observe the SIEM Events Feed. Identify the attack type.\n\nType: identify <attack-type>\nAllowed values: ssh-brute-force, port-scan, phishing, malware-beacon",
+        prompt: "Command: identify <attack-type>\nExample: identify ssh-brute-force",
+        hints: [
+          "Look at the events feed. Multiple SSH login fails from same IP.",
+          "Brute forcing SSH outputs SSH_AUTH_FAIL logs.",
+          "The active threat is: {ATTACK_TYPE}."
+        ]
+      },
+      2: {
+        module: 1,
+        title: "Highlighted Threat Vector",
+        desc: "A highlighted critical SQL Injection event is present in the SIEM feed (marked in cyan outline). Identify the Source IP address from this log.\n\nType: srcip <IP-address>",
+        prompt: "Command: srcip <IP-address>\nExample: srcip 198.51.100.12",
+        hints: [
+          "Scroll through the logs or hover to pause scrolling.",
+          "Look for [ATTN: TARGET EVENT] in the events feed.",
+          "The source IP in that SQL Inject log is: {TARGET_IP}."
+        ]
+      },
+      3: {
+        module: 1,
+        title: "Alert Severity Classification",
+        desc: "Three events in the Alert Queue require immediate triage classification.\n\nRules:\n- C2 Server Beaconing: CRITICAL\n- Database brute force: HIGH\n- External port scan: WARNING\n- General DHCP queries: INFO\n\nType: classify <AlertID> <SEVERITY>",
+        prompt: "Command: classify <AlertID> <SEVERITY>\nExample: classify ALRT-1002 CRITICAL",
+        hints: [
+          "Click on each alert card in the right queue to see details.",
+          "Alert {ID1} is a C2 beacon. Alert {ID2} is brute force. Alert {ID3} is port scan.",
+          "Type commands: classify {ID1} CRITICAL, classify {ID2} HIGH, classify {ID3} WARNING"
+        ]
+      },
+      4: {
+        module: 1,
+        title: "Log Timestamp Reconstruction",
+        desc: "Forensics collected 8 shuffled logs. Sort them chronologically (earliest to latest).\n\nLogs:\n{SHUFFLED_LOGS}\n\nType: order <id1> <id2> ... <id8>",
+        prompt: "Command: order <id1> <id2> ... <id8>\nExample: order LOG-A LOG-D LOG-C ...",
+        hints: [
+          "Read timestamps next to each LOG-ID in task briefing.",
+          "Chronology depends on HH:MM:SS timestamps.",
+          "Sequence: order {CORRECT_ORDER}"
+        ]
+      },
+      5: {
+        module: 1,
+        title: "Target breach (HVAC Pivot)",
+        desc: "Historical incident: In 2013, Target's intranet was compromised after an attacker stole credentials from their HVAC contractor Fazio Mechanical.\n\nFind the external IP associated with the compromised HVAC login event in the logs.\n\nType: srcip <IP-address>",
+        prompt: "Command: srcip <IP-address>\nExample: srcip 198.51.100.45",
+        hints: [
+          "Scan logs for events with keyword 'HVAC_VENTILATION' or 'FAZIO_PORTAL'.",
+          "The logs contain external connection parameters for HVAC maintenance.",
+          "The contractor login originated from IP: {TARGET_VND_IP}."
+        ]
+      },
+      6: {
+        module: 1,
+        title: "Equifax Struts Exploit Port",
+        desc: "Historical incident: In 2017, Equifax was compromised via a Apache Struts RCE vulnerability (CVE-2017-5638) on an external portal server.\n\nIdentify the HTTP server port targeted by the exploit in the logs.\n\nType: port <port>",
+        prompt: "Command: port <port-number>\nExample: port 8080",
+        hints: [
+          "Scan logs for HTTP request methods triggering OGNL expressions or 'struts2'.",
+          "Check the destination port. Port is usually non-standard SSL or web proxy.",
+          "The port targeted is: {EQFX_PORT}. Type: port {EQFX_PORT}."
+        ]
+      },
+      7: {
+        module: 1,
+        title: "Mirai Botnet Telnet Target",
+        desc: "Historical incident: In 2016, the Mirai botnet launched massive DDoS attacks by scanning for IoT devices with default telnet passwords.\n\nIdentify the default network port used by telnet protocols targeted by Mirai.\n\nType: port <port>",
+        prompt: "Command: port <port-number>\nExample: port 23",
+        hints: [
+          "Telnet is an unencrypted remote administration protocol, predecessor of SSH.",
+          "Mirai flooded Telnet scanners globally. Telnet standard port is 23.",
+          "Type: port 23"
+        ]
+      },
+      8: {
+        module: 1,
+        title: "Heartbleed SSL Leak Process",
+        desc: "Historical incident: In 2014, the Heartbleed bug (CVE-2014-0160) allowed attackers to leak memory keys from OpenSSL processes.\n\nIdentify the web daemon process name associated with the SSL heartbeat leak logs.\n\nType: process <name>",
+        prompt: "Command: process <process-name>\nExample: process nginx",
+        hints: [
+          "Look for memory leak anomalies or SSL alerts in logs.",
+          "Check the running processes handling HTTPS. It's 'nginx'.",
+          "Type: process nginx"
+        ]
+      },
+      9: {
+        module: 1,
+        title: "Spearphishing Initial Access",
+        desc: "A corporate user was lured into clicking a fake banking site, compromising credentials.\n\nIdentify the username of the victim account.\n\nType: compromised-user <username>",
+        prompt: "Command: compromised-user <username>\nExample: compromised-user tjenkins",
+        hints: [
+          "Look for 'DNS_PHISHING' or 'WEB_PROXY' logs targeting banking URLs.",
+          "A query for a domain like 'secure-bank-login-verify.net' was executed.",
+          "The victim user is: {USER}. Type: compromised-user {USER}."
+        ]
+      },
+      10: {
+        module: 1,
+        title: "Malicious Attachment Download",
+        desc: "An attacker downloaded a second-stage DLL shell using a built-in system administrator terminal executable.\n\nIdentify the process name of the shell runner/downloader utility.\n\nType: process <name>",
+        prompt: "Command: process <process-name>\nExample: process powershell.exe",
+        hints: [
+          "Check for terminal scripts launching outbound connections.",
+          "Attackers frequently use powershell.exe to download DLL payloads.",
+          "Type: process powershell.exe"
+        ]
+      },
+
+      // MODULE 2 (11-20)
+      11: {
+        module: 2,
+        title: "Mimikatz Credential Dumping",
+        desc: "An adversary dumped local LSASS credentials. Identify the process used to perform credential extraction.\n\nType: process <name>",
+        prompt: "Command: process <process-name>\nExample: process mimikatz.exe",
+        hints: [
+          "LSASS reads are highly restricted security events.",
+          "The utility used is a standard credential harvester: mimikatz.exe.",
+          "Type: process mimikatz.exe"
+        ]
+      },
+      12: {
+        module: 2,
+        title: "Lateral Movement over SMB",
+        desc: "An attacker pivoted to active directories. Identify the three internal destination IPs scanned over SMB port 445.\n\nType: lateral <ip1> <ip2> <ip3>",
+        prompt: "Command: lateral <ip1> <ip2> <ip3>\nExample: lateral 10.142.12.15 10.142.12.33 10.142.12.44",
+        hints: [
+          "Look for SMB port 445 connection requests from source host: {SRC_IP}.",
+          "Identify the three target destination IPs.",
+          "Type: lateral {IP1} {IP2} {IP3}"
+        ]
+      },
+      13: {
+        module: 2,
+        title: "DNS Tunneling Exfiltration",
+        desc: "Attacker is using custom DNS TXT records to tunnel data out of the network. Identify the suspicious external hostname used.\n\nType: domain <domain>",
+        prompt: "Command: domain <domain-name>\nExample: domain dns-bypass.xyz",
+        hints: [
+          "Look for long, base64-encoded subdomains queried on port 53.",
+          "The target domain ends in '.xyz' or matches dynamic DNS bypass paths.",
+          "The domain is: {DOMAIN}. Type: domain {DOMAIN}"
+        ]
+      },
+      14: {
+        module: 2,
+        title: "Registry Run Persistence",
+        desc: "An attacker created an registry autorun key targeting a custom executable hidden inside the local temp directories.\n\nIdentify the process name of the persistence payload.\n\nType: persistence <process-name>",
+        prompt: "Command: persistence <process-name>\nExample: persistence wininit-update.exe",
+        hints: [
+          "Check registry logs or scheduled process trees.",
+          "A process registry key was added inside 'HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'.",
+          "The payload is: {PROCESS}. Type: persistence {PROCESS}"
+        ]
+      },
+      15: {
+        module: 2,
+        title: "Sony Pictures GOP Hack",
+        desc: "Historical incident: In 2014, the Guardians of Peace (GOP) group wiped Sony's servers with disk-clearing malware.\n\nFind the name of the wiper executable used in the intrusion logs.\n\nType: process <name>",
+        prompt: "Command: process <process-name>\nExample: process wiper.exe",
+        hints: [
+          "Search logs for volume shadow copy deletions and raw disk writes.",
+          "The wiper binary is named 'wiper.exe'.",
+          "Type: process wiper.exe"
+        ]
+      },
+      16: {
+        module: 2,
+        title: "Stuxnet Siemens PLC Port",
+        desc: "Historical incident: In 2010, Stuxnet compromised SCADA PLCs by targeting Siemens Step7 software.\n\nIdentify the industrial ICS protocol port targeted by Stuxnet.\n\nType: port <port>",
+        prompt: "Command: port <port-number>\nExample: port 102",
+        hints: [
+          "Stuxnet communicates with Siemens S7-300 programmable logic controllers.",
+          "The standard Siemens S7 communication protocol runs on TCP port 102.",
+          "Type: port 102"
+        ]
+      },
+      17: {
+        module: 2,
+        title: "Kerberoasting Service Tickets",
+        desc: "Attacker requested high-privilege Kerberos tickets (TGS) to perform offline cracking.\n\nIdentify the compromised user account name targeted.\n\nType: compromised-user <username>",
+        prompt: "Command: compromised-user <username>\nExample: compromised-user backup_svc",
+        hints: [
+          "Look for Kerberos ticket service request event logs (Event ID 4769).",
+          "Check for ticket requests targeting service accounts.",
+          "The compromised account username is: {USER}."
+        ]
+      },
+      18: {
+        module: 2,
+        title: "RDP Session Hijacking",
+        desc: "An attacker performed lateral movement via an unauthorized RDP session from an external proxy server.\n\nIdentify the external source IP address initiating the connection.\n\nType: srcip <IP-address>",
+        prompt: "Command: srcip <IP-address>\nExample: srcip 198.51.100.12",
+        hints: [
+          "RDP connections typically target port 3389.",
+          "Identify the external IP establishing the RDP session to internal subnets.",
+          "The source IP is: {SRC_IP}. Type: srcip {SRC_IP}"
+        ]
+      },
+      19: {
+        module: 2,
+        title: "Internal Port Sweep",
+        desc: "An attacker is scanning internal systems to discover network shares.\n\nIdentify the host IP conducting the port sweep.\n\nType: srcip <IP-address>",
+        prompt: "Command: srcip <IP-address>\nExample: srcip 10.142.12.15",
+        hints: [
+          "Check for high volumes of connection failures across multiple destination IPs.",
+          "An internal IP is rapidly probing port 445 or 80 on consecutive hosts.",
+          "The scanner IP is: {SRC_IP}. Type: srcip {SRC_IP}"
+        ]
+      },
+      20: {
+        module: 2,
+        title: "Web Shell Installation",
+        desc: "An attacker uploaded a Java JSP backdoor shell to the corporate web server's public folder.\n\nIdentify the file name of the web shell payload.\n\nType: webshell <name>",
+        prompt: "Command: webshell <file-name>\nExample: webshell cmd.jsp",
+        hints: [
+          "Web shell executions trace to server folders like tomcat/webapps.",
+          "The uploaded backdoor ends in '.jsp'.",
+          "The shell filename is: cmd.jsp. Type: webshell cmd.jsp"
+        ]
+      },
+
+      // MODULE 3 (21-30)
+      21: {
+        module: 3,
+        title: "Cozy Bear (APT29) Phishing",
+        desc: "Historical incident: Cozy Bear compromised federal systems by deploying spearphishing campaigns mimicking IT update notifications.\n\nIdentify the sender domain used by the Cozy Bear campaign.\n\nType: domain <domain>",
+        prompt: "Command: domain <domain-name>\nExample: domain update-microsoft.com",
+        hints: [
+          "Look for email logs or web proxy lookups to update domains.",
+          "The malicious domain is 'update-microsoft.com'.",
+          "Type: domain update-microsoft.com"
+        ]
+      },
+      22: {
+        module: 3,
+        title: "Fancy Bear (APT28) DNC Hack",
+        desc: "Historical incident: In 2016, Fancy Bear hacked DNC mail servers using X-Agent backdoors.\n\nIdentify the internal IP of the targeted corporate mail server.\n\nType: srcip <IP-address>",
+        prompt: "Command: srcip <IP-address>\nExample: srcip 10.142.12.33",
+        hints: [
+          "Look for SMTP logs or X-Agent service callbacks.",
+          "The internal mail server resides on address: {MAIL_IP}.",
+          "Type: srcip {MAIL_IP}"
+        ]
+      },
+      23: {
+        module: 3,
+        title: "Lazarus Group SWIFT Heist",
+        desc: "Historical incident: Lazarus Group attempted a $1 billion SWIFT bank heist in Bangladesh by injecting malware into the SWIFT client software.\n\nIdentify the custom backup port targeted by the SWIFT backdoor.\n\nType: port <port>",
+        prompt: "Command: port <port-number>\nExample: port 30005",
+        hints: [
+          "Look for SWIFT messaging network connections on non-standard ports.",
+          "The target backup channel ran on port 30005.",
+          "Type: port 30005"
+        ]
+      },
+      24: {
+        module: 3,
+        title: "BlackEnergy Power Grid Wiper",
+        desc: "Historical incident: In 2015, the BlackEnergy wiper (KillDisk) compromised Ukrainian power grids causing massive blackouts.\n\nIdentify the process name of the wiper utility.\n\nType: process <name>",
+        prompt: "Command: process <process-name>\nExample: process killdisk.exe",
+        hints: [
+          "Look for disk wiping logs or process names.",
+          "The wiper tool is 'killdisk.exe'.",
+          "Type: process killdisk.exe"
+        ]
+      },
+      25: {
+        module: 3,
+        title: "APT34 (OilRig) C2 Beacon",
+        desc: "Threat intelligence: APT34 uses DNS-based beacon payloads to callback. Identify the internal host IP and external C2 IP.\n\nType: beacon <internal-host-ip> <c2-ip>",
+        prompt: "Command: beacon <internal-ip> <c2-ip>\nExample: beacon 10.142.12.15 198.51.100.82",
+        hints: [
+          "Check for periodic HTTP queries to C2 server: {C2_IP}.",
+          "Identify the internal infected host IP: {HOST_IP}.",
+          "Type: beacon {HOST_IP} {C2_IP}"
+        ]
+      },
+      26: {
+        module: 3,
+        title: "APT41 ShadowPad Trojan",
+        desc: "Threat intelligence: APT41 utilizes a supply chain Trojan named ShadowPad loaded via normal software DLLs.\n\nIdentify the filename of the ShadowPad payload executables.\n\nType: process <name>",
+        prompt: "Command: process <process-name>\nExample: process shadowpad.exe",
+        hints: [
+          "ShadowPad backdoors load dynamically as service DLL files or binaries.",
+          "The executable backdoor is named 'shadowpad.exe'.",
+          "Type: process shadowpad.exe"
+        ]
+      },
+      27: {
+        module: 3,
+        title: "WannaCry Killswitch Domain",
+        desc: "Historical incident: In 2017, the global WannaCry ransomware outbreak was halted when Marcus Hutchins registered its hardcoded killswitch domain.\n\nIdentify the WannaCry killswitch domain name.\n\nType: domain <domain>",
+        prompt: "Command: domain <domain-name>\nExample: domain iuqerfsodp9ifjaposdfjhgosurijfaewrwergwea.com",
+        hints: [
+          "WannaCry checks a long random character domain at startup.",
+          "The domain starts with 'iuqerfsodp' and ends in '.com'.",
+          "Type: domain iuqerfsodp9ifjaposdfjhgosurijfaewrwergwea.com"
+        ]
+      },
+      28: {
+        module: 3,
+        title: "NotPetya Wiper Propagation",
+        desc: "Historical incident: NotPetya wiped global systems by exploiting vulnerability exploits to spread within corporate networks.\n\nIdentify the name of the NSA exploit leaked by Shadow Brokers used by NotPetya (e.g. 'eternalblue').\n\nType: exploit <name>",
+        prompt: "Command: exploit <exploit-name>\nExample: exploit eternalblue",
+        hints: [
+          "The exploit targets vulnerability CVE-2017-0144 in SMBv1.",
+          "The code name of this leaked Windows exploit is 'eternalblue'.",
+          "Type: exploit eternalblue"
+        ]
+      },
+      29: {
+        module: 3,
+        title: "Pegasus Zero-Click Deploy",
+        desc: "Historical incident: NSO Group deployed the Pegasus spyware via zero-click exploits targeting iOS iMessage processes.\n\nIdentify the compromised daemon process name handling iMessage rendering in logs.\n\nType: process <name>",
+        prompt: "Command: process <process-name>\nExample: process imagent",
+        hints: [
+          "iMessage registration and transport relies on the daemon: 'imagent'.",
+          "The exploit hijacked imagent via PDF parsing exploits.",
+          "Type: process imagent"
+        ]
+      },
+      30: {
+        module: 3,
+        title: "Carbanak RAT Execution",
+        desc: "Historical incident: Carbanak stole $1 billion from banks by running remote control tools masquerading as system executables.\n\nIdentify the process name used (masquerading as svchost.exe with a zero).\n\nType: process <name>",
+        prompt: "Command: process <process-name>\nExample: process svch0st.exe",
+        hints: [
+          "Look for processes running out of user folders rather than System32.",
+          "The binary replaces the letter 'o' with a zero: svch0st.exe.",
+          "Type: process svch0st.exe"
+        ]
+      },
+
+      // MODULE 4 (31-40)
+      31: {
+        module: 4,
+        title: "Capital One IMDS Server SSRF",
+        desc: "Historical incident: Capital One's database was stolen via Server-Side Request Forgery (SSRF) querying AWS Metadata endpoints.\n\nIdentify the AWS IMDS metadata server link IP address.\n\nType: srcip <IP-address>",
+        prompt: "Command: srcip <IP-address>\nExample: srcip 169.254.169.254",
+        hints: [
+          "IMDSv1 runs on a link-local address mapping service.",
+          "The standard link-local metadata IP address is 169.254.169.254.",
+          "Type: srcip 169.254.169.254"
+        ]
+      },
+      32: {
+        module: 4,
+        title: "Okta Support Session Hijacking",
+        desc: "Historical incident: In 2023, Okta's customer support system was compromised, allowing attackers to download HAR files and steal session tokens.\n\nIdentify the authorization header credentials token type stolen.\n\nType: token <token-type>",
+        prompt: "Command: token <token-type>\nExample: token bearer-token",
+        hints: [
+          "HAR logs contain active HTTP request header tokens.",
+          "The tokens are authorization headers called bearer tokens.",
+          "Type: token bearer-token"
+        ]
+      },
+      33: {
+        module: 4,
+        title: "Log4Shell RCE Protocol",
+        desc: "Historical incident: In 2021, the Log4Shell vulnerability (CVE-2021-44228) allowed remote execution via JNDI string injection.\n\nIdentify the lookup directory protocol targeted by Log4Shell (e.g. 'ldap').\n\nType: protocol <protocol-name>",
+        prompt: "Command: protocol <name>\nExample: protocol ldap",
+        hints: [
+          "JNDI lookups connect to remote directory services like LDAP or RMI.",
+          "The most common vector exploited utilized LDAP. Type: protocol ldap.",
+          "Type: protocol ldap"
+        ]
+      },
+      34: {
+        module: 4,
+        title: "MGM Resorts Social Engineering",
+        desc: "Historical incident: MGM Resorts was crippled when attackers called support desks, bypassed authentication, and triggered MFA floods.\n\nIdentify the social engineering fatigue method (e.g. 'mfa-fatigue').\n\nType: bypass <method>",
+        prompt: "Command: bypass <method-name>\nExample: bypass mfa-fatigue",
+        hints: [
+          "Attackers flood users with push notifications until they approve.",
+          "This credential abuse bypass is called MFA Fatigue.",
+          "Type: bypass mfa-fatigue"
+        ]
+      },
+      35: {
+        module: 4,
+        title: "SolarWinds (SUNBURST) DLL",
+        desc: "Historical incident: SolarWinds Orion supply chain attack injected backdoors inside official DLL files.\n\nIdentify the filename of the backdoored BusinessLayer DLL.\n\nType: file <filename>",
+        prompt: "Command: file <filename>\nExample: file solarwinds.businesslayer.dll",
+        hints: [
+          "The DLL coordinates with business logic updates.",
+          "The exact backdoor filename is: solarwinds.businesslayer.dll.",
+          "Type: file solarwinds.businesslayer.dll"
+        ]
+      },
+      36: {
+        module: 4,
+        title: "3CX Desktop VoIP Backdoor",
+        desc: "Historical incident: In 2023, the 3CX desktop application was compromised in a supply chain attack delivering malicious payloads.\n\nIdentify the compromised executable process name.\n\nType: process <name>",
+        prompt: "Command: process <process-name>\nExample: process 3cxdesktopapp.exe",
+        hints: [
+          "The application targeted handles VoIP messaging desk clients.",
+          "The executable name is: 3cxdesktopapp.exe.",
+          "Type: process 3cxdesktopapp.exe"
+        ]
+      },
+      37: {
+        module: 4,
+        title: "Lapsus$ Azure Portal Access",
+        desc: "Threat intelligence: Lapsus$ bypassed admin verification to access Azure cloud portals.\n\nIdentify the compromised admin account user string.\n\nType: compromised-user <username>",
+        prompt: "Command: compromised-user <username>\nExample: compromised-user admin-azure",
+        hints: [
+          "Look for Azure portal logins from unusual geo-locations.",
+          "The account compromised is admin-azure.",
+          "Type: compromised-user admin-azure"
+        ]
+      },
+      38: {
+        module: 4,
+        title: "Kaseya VSA Remote Exploit",
+        desc: "Historical incident: REvil ransomware compromised Kaseya VSA servers, executing malware across downstream clients.\n\nIdentify the VSA agent monitoring process targeted.\n\nType: process <name>",
+        prompt: "Command: process <process-name>\nExample: process agentmon.exe",
+        hints: [
+          "The target process monitors client node configurations.",
+          "The process file is: agentmon.exe.",
+          "Type: process agentmon.exe"
+        ]
+      },
+      39: {
+        module: 4,
+        title: "PrintNightmare Spooler Service",
+        desc: "Historical incident: PrintNightmare (CVE-2021-34527) allowed attackers to execute code via Windows printer services.\n\nIdentify the print spooler process name targeted.\n\nType: process <name>",
+        prompt: "Command: process <process-name>\nExample: process spoolsv.exe",
+        hints: [
+          "The printer spooler system daemon process is spoolsv.exe.",
+          "Type: process spoolsv.exe"
+        ]
+      },
+      40: {
+        module: 4,
+        title: "XZ Utils Backdoor Library",
+        desc: "Historical incident: In 2024, a backdoor (CVE-2024-3094) was discovered inside the compression library of XZ Utils.\n\nIdentify the compromised shared library filename.\n\nType: file <filename>",
+        prompt: "Command: file <filename>\nExample: file liblzma.so",
+        hints: [
+          "The library handles LZMA compression inside SSH daemons.",
+          "The shared object library is: liblzma.so.",
+          "Type: file liblzma.so"
+        ]
+      },
+
+      // MODULE 5 (41-50)
+      41: {
+        module: 5,
+        title: "Colonial Pipeline Containment",
+        desc: "CRITICAL: Colonial Pipeline systems are under active ransomware attack. Block the attacker IP to contain the threat!\n\nType: block <IP>",
+        prompt: "Command: block <IP>\nExample: block 203.0.113.99",
+        hints: [
+          "Check the red containment status panel on the left sidebar for the IP.",
+          "The source attacker IP is: {ATTACKER_IP}.",
+          "Type command: block {ATTACKER_IP}"
+        ]
+      },
+      42: {
+        module: 5,
+        title: "LockBit Ransomware Extension",
+        desc: "Threat intelligence: LockBit appended custom extensions to all encrypted host server logs.\n\nIdentify the file extension associated with LockBit (e.g. '.lockbit').\n\nType: extension <extension>",
+        prompt: "Command: extension <extension-name>\nExample: extension .lockbit",
+        hints: [
+          "Look at the log files. Backups carry new extensions like '.lockbit'.",
+          "LockBit appends '.lockbit'. Type: extension .lockbit.",
+          "Type: extension .lockbit"
+        ]
+      },
+      43: {
+        module: 5,
+        title: "Conti Shadow Copy Deletion",
+        desc: "Threat intelligence: Conti ransomware deletes shadow copies before executing encryption.\n\nIdentify the Windows administrative process used to delete shadow copies.\n\nType: process <name>",
+        prompt: "Command: process <process-name>\nExample: process vssadmin.exe",
+        hints: [
+          "The utility used is 'vssadmin.exe'.",
+          "Type: process vssadmin.exe"
+        ]
+      },
+      44: {
+        module: 5,
+        title: "DarkSide C2 Exfiltration",
+        desc: "Historical incident: DarkSide exfiltrated Colonial Pipeline database assets. Identify the external IP used to upload data.\n\nType: srcip <IP-address>",
+        prompt: "Command: srcip <IP-address>\nExample: srcip 198.51.100.12",
+        hints: [
+          "Look for high-bandwidth web requests or exfil events.",
+          "The destination backup server external IP is: {EXFIL_IP}.",
+          "Type: srcip {EXFIL_IP}"
+        ]
+      },
+      45: {
+        module: 5,
+        title: "BlackCat Web Console User",
+        desc: "Threat intelligence: BlackCat compromised virtual hosts by accessing cloud console backups.\n\nIdentify the backup service username compromised.\n\nType: compromised-user <username>",
+        prompt: "Command: compromised-user <username>\nExample: compromised-user backup_svc",
+        hints: [
+          "Check console access logs for backup operator usernames.",
+          "The service account compromised is: backup_svc.",
+          "Type: compromised-user backup_svc"
+        ]
+      },
+      46: {
+        module: 5,
+        title: "Magecart Skimmer Injection",
+        desc: "Historical incident: Magecart injected credit card skimming scripts inside merchant checkout web pages.\n\nIdentify the malicious CDN domain hostname used to host the skimmer script.\n\nType: domain <domain>",
+        prompt: "Command: domain <domain-name>\nExample: domain cdns-google.com",
+        hints: [
+          "Check outbound DNS queries from checkout portal pages.",
+          "The domain masquerades as a Google CDN: cdns-google.com.",
+          "Type: domain cdns-google.com"
+        ]
+      },
+      47: {
+        module: 5,
+        title: "SIM Swapping Defense",
+        desc: "Remediation audit: Attacker compromised mobile carrier accounts to bypass SMS multi-factor locks (SIM Swapping).\n\nIdentify the best remediation: \n- [A] Enforce app-based TOTP or hardware FIDO tokens.\n- [B] Increase password length on cellular accounts.\n- [C] Block outbound emails to mobile providers.\n- [D] Enable VPN routers on mobile connections.\n\nType: recommend <choice>",
+        prompt: "Command: recommend <A/B/C/D>\nExample: recommend A",
+        hints: [
+          "SMS is highly vulnerable to SIM swaps. App-based MFA (TOTP) or hardware tokens (FIDO) do not rely on carrier cellular numbers.",
+          "Select Option A. Type: recommend A.",
+          "Type: recommend A"
+        ]
+      },
+      48: {
+        module: 5,
+        title: "Volt Typhoon Living-off-Land",
+        desc: "Historical incident: Volt Typhoon hijacked US critical infrastructure by using administrative Windows tools (Living-off-the-Land).\n\nIdentify the built-in networking command tool used to discover active domain shares.\n\nType: process <name>",
+        prompt: "Command: process <process-name>\nExample: process net.exe",
+        hints: [
+          "The utility used displays active shares: 'net.exe view /domain'.",
+          "The process file is: net.exe.",
+          "Type: process net.exe"
+        ]
+      },
+      49: {
+        module: 5,
+        title: "Incident Reporting Audit",
+        desc: "Draft a final incident summary report for the Colonial Pipeline ransomware incident. Use exact field parameters:\n\nType: summary attack=<type> vector=<initial-vector> affected=<count> severity=<level> contained=<yes/no>\n\nGround Truth:\n- Attack: ransomware\n- Vector: phishing\n- Affected: 5 (allow tolerance of 1)\n- Severity: critical\n- Contained: yes",
+        prompt: "Command: summary attack=ransomware vector=phishing affected=5 severity=critical contained=yes",
+        hints: [
+          "Follow the exact syntax parameter list: attack=ransomware vector=phishing affected=5 severity=critical contained=yes.",
+          "Type the summary exactly.",
+          "Type: summary attack=ransomware vector=phishing affected=5 severity=critical contained=yes"
+        ]
+      },
+      50: {
+        module: 5,
+        title: "Final Strategic Recommendation",
+        desc: "Remediation audit: To prevent third-party software supply chain compromises (like SolarWinds and 3CX), identify the primary security strategy:\n\n- [A] Install secondary egress perimeter boundary firewalls.\n- [B] Audit codebases of all open-source web servers.\n- [C] Enforce software signing, bill-of-materials (SBOM) audits, and zero-trust verification.\n- [D] Deploy daily backups on local systems.\n\nType: recommend <choice>",
+        prompt: "Command: recommend <A/B/C/D>\nExample: recommend C",
+        hints: [
+          "Supply chain attacks compromise signed software modules. Zero-trust verification and SBOM audits identify dependencies and anomalous behaviors.",
+          "Select Option C. Type: recommend C.",
+          "Type: recommend C"
+        ]
+      }
+    };
+
+    // ----------------------------------------------------
+    // Scenario and Data Initialization Engine
+    // ----------------------------------------------------
+    function initSessionConfig() {
+      // General random values
+      GameState.config.attackTypeTask1 = ATTACK_TYPES[Math.floor(Math.random() * ATTACK_TYPES.length)];
+      GameState.config.srcIpTask2 = IPS_EXTERNAL[Math.floor(Math.random() * IPS_EXTERNAL.length)];
+      
+      const a1Id = 'ALRT-' + (Math.floor(Math.random() * 8000) + 1000);
+      const a2Id = 'ALRT-' + (Math.floor(Math.random() * 8000) + 1000);
+      const a3Id = 'ALRT-' + (Math.floor(Math.random() * 8000) + 1000);
+      GameState.config.alertListTask3 = [
+        { id: a1Id, type: "Malware C2 Beaconing", ip: IPS_C2[0], severity: "CRITICAL", desc: "Outbound connection to known C2 server" },
+        { id: a2Id, type: "Database SSH Brute Force", ip: IPS_EXTERNAL[1], severity: "HIGH", desc: "Multiple failed login attempts to MSSQL database server" },
+        { id: a3Id, type: "External Port Scan", ip: IPS_EXTERNAL[2], severity: "WARNING", desc: "Sequential connection attempts from external network host" }
+      ];
+
+      const logs = [
+        { id: "LOG-A", time: "10:00:15", desc: "User clicked suspicious email link" },
+        { id: "LOG-B", time: "10:01:40", desc: "User downloaded file attachment" },
+        { id: "LOG-C", time: "10:02:10", desc: "Process created: invoice_update.exe" },
+        { id: "LOG-D", time: "10:02:45", desc: "Established outbound C2 TCP socket" },
+        { id: "LOG-E", time: "10:03:15", desc: "Added persistence registry run key" },
+        { id: "LOG-F", time: "10:04:50", desc: "LSASS credential memory dumped" },
+        { id: "LOG-G", time: "10:06:10", desc: "SMB connection to Domain Controller" },
+        { id: "LOG-H", time: "10:08:30", desc: "Data exfiltration over HTTPS complete" }
+      ];
+      const ids = ["LOG-A", "LOG-B", "LOG-C", "LOG-D", "LOG-E", "LOG-F", "LOG-G", "LOG-H"];
+      const shuffledIds = [...ids].sort(() => Math.random() - 0.5);
+      GameState.config.timelineTask4 = logs.map((log, idx) => {
+        return { id: shuffledIds[idx], time: log.time, desc: log.desc };
+      });
+
+      // Randomized configs for specific tasks
+      GameState.config.targetVndTask5 = IPS_EXTERNAL[Math.floor(Math.random() * IPS_EXTERNAL.length)];
+      GameState.config.eqfxPortTask6 = [8080, 8443, 9000, 8000][Math.floor(Math.random() * 4)];
+      GameState.config.compromisedUserTask9 = USER_NAMES[Math.floor(Math.random() * USER_NAMES.length)];
+      
+      const lateralSrc = IPS_INTERNAL[2];
+      const lateralAttacker = IPS_EXTERNAL[3];
+      const targets = [IPS_INTERNAL[3], IPS_INTERNAL[4], IPS_INTERNAL[5]];
+      GameState.config.lateralTask12 = { attacker: lateralAttacker, victimSrc: lateralSrc, targets: targets };
+      
+      GameState.config.dnsDomainTask13 = DOMAINS_PHISHING[Math.floor(Math.random() * DOMAINS_PHISHING.length)];
+      GameState.config.persistenceTask14 = PROCESS_NAMES[Math.floor(Math.random() * PROCESS_NAMES.length)];
+      GameState.config.compromisedUserTask17 = USER_NAMES[Math.floor(Math.random() * USER_NAMES.length)];
+      GameState.config.rdpSrcTask18 = IPS_EXTERNAL[4];
+      GameState.config.internalSweepTask19 = IPS_INTERNAL[0];
+      
+      GameState.config.fancyBearMailTask22 = IPS_INTERNAL[1];
+      GameState.config.apt34BeaconTask25 = { host: IPS_INTERNAL[7], c2: IPS_C2[1] };
+      
+      // Colonial Pipeline Attacker IP
+      GameState.config.containmentTask41.attacker = IPS_EXTERNAL[6];
+      GameState.config.darkSideExfilTask44 = IPS_EXTERNAL[7];
+
+      // Dynamically initialize 50 Tasks state objects
+      for (let i = 1; i <= 50; i++) {
+        GameState.tasks[i] = {
+          id: i,
+          name: taskBriefings[i].title,
+          completed: false,
+          hintsUsed: 0,
+          points: 20,
+          timeStarted: 0,
+          timeTaken: 0,
+          classified: i === 3 ? {} : undefined
+        };
+      }
+    }
+
+    // ----------------------------------------------------
+    // Log Stream Engine
+    // ----------------------------------------------------
+    const LogEngine = {
+      logFeedEl: null,
+      maxLogs: 100,
+      intervalId: null,
+
+      init() {
+        this.logFeedEl = document.getElementById('log-feed');
+        this.startStreaming();
+      },
+
+      startStreaming() {
+        if (this.intervalId) clearInterval(this.intervalId);
+        
+        let speed = 2000;
+        if (GameState.config.containmentTask41.active) {
+          speed = 700;
+        }
+        
+        this.intervalId = setInterval(() => {
+          this.generateLog();
+        }, speed);
+      },
+
+      generateLog() {
+        const timestamp = new Date().toLocaleTimeString();
+        let logData = this.getRandomNoiseLog(timestamp);
+        
+        // Inject task specific logs
+        const task = GameState.currentTask;
+        if (task === 1) {
+          if (Math.random() < 0.3) logData = this.getTask1AttackLog(timestamp);
+        } else if (task === 2) {
+          if (Math.random() < 0.15 && !document.querySelector('.log-highlight')) {
+            logData = {
+              time: timestamp,
+              sev: "CRIT",
+              ip: GameState.config.srcIpTask2,
+              type: "SQL_INJECT",
+              desc: `[ATTN: TARGET EVENT] Web Server received SQL payload: UNION SELECT user, password FROM users`,
+              class: "log-highlight"
+            };
+          }
+        } else if (task === 5) {
+          if (Math.random() < 0.2) {
+            logData = {
+              time: timestamp,
+              sev: "INFO",
+              ip: GameState.config.targetVndTask5,
+              type: "FAZIO_PORTAL",
+              desc: `HVAC_VENTILATION: Fazio Mechanical user login request approved externally`
+            };
+          }
+        } else if (task === 6) {
+          if (Math.random() < 0.2) {
+            logData = {
+              time: timestamp,
+              sev: "CRIT",
+              ip: IPS_INTERNAL[4],
+              type: "STRUTS_RCE",
+              desc: `HTTP POST request to port ${GameState.config.eqfxPortTask6} contains OGNL expressions targeting bash process execution`
+            };
+          }
+        } else if (task === 9) {
+          if (Math.random() < 0.2) {
+            logData = {
+              time: timestamp,
+              sev: "WARN",
+              ip: IPS_INTERNAL[2],
+              type: "DNS_PHISHING",
+              desc: `DNS query for flagged domain ${DOMAINS_PHISHING[1]} by user ${GameState.config.compromisedUserTask9}`
+            };
+          }
+        } else if (task === 12) {
+          if (Math.random() < 0.2) {
+            const config = GameState.config.lateralTask12;
+            const target = config.targets[Math.floor(Math.random() * config.targets.length)];
+            logData = {
+              time: timestamp,
+              sev: "WARN",
+              ip: config.victimSrc,
+              type: "SMB_CONN",
+              desc: `Outbound connection to host ${target}:445/SMB by user Administrator`
+            };
+          }
+        } else if (task === 13) {
+          if (Math.random() < 0.2) {
+            logData = {
+              time: timestamp,
+              sev: "CRIT",
+              ip: IPS_INTERNAL[0],
+              type: "DNS_TUNNEL",
+              desc: `Query: base64-encoded TXT payload queried on ${GameState.config.dnsDomainTask13}`
+            };
+          }
+        } else if (task === 14) {
+          if (Math.random() < 0.25) {
+            logData = {
+              time: timestamp,
+              sev: "WARN",
+              ip: IPS_INTERNAL[1],
+              type: "REG_PERSIST",
+              desc: `Added Run Registry Key: HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run -> C:\\Temp\\${GameState.config.persistenceTask14}`
+            };
+          }
+        } else if (task === 17) {
+          if (Math.random() < 0.2) {
+            logData = {
+              time: timestamp,
+              sev: "WARN",
+              ip: IPS_INTERNAL[3],
+              type: "KERBEROAST",
+              desc: `Kerberos Service Ticket request (TGS) targeting user: ${GameState.config.compromisedUserTask17} with high encryption algorithms`
+            };
+          }
+        } else if (task === 18) {
+          if (Math.random() < 0.2) {
+            logData = {
+              time: timestamp,
+              sev: "CRIT",
+              ip: GameState.config.rdpSrcTask18,
+              type: "RDP_HIJACK",
+              desc: `Session Hijack: External login established via RDP port 3389 from gateway proxy`
+            };
+          }
+        } else if (task === 19) {
+          if (Math.random() < 0.25) {
+            logData = {
+              time: timestamp,
+              sev: "WARN",
+              ip: GameState.config.internalSweepTask19,
+              type: "PORT_SWEEP",
+              desc: `TCP Connection sweep targeting sequential local IPs on ports 445 and 3389`
+            };
+          }
+        } else if (task === 22) {
+          if (Math.random() < 0.2) {
+            logData = {
+              time: timestamp,
+              sev: "CRIT",
+              ip: GameState.config.fancyBearMailTask22,
+              type: "SMTP_EXPLOIT",
+              desc: `X-Agent client deployment script injected against local mail gateway server`
+            };
+          }
+        } else if (task === 25) {
+          if (Math.random() < 0.25) {
+            const config = GameState.config.apt34BeaconTask25;
+            logData = {
+              time: timestamp,
+              sev: "CRIT",
+              ip: config.host,
+              type: "NET_BEACON",
+              desc: `Periodic HTTP POST callback to C2 IP ${config.c2} via port 80 - 452 Bytes sent`
+            };
+          }
+        } else if (task === 41 && GameState.config.containmentTask41.active) {
+          if (Math.random() < 0.4) {
+            const att = GameState.config.containmentTask41.attacker;
+            logData = {
+              time: timestamp,
+              sev: "CRIT",
+              ip: att,
+              type: "RANSOM_SPREAD",
+              desc: `Intrusion: SMB exploitation attempt against pipeline workstation controller`
+            };
+          }
+        } else if (task === 44) {
+          if (Math.random() < 0.2) {
+            logData = {
+              time: timestamp,
+              sev: "CRIT",
+              ip: GameState.config.darkSideExfilTask44,
+              type: "NET_EXFIL",
+              desc: `Exfiltration: Bulk transfer completed to destination host IP: ${GameState.config.darkSideExfilTask44}`
+            };
+          }
+        }
+
+        if (GameState.blocklist.has(logData.ip)) {
+          return;
+        }
+
+        // Dynamic Alert Spawning
+        if (GameState.currentTask !== 3) {
+          if (logData.sev === 'CRIT') {
+            AlertEngine.spawn(logData.ip, logData.type, 'CRITICAL', logData.desc);
+          } else if (logData.sev === 'WARN' && Math.random() < 0.25) {
+            AlertEngine.spawn(logData.ip, logData.type, 'WARNING', logData.desc);
+          }
+        }
+
+        if (GameState.logFeedPaused) {
+          GameState.logBuffer.push(logData);
+          if (GameState.logBuffer.length > 30) GameState.logBuffer.shift();
+        } else {
+          this.appendLogLine(logData);
+        }
+      },
+
+      appendLogLine(data) {
+        const line = document.createElement('div');
+        line.className = `log-line log-${data.sev.toLowerCase()} ${data.class || ''}`;
+        
+        line.innerHTML = `
+          <span class="log-time">[${data.time}]</span>
+          <span class="log-sev">[${data.sev}]</span>
+          <span class="log-ip">${data.ip}</span>
+          <span class="log-type">[${data.type}]</span>
+          <span class="log-desc">${data.desc}</span>
+        `;
+        
+        this.logFeedEl.appendChild(line);
+        
+        const container = document.getElementById('log-feed-scroll');
+        container.scrollTop = container.scrollHeight;
+        
+        while (this.logFeedEl.childElementCount > this.maxLogs) {
+          this.logFeedEl.removeChild(this.logFeedEl.firstChild);
+        }
+      },
+
+      releaseBuffer() {
+        while (GameState.logBuffer.length > 0) {
+          this.appendLogLine(GameState.logBuffer.shift());
+        }
+      },
+
+      getRandomNoiseLog(time) {
+        const types = [
+          { sev: "INFO", type: "SYS_LOG", ip: IPS_INTERNAL[0], desc: "User jsmith authenticated successfully on DC-01" },
+          { sev: "INFO", type: "FIREWALL", ip: IPS_INTERNAL[1], desc: "Allowed outbound TCP connection to static.microsoft.com:443" },
+          { sev: "INFO", type: "DNS_RESOLVE", ip: IPS_INTERNAL[2], desc: "Resolved dns.google to 8.8.8.8" },
+          { sev: "INFO", type: "DHCP", ip: IPS_INTERNAL[3], desc: "DHCP IP lease renewed for interface eth0" },
+          { sev: "INFO", type: "SYS_LOG", ip: IPS_INTERNAL[4], desc: "Windows Defender Engine service status: RUNNING" },
+          { sev: "INFO", type: "SYS_LOG", ip: IPS_INTERNAL[5], desc: "Network connection from WS-04 to PrintServer (port 9100)" },
+          { sev: "INFO", type: "FIREWALL", ip: IPS_INTERNAL[6], desc: "Permitted secure TLS handshake with repository.github.com:443" },
+          { sev: "INFO", type: "DNS_RESOLVE", ip: IPS_INTERNAL[7], desc: "Resolved update.windows.com to 23.4.152.12" }
+        ];
+        return {
+          time,
+          ...types[Math.floor(Math.random() * types.length)]
+        };
+      },
+
+      getTask1AttackLog(time) {
+        const attack = GameState.config.attackTypeTask1;
+        if (attack === "ssh-brute-force") {
+          return {
+            time,
+            sev: "WARN",
+            ip: IPS_EXTERNAL[0],
+            type: "SSH_AUTH_FAIL",
+            desc: `Failed password for root from ${IPS_EXTERNAL[0]} port 49122 ssh2 (Attempt ${Math.floor(Math.random()*10)+5})`
+          };
+        } else if (attack === "port-scan") {
+          const ports = [21, 22, 23, 25, 80, 110, 443, 3389, 8080];
+          const port = ports[Math.floor(Math.random() * ports.length)];
+          return {
+            time,
+            sev: "WARN",
+            ip: IPS_EXTERNAL[1],
+            type: "CONN_REFUSED",
+            desc: `TCP Connection request to internal host ${IPS_INTERNAL[1]}:${port} refused`
+          };
+        } else if (attack === "phishing") {
+          return {
+            time,
+            sev: "CRIT",
+            ip: IPS_INTERNAL[2],
+            type: "DNS_PHISHING",
+            desc: `Domain query flagged: query for malicious domain ${DOMAINS_PHISHING[0]} blocked by DNS filter`
+          };
+        } else {
+          return {
+            time,
+            sev: "CRIT",
+            ip: IPS_INTERNAL[3],
+            type: "BEACONING",
+            desc: `C2 connection callback: Outbound HTTP beacon packet sent to C2 node ${IPS_C2[0]}`
+          };
+        }
+      }
+    };
+
+    // ----------------------------------------------------
+    // Alert Triage Engine
+    // ----------------------------------------------------
+    const AlertEngine = {
+      alerts: {},
+
+      spawnTask3Alerts() {
+        const container = document.getElementById('alert-queue-list');
+        container.innerHTML = '';
+        
+        GameState.config.alertListTask3.forEach(alert => {
+          this.alerts[alert.id] = {
+            id: alert.id,
+            type: alert.type,
+            ip: alert.ip,
+            severity: alert.severity,
+            desc: alert.desc,
+            time: new Date().toLocaleTimeString(),
+            status: "NEW"
+          };
+          this.createAlertCard(this.alerts[alert.id]);
+        });
+
+        this.updateQueueCount();
+      },
+
+      createAlertCard(alert) {
+        const container = document.getElementById('alert-queue-list');
+        const card = document.createElement('div');
+        card.id = `card-${alert.id}`;
+        card.className = `alert-card ${alert.severity === 'CRITICAL' ? 'crit' : alert.severity === 'HIGH' ? 'crit' : 'warn'}`;
+        card.onclick = () => this.selectAlert(alert.id);
+        
+        card.innerHTML = `
+          <div class="alert-card-header">
+            <span>[${alert.id}]</span>
+            <span class="alert-badge badge-${alert.severity.toLowerCase()}">${alert.severity}</span>
+          </div>
+          <div class="alert-card-body">
+            <strong>${alert.type}</strong><br>
+            Src: ${alert.ip}
+          </div>
+          <div class="alert-card-footer">
+            <span>Status: <span id="status-text-${alert.id}">${alert.status}</span></span>
+            <span>${alert.time}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      },
+
+      selectAlert(id) {
+        GameState.selectedAlertId = id;
+        
+        document.querySelectorAll('.alert-card').forEach(card => card.classList.remove('selected'));
+        
+        const card = document.getElementById(`card-${id}`);
+        if (card) card.classList.add('selected');
+        
+        const alert = this.alerts[id];
+        if (alert) {
+          if (alert.status === "NEW") {
+            alert.status = "INVESTIGATING";
+            document.getElementById(`status-text-${id}`).innerText = "INVESTIGATING";
+          }
+          
+          document.getElementById('selected-alert-detail').innerHTML = `
+            <strong>Alert ID:</strong> ${alert.id}<br>
+            <strong>Type:</strong> ${alert.type}<br>
+            <strong>Source IP:</strong> ${alert.ip}<br>
+            <strong>Report Time:</strong> ${alert.time}<br>
+            <strong>Current Status:</strong> <span class="color-cyan">${alert.status}</span><br>
+            <strong>Logs:</strong> ${alert.desc}
+          `;
+        }
+      },
+
+      updateAlertStatus(id, newStatus) {
+        if (this.alerts[id]) {
+          this.alerts[id].status = newStatus;
+          const statusText = document.getElementById(`status-text-${id}`);
+          if (statusText) statusText.innerText = newStatus;
+          
+          if (GameState.selectedAlertId === id) {
+            this.selectAlert(id);
+          }
+
+          const card = document.getElementById(`card-${id}`);
+          if (newStatus === "RESOLVED" || newStatus === "FALSE_POSITIVE") {
+            if (card) {
+              card.style.opacity = '0.4';
+              card.style.borderLeftColor = '#10b981';
+            }
+          } else {
+            if (card) {
+              card.style.opacity = '';
+              card.style.borderLeftColor = '';
+            }
+          }
+          this.updateQueueCount();
+        }
+      },
+
+      spawn(ip, type, severity, desc) {
+        if (GameState.currentTask === 3) return;
+
+        const id = 'ALRT-' + (Math.floor(Math.random() * 8000) + 1000);
+        this.alerts[id] = {
+          id: id,
+          type: type,
+          ip: ip,
+          severity: severity,
+          desc: desc,
+          time: new Date().toLocaleTimeString(),
+          status: "NEW"
+        };
+
+        const container = document.getElementById('alert-queue-list');
+        if (container.querySelector('.color-gray')) {
+          container.innerHTML = '';
+        }
+
+        this.createAlertCard(this.alerts[id]);
+        this.updateQueueCount();
+      },
+
+      updateQueueCount() {
+        const activeAlerts = Object.values(this.alerts).filter(a => a.status !== "RESOLVED" && a.status !== "FALSE_POSITIVE");
+        document.getElementById('alert-queue-count').innerText = `${activeAlerts.length} Active`;
+        document.getElementById('header-alerts').innerText = activeAlerts.length;
+        if (UIUpdater && typeof UIUpdater.updateHeader === 'function') {
+          UIUpdater.updateHeader();
+        }
+      }
+    };
+
+    // ----------------------------------------------------
+    // Hint System Engine
+    // ----------------------------------------------------
+    const HintEngine = {
+      revealNextHint() {
+        const taskId = GameState.currentTask;
+        const task = GameState.tasks[taskId];
+        const configBrief = taskBriefings[taskId];
+        
+        if (task.completed) {
+          TriageConsole.log(`[!] Task ${taskId} is already completed.`, "color-amber");
+          return;
+        }
+
+        if (task.hintsUsed >= 3) {
+          TriageConsole.log(`[!] All available hints for this task have been revealed.`, "color-amber");
+          return;
+        }
+
+        task.hintsUsed++;
+        
+        let cost = 0;
+        if (task.hintsUsed === 2) {
+          cost = 5;
+          task.points -= 5;
+        } else if (task.hintsUsed === 3) {
+          cost = 10;
+          task.points -= 10;
+        }
+
+        GameState.score = calculateTotalScore();
+        UIUpdater.updateHeader();
+
+        this.renderHintsUI();
+        
+        let hintText = configBrief.hints[task.hintsUsed - 1];
+        hintText = this.formatHintVariables(hintText, taskId);
+
+        TriageConsole.log(`[+] Hint ${task.hintsUsed} revealed. Cost: -${cost} points.`, "color-cyan");
+        TriageConsole.log(`HINT: ${hintText}`, "color-amber");
+        if (typeof saveProgress === 'function') saveProgress();
+      },
+
+      formatHintVariables(hintText, taskId) {
+        let text = hintText;
+        if (taskId === 1) {
+          text = text.replace("{ATTACK_TYPE}", GameState.config.attackTypeTask1);
+        } else if (taskId === 2) {
+          text = text.replace("{TARGET_IP}", GameState.config.srcIpTask2);
+        } else if (taskId === 3) {
+          const list = GameState.config.alertListTask3;
+          text = text.replace("{ID1}", list[0].id).replace("{ID1}", list[0].id);
+          text = text.replace("{ID2}", list[1].id).replace("{ID2}", list[1].id);
+          text = text.replace("{ID3}", list[2].id).replace("{ID3}", list[2].id);
+        } else if (taskId === 4) {
+          const correctOrder = getTask4CorrectSequence().join(" ");
+          text = text.replace("{EARLIEST_LOG}", "LOG-B").replace("{NEXT_LOG}", "LOG-D").replace("{CORRECT_ORDER}", correctOrder);
+        } else if (taskId === 5) {
+          text = text.replace("{TARGET_VND_IP}", GameState.config.targetVndTask5);
+        } else if (taskId === 6) {
+          text = text.replaceAll("{EQFX_PORT}", GameState.config.eqfxPortTask6);
+        } else if (taskId === 9) {
+          text = text.replaceAll("{USER}", GameState.config.compromisedUserTask9);
+        } else if (taskId === 12) {
+          text = text.replace("{SRC_IP}", GameState.config.lateralTask12.victimSrc);
+          text = text.replace("{IP1}", GameState.config.lateralTask12.targets[0]);
+          text = text.replace("{IP2}", GameState.config.lateralTask12.targets[1]);
+          text = text.replace("{IP3}", GameState.config.lateralTask12.targets[2]);
+        } else if (taskId === 13) {
+          text = text.replaceAll("{DOMAIN}", GameState.config.dnsDomainTask13);
+        } else if (taskId === 14) {
+          text = text.replaceAll("{PROCESS}", GameState.config.persistenceTask14);
+        } else if (taskId === 17) {
+          text = text.replaceAll("{USER}", GameState.config.compromisedUserTask17);
+        } else if (taskId === 18) {
+          text = text.replaceAll("{SRC_IP}", GameState.config.rdpSrcTask18);
+        } else if (taskId === 19) {
+          text = text.replaceAll("{SRC_IP}", GameState.config.internalSweepTask19);
+        } else if (taskId === 22) {
+          text = text.replaceAll("{MAIL_IP}", GameState.config.fancyBearMailTask22);
+        } else if (taskId === 25) {
+          text = text.replaceAll("{HOST_IP}", GameState.config.apt34BeaconTask25.host);
+          text = text.replaceAll("{C2_IP}", GameState.config.apt34BeaconTask25.c2);
+        } else if (taskId === 41) {
+          text = text.replaceAll("{ATTACKER_IP}", GameState.config.containmentTask41.attacker);
+        } else if (taskId === 44) {
+          text = text.replaceAll("{EXFIL_IP}", GameState.config.darkSideExfilTask44);
+        }
+        return text;
+      },
+
+      renderHintsUI() {
+        const taskId = GameState.currentTask;
+        const task = GameState.tasks[taskId];
+        const configBrief = taskBriefings[taskId];
+        const container = document.getElementById('hints-ui-container');
+        
+        container.innerHTML = '';
+        if (task.hintsUsed === 0) {
+          container.innerHTML = `<div class="color-gray" style="font-size: 0.75rem;">No hints revealed yet. Type "hint" or click below.</div>`;
+          return;
+        }
+
+        for (let i = 0; i < task.hintsUsed; i++) {
+          const hintCard = document.createElement('div');
+          hintCard.className = 'hint-box';
+          hintCard.innerText = this.formatHintVariables(configBrief.hints[i], taskId);
+          container.appendChild(hintCard);
+        }
+      }
+    };
+
+    // ----------------------------------------------------
+    // Triage Console & Terminal Input Parser
+    // ----------------------------------------------------
+    const TriageConsole = {
+      inputEl: null,
+      outputEl: null,
+
+      init() {
+        this.inputEl = document.getElementById('console-input');
+        this.outputEl = document.getElementById('console-output');
+
+        this.inputEl.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            this.handleInput();
+          } else if (e.key === 'ArrowUp') {
+            this.navigateHistory(-1);
+          } else if (e.key === 'ArrowDown') {
+            this.navigateHistory(1);
+          }
+        });
+      },
+
+      log(text, colorClass = '') {
+        const line = document.createElement('div');
+        line.className = `console-log-entry ${colorClass}`;
+        line.innerText = text;
+        this.outputEl.appendChild(line);
+        this.outputEl.scrollTop = this.outputEl.scrollHeight;
+      },
+
+      clear() {
+        this.outputEl.innerHTML = '';
+      },
+
+      handleInput() {
+        const inputRaw = this.inputEl.value;
+        const input = inputRaw.trim();
+        if (!input) return;
+
+        GameState.commandHistory.push(input);
+        GameState.historyIndex = GameState.commandHistory.length;
+        this.inputEl.value = '';
+
+        this.log(`ANALYST@AEGIS-SOC:~$ ${input}`, 'color-green');
+
+        const tokens = input.split(/\s+/);
+        const cmd = tokens[0].toLowerCase();
+        const args = tokens.slice(1);
+
+        this.executeCommand(cmd, args, input);
+      },
+
+      navigateHistory(direction) {
+        if (GameState.commandHistory.length === 0) return;
+        
+        GameState.historyIndex += direction;
+        if (GameState.historyIndex < 0) GameState.historyIndex = 0;
+        if (GameState.historyIndex >= GameState.commandHistory.length) {
+          GameState.historyIndex = GameState.commandHistory.length;
+          this.inputEl.value = '';
+          return;
+        }
+
+        this.inputEl.value = GameState.commandHistory[GameState.historyIndex];
+      },
+
+      executeCommand(cmd, args, fullCommand) {
+        if (cmd === 'help') {
+          this.log(`AEGIS Command List:
+  whois <IP>        - Lookup registry database configuration for external host IP
+  geoip <IP>        - Extract geographical IP location mapping
+  scan <IP>         - Query remote host for active open ports (TCP)
+  history           - Print past CLI analyst terminal queries
+  clear             - Flush terminal log buffers
+  progress          - Print status verification across all core training modules
+  score             - Audit current task scoring and hint usage point deductions
+  hint              - Force reveal the next level objective hint for current task
+  
+Task Commands Reference:
+  identify <type>   | srcip <IP>        | classify <id> <sev> | order <ids...>
+  port <number>     | process <name>    | compromised-user <usr>
+  lateral <ips...>  | domain <domain>   | persistence <proc>  | webshell <name>
+  exploit <name>    | token <token-id>  | protocol <name>     | bypass <method>
+  file <name>       | block <IP>        | extension <name>    | respond <actions>
+  summary <fields>  | recommend <choice>`);
+          return;
+        }
+
+        if (cmd === 'clear') {
+          this.clear();
+          return;
+        }
+
+        if (cmd === 'history') {
+          this.log("Command Query History:");
+          GameState.commandHistory.forEach((c, idx) => {
+            this.log(`  ${idx + 1}: ${c}`, "color-gray");
+          });
+          return;
+        }
+
+        if (cmd === 'hint') {
+          HintEngine.revealNextHint();
+          return;
+        }
+
+        if (cmd === 'progress') {
+          this.log("AEGIS-SOC Task Verification Status:");
+          Object.values(GameState.tasks).forEach(t => {
+            const status = t.completed ? "✓ VERIFIED" : " PENDING";
+            const color = t.completed ? "color-green" : "color-gray";
+            this.log(`  Task ${String(t.id).padStart(2, '0')} [${status}] - ${t.name}`, color);
+          });
+          return;
+        }
+
+        if (cmd === 'score') {
+          this.log(`Current Score: ${GameState.score} / 1020`);
+          this.log("Task Breakdown:");
+          Object.values(GameState.tasks).forEach(t => {
+            if (t.completed) {
+              this.log(`  Task ${t.id}: ${t.points}/20 pts (Hints Used: ${t.hintsUsed})`, "color-green");
+            } else {
+              this.log(`  Task ${t.id}: Pending (Max: ${t.points} pts, Hints Used: ${t.hintsUsed})`, "color-gray");
+            }
+          });
+          return;
+        }
+
+        if (cmd === 'whois') {
+          if (args.length === 0) {
+            this.log("Usage: whois <IP>", "color-red");
+            return;
+          }
+          const ip = args[0];
+          if (isPrivateIP(ip)) {
+            this.log("WHOIS Query Error: Private subnets are empty in external registry databases.", "color-amber");
+            return;
+          }
+          const domainIdx = Math.abs(hashCode(ip)) % DOMAINS_PHISHING.length;
+          this.log(`
+[+] WHOIS REGISTRY DATA FOR ${ip}
+===================================================
+Organization:     Incident Endpoint Hosting Services
+ASN:              AS${Math.floor(Math.random() * 50000) + 10000}
+ISP Routing:      Global Transit Communications
+Registry Country: RU / CN / BR / US
+Registration:     2019-02-14
+Abuse Contact:    abuse@external-asset-routing.net
+Risk Rating:      HIGH / Flagged Malicious Egress IP
+===================================================`);
+          return;
+        }
+
+        if (cmd === 'geoip') {
+          if (args.length === 0) {
+            this.log("Usage: geoip <IP>", "color-red");
+            return;
+          }
+          const ip = args[0];
+          if (isPrivateIP(ip)) {
+            this.log("GeoIP Query Error: Address resides on private subnets.", "color-amber");
+            return;
+          }
+          const hash = Math.abs(hashCode(ip));
+          const countries = ["Russia (RU)", "China (CN)", "Brazil (BR)", "North Korea (KP)", "Netherlands (NL)"];
+          const city = ["St Petersburg", "Shanghai", "Sao Paulo", "Pyongyang", "Amsterdam"][hash % 5];
+          this.log(`
+GeoIP Tracking Report:
+  IP Address:   ${ip}
+  Country:      ${countries[hash % 5]}
+  City:         ${city}
+  AS Owner:     Transit Network Routing Hostings`);
+          return;
+        }
+
+        if (cmd === 'scan') {
+          if (args.length === 0) {
+            this.log("Usage: scan <IP>", "color-red");
+            return;
+          }
+          const ip = args[0];
+          this.log(`Initializing TCP Syn Port Scan targeting ${ip}...`, "color-cyan");
+          setTimeout(() => {
+            if (isPrivateIP(ip)) {
+              this.log(`Scan Results for ${ip}:
+  Port 22/tcp   - OPEN  - SSH (OpenSSH 8.2p1)
+  Port 80/tcp   - CLOSED- HTTP
+  Port 443/tcp  - OPEN  - HTTPS (Nginx)
+  Port 445/tcp  - OPEN  - SMB (Microsoft-DS)
+  Port 3389/tcp - OPEN  - RDP (Windows Remote Desktop)
+Scan complete: 3 ports open.`, "color-green");
+            } else {
+              this.log(`Scan Results for ${ip}:
+  Port 22/tcp   - OPEN  - SSH (OpenSSH 7.9)
+  Port 80/tcp   - OPEN  - HTTP (Apache Tomcat)
+  Port 443/tcp  - OPEN  - HTTPS
+  Port 8080/tcp - OPEN  - HTTP-Proxy
+Scan complete: 4 ports open.`, "color-green");
+            }
+          }, 600);
+          return;
+        }
+
+        if (cmd === 'block') {
+          if (args.length === 0) {
+            this.log("Usage: block <IP>", "color-red");
+            return;
+          }
+          const ip = args[0];
+          
+          if (isPrivateIP(ip)) {
+            this.log(`[!] CRITICAL ERR: Denied. Cannot block internal subnet addresses (${ip}). Points penalized for unsafe action!`, "color-red");
+            GameState.score = Math.max(0, GameState.score - 10);
+            UIUpdater.updateHeader();
+            return;
+          }
+
+          GameState.blocklist.add(ip);
+          this.log(`[+] Boundary Firewall updated: blocked inbound traffic from IP ${ip}.`, "color-green");
+          
+          if (GameState.currentTask === 41) {
+            VerificationEngine.verifyTask41(ip);
+          }
+          return;
+        }
+
+        VerificationEngine.processTaskCommand(cmd, args, fullCommand);
+      }
+    };
+
+    // ----------------------------------------------------
+    // Verification Engine
+    // ----------------------------------------------------
+    const VerificationEngine = {
+      processTaskCommand(cmd, args, fullCommand) {
+        const taskId = GameState.currentTask;
+        const task = GameState.tasks[taskId];
+        
+        let verified = false;
+
+        switch (taskId) {
+          case 1:
+            if (cmd === 'identify' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === GameState.config.attackTypeTask1) verified = true;
+            }
+            break;
+          case 2:
+            if (cmd === 'srcip' && args.length > 0) {
+              if (args[0].trim() === GameState.config.srcIpTask2) verified = true;
+            }
+            break;
+          case 3:
+            if (cmd === 'classify' && args.length >= 2) {
+              const alertId = args[0].toUpperCase().trim();
+              const severity = args[1].toUpperCase().trim();
+              const validSevs = ["CRITICAL", "HIGH", "WARNING", "INFO"];
+              if (!validSevs.includes(severity)) {
+                TriageConsole.log(`[!] Invalid severity. Choose: CRITICAL, HIGH, WARNING, INFO`, "color-amber");
+                return;
+              }
+              const target = GameState.config.alertListTask3.find(a => a.id === alertId);
+              if (!target) {
+                TriageConsole.log(`[!] Alert ID ${alertId} not found.`, "color-amber");
+                return;
+              }
+              task.classified[alertId] = severity;
+              AlertEngine.updateAlertStatus(alertId, "RESOLVED");
+              TriageConsole.log(`[+] Alert ${alertId} classified as ${severity}.`, "color-cyan");
+              
+              const allClassified = GameState.config.alertListTask3.every(a => task.classified[a.id]);
+              if (allClassified) {
+                const allCorrect = GameState.config.alertListTask3.every(a => task.classified[a.id] === a.severity);
+                if (allCorrect) {
+                  verified = true;
+                } else {
+                  TriageConsole.log("[-] INCORRECT — Classifications standard mismatch. Re-evaluating.", "color-red");
+                  task.classified = {};
+                  GameState.config.alertListTask3.forEach(a => AlertEngine.updateAlertStatus(a.id, "NEW"));
+                }
+              }
+            }
+            break;
+          case 4:
+            if (cmd === 'order' && args.length >= 8) {
+              const correctSeq = getTask4CorrectSequence();
+              const submittedSeq = args.map(a => a.toUpperCase().trim());
+              if (correctSeq.length === submittedSeq.length && correctSeq.every((val, idx) => val === submittedSeq[idx])) verified = true;
+            }
+            break;
+          case 5:
+            if (cmd === 'srcip' && args.length > 0) {
+              if (args[0].trim() === GameState.config.targetVndTask5) verified = true;
+            }
+            break;
+          case 6:
+            if (cmd === 'port' && args.length > 0) {
+              if (parseInt(args[0]) === GameState.config.eqfxPortTask6) verified = true;
+            }
+            break;
+          case 7:
+            if (cmd === 'port' && args.length > 0) {
+              if (parseInt(args[0]) === 23) verified = true;
+            }
+            break;
+          case 8:
+            if (cmd === 'process' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'nginx') verified = true;
+            }
+            break;
+          case 9:
+            if (cmd === 'compromised-user' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === GameState.config.compromisedUserTask9) verified = true;
+            }
+            break;
+          case 10:
+            if (cmd === 'process' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'powershell.exe') verified = true;
+            }
+            break;
+          case 11:
+            if (cmd === 'process' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'mimikatz.exe') verified = true;
+            }
+            break;
+          case 12:
+            if (cmd === 'lateral' && args.length >= 3) {
+              const subIPs = args.map(ip => ip.trim());
+              const targets = GameState.config.lateralTask12.targets;
+              if (subIPs.every(ip => targets.includes(ip)) && targets.every(ip => subIPs.includes(ip))) verified = true;
+            }
+            break;
+          case 13:
+            if (cmd === 'domain' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === GameState.config.dnsDomainTask13) verified = true;
+            }
+            break;
+          case 14:
+            if (cmd === 'persistence' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === GameState.config.persistenceTask14) verified = true;
+            }
+            break;
+          case 15:
+            if (cmd === 'process' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'wiper.exe') verified = true;
+            }
+            break;
+          case 16:
+            if (cmd === 'port' && args.length > 0) {
+              if (parseInt(args[0]) === 102) verified = true;
+            }
+            break;
+          case 17:
+            if (cmd === 'compromised-user' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === GameState.config.compromisedUserTask17) verified = true;
+            }
+            break;
+          case 18:
+            if (cmd === 'srcip' && args.length > 0) {
+              if (args[0].trim() === GameState.config.rdpSrcTask18) verified = true;
+            }
+            break;
+          case 19:
+            if (cmd === 'srcip' && args.length > 0) {
+              if (args[0].trim() === GameState.config.internalSweepTask19) verified = true;
+            }
+            break;
+          case 20:
+            if (cmd === 'webshell' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'cmd.jsp') verified = true;
+            }
+            break;
+          case 21:
+            if (cmd === 'domain' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'update-microsoft.com') verified = true;
+            }
+            break;
+          case 22:
+            if (cmd === 'srcip' && args.length > 0) {
+              if (args[0].trim() === GameState.config.fancyBearMailTask22) verified = true;
+            }
+            break;
+          case 23:
+            if (cmd === 'port' && args.length > 0) {
+              if (parseInt(args[0]) === 30005) verified = true;
+            }
+            break;
+          case 24:
+            if (cmd === 'process' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'killdisk.exe') verified = true;
+            }
+            break;
+          case 25:
+            if (cmd === 'beacon' && args.length >= 2) {
+              const host = args[0].trim();
+              const c2 = args[1].trim();
+              const config = GameState.config.apt34BeaconTask25;
+              if (host === config.host && c2 === config.c2) verified = true;
+            }
+            break;
+          case 26:
+            if (cmd === 'process' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'shadowpad.exe') verified = true;
+            }
+            break;
+          case 27:
+            if (cmd === 'domain' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'iuqerfsodp9ifjaposdfjhgosurijfaewrwergwea.com') verified = true;
+            }
+            break;
+          case 28:
+            if (cmd === 'exploit' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'eternalblue') verified = true;
+            }
+            break;
+          case 29:
+            if (cmd === 'process' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'imagent') verified = true;
+            }
+            break;
+          case 30:
+            if (cmd === 'process' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'svch0st.exe') verified = true;
+            }
+            break;
+          case 31:
+            if (cmd === 'srcip' && args.length > 0) {
+              if (args[0].trim() === '169.254.169.254') verified = true;
+            }
+            break;
+          case 32:
+            if (cmd === 'token' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'bearer-token') verified = true;
+            }
+            break;
+          case 33:
+            if (cmd === 'protocol' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'ldap') verified = true;
+            }
+            break;
+          case 34:
+            if (cmd === 'bypass' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'mfa-fatigue') verified = true;
+            }
+            break;
+          case 35:
+            if (cmd === 'file' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'solarwinds.businesslayer.dll') verified = true;
+            }
+            break;
+          case 36:
+            if (cmd === 'process' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === '3cxdesktopapp.exe') verified = true;
+            }
+            break;
+          case 37:
+            if (cmd === 'compromised-user' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'admin-azure') verified = true;
+            }
+            break;
+          case 38:
+            if (cmd === 'process' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'agentmon.exe') verified = true;
+            }
+            break;
+          case 39:
+            if (cmd === 'process' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'spoolsv.exe') verified = true;
+            }
+            break;
+          case 40:
+            if (cmd === 'file' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'liblzma.so') verified = true;
+            }
+            break;
+          case 41:
+            // Containment handled in verifyTask41 via block command
+            break;
+          case 42:
+            if (cmd === 'extension' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === '.lockbit') verified = true;
+            }
+            break;
+          case 43:
+            if (cmd === 'process' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'vssadmin.exe') verified = true;
+            }
+            break;
+          case 44:
+            if (cmd === 'srcip' && args.length > 0) {
+              if (args[0].trim() === GameState.config.darkSideExfilTask44) verified = true;
+            }
+            break;
+          case 45:
+            if (cmd === 'compromised-user' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'backup_svc') verified = true;
+            }
+            break;
+          case 46:
+            if (cmd === 'domain' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'cdns-google.com') verified = true;
+            }
+            break;
+          case 47:
+            if (cmd === 'recommend' && args.length > 0) {
+              if (args[0].toUpperCase().trim() === 'A') verified = true;
+            }
+            break;
+          case 48:
+            if (cmd === 'process' && args.length > 0) {
+              if (args[0].toLowerCase().trim() === 'net.exe') verified = true;
+            }
+            break;
+          case 49:
+            if (cmd === 'summary') {
+              const params = {};
+              args.forEach(arg => {
+                const parts = arg.split('=');
+                if (parts.length === 2) params[parts[0].toLowerCase().trim()] = parts[1].toLowerCase().trim();
+              });
+              const affectedNum = parseInt(params.affected);
+              const checkAttack = params.attack === 'ransomware';
+              const checkVector = params.vector === 'phishing';
+              const checkSeverity = params.severity === 'critical';
+              const checkContained = params.contained === 'yes';
+              const checkAffected = Math.abs(affectedNum - 5) <= 1;
+
+              if (checkAttack && checkVector && checkSeverity && checkContained && checkAffected) verified = true;
+            }
+            break;
+          case 50:
+            if (cmd === 'recommend' && args.length > 0) {
+              const choice = args[0].toUpperCase().trim();
+              if (choice === 'C') {
+                verified = true;
+                GameState.tasks[50].points += 10; // Accuracy bonus
+              } else {
+                TriageConsole.log("[-] INCORRECT — 0/20 points earned.", "color-red");
+                TriageConsole.log("EXPLANATION: Option C (Software signing, SBOM audits, zero-trust verification) is the correct strategic mitigation. Egress firewalls and standard backups fail to detect trojanized official library binaries executing inside authenticated pipelines.", "color-cyan");
+                GameState.tasks[50].points = 0;
+                verified = true;
+              }
+            }
+            break;
+        }
+
+        if (verified && taskId !== 41) {
+          this.triggerTaskVerificationSuccess();
+        } else if (!verified && ['identify','srcip','classify','order','port','process','compromised-user','lateral','domain','persistence','webshell','exploit','token','protocol','bypass','file','extension','respond','summary','recommend'].includes(cmd)) {
+          TriageConsole.log("[-] INCORRECT — try again.", "color-red");
+        }
+      },
+
+      verifyTask41(blockedIp) {
+        if (!GameState.config.containmentTask41.active) return;
+        const correctAttacker = GameState.config.containmentTask41.attacker;
+        if (blockedIp === correctAttacker) {
+          clearInterval(GameState.config.containmentTask41.intervalId);
+          GameState.config.containmentTask41.active = false;
+          GameState.config.containmentTask41.completed = true;
+          document.getElementById('containment-status-box').style.display = 'none';
+          TriageConsole.log(`[+] SUCCESS: Perimeter firewall sealed. Pipeline controllers protected.`, "color-green");
+          
+          if (GameState.config.containmentTask41.compromisedCount <= 1) {
+            GameState.tasks[41].points += 10;
+            GameState.config.containmentTask41.bonusEarned = true;
+            TriageConsole.log(`[+] BONUS EARNED: Incident contained before spreading. +10 pts.`, "color-green");
+          }
+          this.triggerTaskVerificationSuccess();
+        } else {
+          TriageConsole.log(`[-] INCORRECT IP blocked. This is not the primary threat source. Attack continues!`, "color-red");
+        }
+      },
+
+      triggerTaskVerificationSuccess() {
+        const taskId = GameState.currentTask;
+        const task = GameState.tasks[taskId];
+        
+        task.completed = true;
+        task.timeTaken = Math.floor((Date.now() - task.timeStarted) / 1000);
+        TriageConsole.log(`[+] VERIFIED ✓ - Task ${taskId} complete. Earned: ${task.points} pts.`, "color-green");
+        
+        GameState.score = calculateTotalScore();
+        UIUpdater.updateHeader();
+        
+        if (GameState.currentTask < 50) {
+          GameState.currentTask++;
+          GameState.tasks[GameState.currentTask].timeStarted = Date.now();
+          
+          const prevModule = GameState.currentModule;
+          GameState.currentModule = Math.floor((GameState.currentTask - 1) / 10) + 1;
+          
+          if (GameState.currentModule !== prevModule) {
+            TriageConsole.log(`\n===================================================
+[+] MODULE COMPLETE: Module ${prevModule} fully verified!
+[+] Module ${GameState.currentModule} unlocked.
+===================================================\n`, "color-green");
+          }
+          UIUpdater.loadCurrentTask();
+        } else {
+          endTrainingSession();
+        }
+        if (typeof saveProgress === 'function') saveProgress();
+      }
+    };
+
+    function getTask4CorrectSequence() {
+      const mapping = {
+        "10:00:15": 0, "10:01:40": 1, "10:02:10": 2, "10:02:45": 3,
+        "10:03:15": 4, "10:04:50": 5, "10:06:10": 6, "10:08:30": 7
+      };
+      const sorted = [...GameState.config.timelineTask4].sort((a, b) => mapping[a.time] - mapping[b.time]);
+      return sorted.map(s => s.id);
+    }
+
+    function calculateTotalScore() {
+      let sum = 0;
+      Object.values(GameState.tasks).forEach(t => {
+        if (t.completed) sum += t.points;
+      });
+      return sum;
+    }
+
+    function isPrivateIP(ip) {
+      if (!ip) return false;
+      const parts = ip.split('.');
+      if (parts.length !== 4) return false;
+      const first = parseInt(parts[0]);
+      const second = parseInt(parts[1]);
+      if (first === 10) return true;
+      if (first === 172 && second >= 16 && second <= 31) return true;
+      if (first === 192 && second === 168) return true;
+      return false;
+    }
+
+    function hashCode(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      return hash;
+    }
+
+    // ----------------------------------------------------
+    // UI Updater / Orchestrator Engine
+    // ----------------------------------------------------
+    const UIUpdater = {
+      init(loaded) {
+        this.loadCurrentTask();
+        if (!loaded) {
+          GameState.elapsedTime = 0;
+          GameState.tasks[1].timeStarted = Date.now();
+        } else {
+          if (GameState.tasks[GameState.currentTask] && !GameState.tasks[GameState.currentTask].timeStarted) {
+            GameState.tasks[GameState.currentTask].timeStarted = Date.now();
+          }
+        }
+        
+        if (GameState.sessionTimerInterval) clearInterval(GameState.sessionTimerInterval);
+        GameState.sessionTimerInterval = setInterval(() => {
+          GameState.elapsedTime++;
+          const m = String(Math.floor(GameState.elapsedTime / 60)).padStart(2, '0');
+          const s = String(GameState.elapsedTime % 60).padStart(2, '0');
+          document.getElementById('header-timer').innerText = `${m}:${s}`;
+        }, 1000);
+      },
+
+      updateHeader() {
+        document.getElementById('header-score').innerText = `${String(GameState.score).padStart(3, '0')}/1020`;
+        const mBrief = taskBriefings[GameState.currentTask];
+        document.getElementById('active-task-header').innerText = `[MODULE ${mBrief.module}: ${getModuleName(mBrief.module)}] // Task ${GameState.currentTask}: ${mBrief.title}`;
+        
+        const activeAlerts = Object.values(AlertEngine.alerts).filter(a => a.status !== "RESOLVED" && a.status !== "FALSE_POSITIVE");
+        const hasCritical = activeAlerts.some(a => a.severity === "CRITICAL");
+        const hasHigh = activeAlerts.some(a => a.severity === "HIGH");
+        
+        const badge = document.getElementById('header-threat');
+        
+        if (GameState.config.containmentTask41.active) {
+          badge.innerText = "CRITICAL";
+          badge.className = 'threat-badge threat-critical';
+        } else if (hasCritical) {
+          badge.innerText = "HIGH";
+          badge.className = 'threat-badge threat-high';
+        } else if (hasHigh) {
+          badge.innerText = "MEDIUM";
+          badge.className = 'threat-badge threat-medium';
+        } else {
+          badge.innerText = "LOW";
+          badge.className = 'threat-badge threat-low';
+        }
+
+        // Update progress bar
+        const completedCount = Object.values(GameState.tasks).filter(t => t.completed).length;
+        const progressPercent = ((completedCount / 50) * 100).toFixed(1);
+        const progfill = document.getElementById('progfill');
+        if (progfill) progfill.style.width = `${progressPercent}%`;
+      },
+
+      loadCurrentTask() {
+        const taskId = GameState.currentTask;
+        const brief = taskBriefings[taskId];
+        
+        document.getElementById('current-module-badge').innerText = `M${brief.module}`;
+        
+        let descText = brief.desc;
+        if (taskId === 4) {
+          const lines = GameState.config.timelineTask4.map(log => `  - [${log.id}] ${log.time} : ${log.desc}`).join("\n");
+          descText = descText.replace("{SHUFFLED_LOGS}", lines);
+        } else if (taskId === 5) {
+          descText = descText.replace("{TARGET_VND_IP}", GameState.config.targetVndTask5);
+        } else if (taskId === 12) {
+          descText = descText.replace("{SRC_IP}", GameState.config.lateralTask12.victimSrc);
+        } else if (taskId === 41) {
+          descText = descText.replace("{ATTACKER_IP}", GameState.config.containmentTask41.attacker);
+        }
+        document.getElementById('objective-desc').innerText = descText;
+
+        // Render dynamic helper syntax prompt
+        let promptText = brief.prompt;
+        if (taskId === 3) {
+          const list = GameState.config.alertListTask3;
+          promptText = `classify ${list[0].id} CRITICAL\nclassify ${list[1].id} HIGH`;
+        }
+        document.getElementById('beginner-syntax-help').innerText = promptText;
+
+        this.renderProgressList();
+        HintEngine.renderHintsUI();
+        this.updateHeader();
+
+        if (taskId === 3) {
+          AlertEngine.spawnTask3Alerts();
+        } else {
+          document.getElementById('alert-queue-list').innerHTML = `<div class="color-gray" style="text-align: center; font-size: 0.8rem; margin-top: 20px;">No alerts in queue.</div>`;
+          document.getElementById('alert-queue-count').innerText = "0 Active";
+          document.getElementById('header-alerts').innerText = "0";
+          document.getElementById('selected-alert-detail').innerHTML = "No alert selected.<br>Click an alert in the queue to load details.";
+        }
+
+        if (taskId === 41) {
+          this.triggerTask41Countdown();
+        } else {
+          document.getElementById('containment-status-box').style.display = 'none';
+        }
+      },
+
+      renderProgressList() {
+        const checklist = document.getElementById('task-checklist-ui');
+        checklist.innerHTML = '';
+        
+        const startIdx = (GameState.currentModule - 1) * 10 + 1;
+        const endIdx = startIdx + 9;
+
+        for (let i = startIdx; i <= endIdx; i++) {
+          const t = GameState.tasks[i];
+          const item = document.createElement('li');
+          item.className = `task-item ${i === GameState.currentTask ? 'active' : ''} ${t.completed ? 'verified' : ''} ${i > GameState.currentTask ? 'locked' : ''}`;
+          
+          let marker = '[ ]';
+          if (t.completed) marker = '[✓]';
+          else if (i === GameState.currentTask) marker = '[>]';
+          
+          item.innerText = `${marker} Task ${i}: ${t.name}`;
+          checklist.appendChild(item);
+        }
+      },
+
+      triggerTask41Countdown() {
+        const config = GameState.config.containmentTask41;
+        config.active = true;
+        config.compromisedCount = 0;
+        config.timerLeft = config.timerLimit;
+
+        document.getElementById('containment-status-box').style.display = 'block';
+        document.getElementById('containment-target-ip').innerText = config.attacker;
+        
+        this.updateTask41UI();
+        LogEngine.startStreaming();
+
+        if (config.intervalId) clearInterval(config.intervalId);
+        
+        config.intervalId = setInterval(() => {
+          config.timerLeft--;
+          document.getElementById('containment-seconds').innerText = `${config.timerLeft}s`;
+
+          if (config.timerLeft <= 0) {
+            config.compromisedCount++;
+            config.timerLeft = config.timerLimit;
+            TriageConsole.log(`[!] CRITICAL WARNING: Attacker compromised controller: ${config.victimPrefix}${Math.floor(Math.random() * 200)}!`, "color-red");
+            
+            if (config.compromisedCount >= config.maxCompromised) {
+              clearInterval(config.intervalId);
+              config.active = false;
+              TriageConsole.log(`[-] FAILURE: Attacker compromised pipeline. Resetting containment. Restarting Task 41...`, "color-red");
+              setTimeout(() => { UIUpdater.loadCurrentTask(); }, 2000);
+              return;
+            }
+          }
+          this.updateTask41UI();
+        }, 1000);
+      },
+
+      updateTask41UI() {
+        const config = GameState.config.containmentTask41;
+        document.getElementById('compromise-ratio').innerText = `${config.compromisedCount}/${config.maxCompromised} compromised`;
+        const fillWidth = (config.compromisedCount / config.maxCompromised) * 100;
+        document.getElementById('contain-fill-progress').style.width = `${fillWidth}%`;
+      }
+    };
+
+    function getModuleName(id) {
+      const names = {
+        1: "SECURITY LOG BASICS",
+        2: "CORPORATE INTRUSIONS",
+        3: "ADVANCED THREAT ACTORS",
+        4: "CLOUD & MODERN INCIDENTS",
+        5: "RANSOMWARE & MITIGATION"
+      };
+      return names[id] || "DEFENSE OPERATIONS";
+    }
+
+    // ----------------------------------------------------
+    // Session Summary Dashboard
+    // ----------------------------------------------------
+    function endTrainingSession() {
+      clearInterval(GameState.sessionTimerInterval);
+      if (GameState.config.containmentTask41.intervalId) clearInterval(GameState.config.containmentTask41.intervalId);
+      if (LogEngine.intervalId) clearInterval(LogEngine.intervalId);
+
+      const tbody = document.getElementById('summary-tasks-table-body');
+      tbody.innerHTML = '';
+      
+      let totalTime = 0;
+      let totalHints = 0;
+      let completedCount = 0;
+
+      Object.values(GameState.tasks).forEach(t => {
+        if (t.completed) completedCount++;
+        totalTime += t.timeTaken;
+        totalHints += t.hintsUsed;
+
+        // Render completed tasks or only active ones in summary table to keep it legible
+        if (t.completed || t.id === GameState.currentTask) {
+          const row = document.createElement('tr');
+          const duration = `${String(Math.floor(t.timeTaken / 60)).padStart(2, '0')}:${String(t.timeTaken % 60).padStart(2, '0')}`;
+          row.innerHTML = `
+            <td>Task ${t.id}: ${t.name}</td>
+            <td>${t.completed ? duration : 'Pending'}</td>
+            <td>${t.hintsUsed} / 3</td>
+            <td class="${t.completed ? 'color-green' : 'color-gray'}" style="font-weight: bold;">${t.completed ? t.points + ' pts' : '0 pts'}</td>
+          `;
+          tbody.appendChild(row);
+        }
+      });
+
+      // Fix completion rate logic
+      const completionRate = Math.round((completedCount / 50) * 100);
+      document.getElementById('summary-resolution-rate').innerText = `${completionRate}%`;
+
+      document.getElementById('summary-final-score').innerText = `${GameState.score}/1020`;
+      
+      const m = String(Math.floor(GameState.elapsedTime / 60)).padStart(2, '0');
+      const s = String(GameState.elapsedTime % 60).padStart(2, '0');
+      document.getElementById('summary-total-time').innerText = `${m}:${s}`;
+      document.getElementById('summary-hints-used').innerText = totalHints;
+
+      // Module-by-module scores
+      const getModScore = (start, end) => {
+        let sum = 0;
+        for (let i = start; i <= end; i++) {
+          if (GameState.tasks[i].completed) sum += GameState.tasks[i].points;
+        }
+        return sum;
+      };
+
+      const m1 = getModScore(1, 10);
+      const m2 = getModScore(11, 20);
+      const m3 = getModScore(21, 30);
+      const m4 = getModScore(31, 40);
+      const m5 = getModScore(41, 50);
+
+      document.getElementById('summary-evaluation-text').innerHTML = `
+        <strong>Completion Breakdown:</strong> Verified ${completedCount} of 50 threat analysis operations.<br><br>
+        <strong>Module Achievements:</strong><br>
+        - Module 1 Basics: ${m1}/200 pts<br>
+        - Module 2 Intrusions: ${m2}/200 pts<br>
+        - Module 3 APT Hunting: ${m3}/200 pts<br>
+        - Module 4 Cloud: ${m4}/200 pts<br>
+        - Module 5 Ransomware: ${m5}/220 pts<br><br>
+        <span class="color-green" style="font-weight: bold;">✓ SOC TRAINING EVALUATION COMPLETE</span>
+      `;
+
+      document.getElementById('summary-modal').style.display = 'flex';
+    }
+
+    // ----------------------------------------------------
+    // Scenario Injection & Progress Persistence
+    // ----------------------------------------------------
+    const SAVE_KEY = 'aegis_soc_v1_save';
+
+    function R_EL(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function saveProgress() {
+      try {
+        const serializedTasks = {};
+        Object.keys(GameState.tasks).forEach(id => {
+          serializedTasks[id] = {
+            completed: GameState.tasks[id].completed,
+            hintsUsed: GameState.tasks[id].hintsUsed,
+            points: GameState.tasks[id].points,
+            timeStarted: GameState.tasks[id].timeStarted,
+            timeTaken: GameState.tasks[id].timeTaken,
+            classified: GameState.tasks[id].classified
+          };
+        });
+
+        const data = {
+          currentTask: GameState.currentTask,
+          currentModule: GameState.currentModule,
+          score: GameState.score,
+          elapsedTime: GameState.elapsedTime,
+          blocklist: Array.from(GameState.blocklist),
+          tasks: serializedTasks,
+          commandHistory: GameState.commandHistory
+        };
+
+        localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+        const savedIndicator = document.getElementById('header-saved');
+        if (savedIndicator) {
+          savedIndicator.style.color = '#00ff88'; // glowing green
+          setTimeout(() => {
+            savedIndicator.style.color = ''; // reset to dim
+          }, 1000);
+        }
+      } catch (e) {
+        console.error("Failed to save progress", e);
+      }
+    }
+
+    function loadProgress() {
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return false;
+        const data = JSON.parse(raw);
+        if (!data) return false;
+
+        GameState.currentTask = data.currentTask || 1;
+        GameState.currentModule = data.currentModule || 1;
+        GameState.score = data.score || 0;
+        GameState.elapsedTime = data.elapsedTime || 0;
+        GameState.blocklist = new Set(data.blocklist || []);
+        GameState.commandHistory = data.commandHistory || [];
+        GameState.historyIndex = GameState.commandHistory.length;
+
+        if (data.tasks) {
+          Object.keys(data.tasks).forEach(id => {
+            if (GameState.tasks[id] && data.tasks[id]) {
+              GameState.tasks[id].completed = data.tasks[id].completed;
+              GameState.tasks[id].hintsUsed = data.tasks[id].hintsUsed;
+              GameState.tasks[id].points = data.tasks[id].points;
+              GameState.tasks[id].timeStarted = data.tasks[id].timeStarted;
+              GameState.tasks[id].timeTaken = data.tasks[id].timeTaken;
+              GameState.tasks[id].classified = data.tasks[id].classified;
+            }
+          });
+        }
+        return true;
+      } catch (e) {
+        console.error("Failed to load progress", e);
+        return false;
+      }
+    }
+
+    function injectScenario() {
+      const sel = document.getElementById('scensel').value;
+      if (!sel) {
+        TriageConsole.log("[!] Please select a scenario from the dropdown list first.", "color-amber");
+        return;
+      }
+      
+      const ts = () => new Date().toLocaleTimeString();
+      const ext = ['.locked', '.crypt', '.enc', '.crypted', '.rnsmw'];
+      
+      const scenarios = {
+        apt: () => {
+          const victim = R_EL(IPS_INTERNAL);
+          const c2 = R_EL(IPS_C2);
+          const user = R_EL(USER_NAMES);
+          const phishingDomain = R_EL(DOMAINS_PHISHING);
+          
+          const logs = [
+            { time: ts(), sev: "WARN", ip: victim, type: "DNS_PHISHING", desc: `DNS query for flagged domain ${phishingDomain} by user ${user}` },
+            { time: ts(), sev: "CRIT", ip: victim, type: "BEACONING", desc: `C2 connection callback: Outbound HTTP beacon packet sent to C2 node ${c2}` },
+            { time: ts(), sev: "WARN", ip: victim, type: "SMB_CONN", desc: `Outbound connection to host ${R_EL(IPS_INTERNAL)}:445/SMB by user Administrator` },
+            { time: ts(), sev: "CRIT", ip: victim, type: "CRED_DUMP", desc: `LSASS credential memory dumped via mimikatz.exe by user ${user}` },
+            { time: ts(), sev: "CRIT", ip: R_EL(IPS_EXTERNAL), type: "NET_EXFIL", desc: `Exfiltration: Bulk transfer completed to destination host IP: ${c2}` }
+          ];
+          
+          logs.forEach((log, i) => {
+            setTimeout(() => {
+              if (!GameState.blocklist.has(log.ip)) {
+                LogEngine.appendLogLine(log);
+                if (log.sev === 'CRIT') {
+                  AlertEngine.spawn(log.ip, log.type, 'CRITICAL', log.desc);
+                } else if (log.sev === 'WARN' && Math.random() < 0.25) {
+                  AlertEngine.spawn(log.ip, log.type, 'WARNING', log.desc);
+                }
+              }
+            }, i * 1000);
+          });
+          
+          TriageConsole.log(`[+] INJECTED: APT Campaign — phishing → C2 beacon → credential dump → exfiltration.`, "color-cyan");
+        },
+        
+        ransomware: () => {
+          const victim = R_EL(IPS_INTERNAL);
+          const host = R_EL(HOST_NAMES);
+          const fileExtension = R_EL(ext);
+          
+          const logs = [
+            { time: ts(), sev: "WARN", ip: victim, type: "VSS_DELETE", desc: `Shadow copy deletion request received: vssadmin.exe delete shadows /all /quiet` },
+            { time: ts(), sev: "CRIT", ip: victim, type: "RANSOMWARE", desc: `Encryption payload active on ${host}: encrypting files, appending extension ${fileExtension}` },
+            { time: ts(), sev: "CRIT", ip: victim, type: "RANSOM_SPREAD", desc: `Intrusion: SMB exploitation attempt against network controllers` }
+          ];
+          
+          logs.forEach((log, i) => {
+            setTimeout(() => {
+              if (!GameState.blocklist.has(log.ip)) {
+                LogEngine.appendLogLine(log);
+                AlertEngine.spawn(log.ip, log.type, 'CRITICAL', log.desc);
+              }
+            }, i * 800);
+          });
+          
+          TriageConsole.log(`[!] INJECTED: Ransomware Outbreak — Volume Shadow Copy deletion and encryption activity.`, "color-red");
+        },
+        
+        insider: () => {
+          const victim = R_EL(IPS_INTERNAL);
+          const user = R_EL(USER_NAMES);
+          
+          const logs = [
+            { time: ts(), sev: "WARN", ip: victim, type: "UNUSUAL_ACCESS", desc: `Anomaly detection: bulk database records queried by user ${user} outside normal work hours` },
+            { time: ts(), sev: "CRIT", ip: victim, type: "DATA_EXFIL", desc: `USB Data Copy: copied 12GB of encrypted financials to local USB device path \\\\.\\PhysicalDrive1` }
+          ];
+          
+          logs.forEach((log, i) => {
+            setTimeout(() => {
+              if (!GameState.blocklist.has(log.ip)) {
+                LogEngine.appendLogLine(log);
+                if (log.sev === 'CRIT') {
+                  AlertEngine.spawn(log.ip, log.type, 'CRITICAL', log.desc);
+                } else {
+                  AlertEngine.spawn(log.ip, log.type, 'WARNING', log.desc);
+                }
+              }
+            }, i * 1000);
+          });
+          
+          TriageConsole.log(`[+] INJECTED: Insider Threat — Bulk data export and USB exfiltration.`, "color-cyan");
+        },
+        
+        ddos: () => {
+          TriageConsole.log(`[!] INJECTED: Inbound DDoS Flood — Volumetric attack on external load balancers.`, "color-red");
+          for (let i = 0; i < 8; i++) {
+            setTimeout(() => {
+              const attacker = R_EL(IPS_EXTERNAL);
+              const log = {
+                time: ts(),
+                sev: "CRIT",
+                ip: attacker,
+                type: "DDOS_INBOUND",
+                desc: `Firewall warning: High packet rate inbound flood (SYN Flood) from IP ${attacker} targeting web app gateway`
+              };
+              if (!GameState.blocklist.has(log.ip)) {
+                LogEngine.appendLogLine(log);
+                if (Math.random() < 0.4) {
+                  AlertEngine.spawn(log.ip, log.type, 'CRITICAL', log.desc);
+                }
+              }
+            }, i * 300);
+          }
+        },
+        
+        supply: () => {
+          const packageNames = ['SolarWinds.Agent', 'CCleaner.Setup', '3CX.DesktopApp', 'PyTorch-nightly'];
+          const pkgName = R_EL(packageNames);
+          const log = {
+            time: ts(),
+            sev: "CRIT",
+            ip: R_EL(IPS_INTERNAL),
+            type: "SUPPLY_CHAIN",
+            desc: `Code signature verification failed: trojanized update package ${pkgName} detected in local repository`
+          };
+          
+          setTimeout(() => {
+            if (!GameState.blocklist.has(log.ip)) {
+              LogEngine.appendLogLine(log);
+              AlertEngine.spawn(log.ip, log.type, 'CRITICAL', log.desc);
+            }
+          }, 100);
+          
+          TriageConsole.log(`[!] INJECTED: Supply Chain Compromise — Invalid package signature anomaly detected.`, "color-red");
+        }
+      };
+      
+      if (scenarios[sel]) scenarios[sel]();
+    }
+
+    function restartSession() {
+      document.getElementById('summary-modal').style.display = 'none';
+      
+      GameState.currentModule = 1;
+      GameState.currentTask = 1;
+      GameState.score = 0;
+      GameState.blocklist.clear();
+      GameState.commandHistory = [];
+      GameState.historyIndex = -1;
+      GameState.selectedAlertId = null;
+
+      try {
+        localStorage.removeItem(SAVE_KEY);
+      } catch (e) {}
+
+      initSessionConfig();
+      TriageConsole.clear();
+      TriageConsole.log("AEGIS-SOC Security Monitoring Console v1.0.4 initialized.");
+      TriageConsole.log("Type 'help' to list available commands. Task progress is auto-saved.");
+
+      UIUpdater.init(false);
+      LogEngine.init();
+    }
+
+    // ----------------------------------------------------
+    // GUI Quick Action Event Handlers
+    // ----------------------------------------------------
+    function setupGUIActions() {
+      const logFeedScroll = document.getElementById('log-feed-scroll');
+      logFeedScroll.addEventListener('mouseenter', () => {
+        GameState.logFeedPaused = true;
+      });
+      logFeedScroll.addEventListener('mouseleave', () => {
+        GameState.logFeedPaused = false;
+        LogEngine.releaseBuffer();
+      });
+
+      document.getElementById('btn-reveal-hint').onclick = () => {
+        HintEngine.revealNextHint();
+      };
+
+      document.getElementById('btn-triage-investigate').onclick = () => {
+        if (!GameState.selectedAlertId) return;
+        const alert = AlertEngine.alerts[GameState.selectedAlertId];
+        if (!alert) return;
+        TriageConsole.log(`Running host investigations for alert IP: ${alert.ip}...`, "color-cyan");
+        TriageConsole.executeCommand('scan', [alert.ip], `scan ${alert.ip}`);
+      };
+
+      document.getElementById('btn-triage-fp').onclick = () => {
+        if (!GameState.selectedAlertId) return;
+        const alert = AlertEngine.alerts[GameState.selectedAlertId];
+        if (!alert) return;
+        TriageConsole.log(`[!] User classified alert ${alert.id} as False Positive. Points penalized if wrong.`, "color-amber");
+        
+        if (GameState.currentTask === 3) {
+          TriageConsole.log("[-] Classify alerts using severity levels (CRITICAL, HIGH, etc.). False Positive is invalid severity.", "color-red");
+        } else {
+          TriageConsole.log("[-] INCORRECT classification: Alert is a true positive incident.", "color-red");
+          GameState.score = Math.max(0, GameState.score - 5);
+          UIUpdater.updateHeader();
+        }
+      };
+
+      document.getElementById('btn-triage-resolve').onclick = () => {
+        if (!GameState.selectedAlertId) return;
+        const id = GameState.selectedAlertId;
+        const alert = AlertEngine.alerts[id];
+        if (!alert) return;
+        TriageConsole.log(`Resolving Alert ID: ${id}...`, "color-cyan");
+        
+        if (GameState.currentTask === 3) {
+          TriageConsole.log("[!] Please use class command: classify <AlertID> <SEVERITY>", "color-amber");
+        } else {
+          AlertEngine.updateAlertStatus(id, "RESOLVED");
+          TriageConsole.log(`[+] Alert ${id} has been marked RESOLVED.`, "color-green");
+        }
+      };
+
+      document.getElementById('btn-triage-escalate').onclick = () => {
+        if (!GameState.selectedAlertId) return;
+        const id = GameState.selectedAlertId;
+        const alert = AlertEngine.alerts[id];
+        if (!alert) return;
+        TriageConsole.log(`Escalating Alert ID: ${id} to SOC Tier 2...`, "color-cyan");
+        AlertEngine.updateAlertStatus(id, "ESCALATED");
+        TriageConsole.log(`[+] Alert ${id} escalated to Tier 2 engineering queues.`, "color-amber");
+        
+        if (GameState.currentTask !== 3) {
+          TriageConsole.log("[-] Escalation Audits: Point penalty applied. Investigation was incomplete.", "color-red");
+          GameState.score = Math.max(0, GameState.score - 5);
+          UIUpdater.updateHeader();
+        }
+      };
+
+      document.getElementById('btn-triage-block').onclick = () => {
+        if (!GameState.selectedAlertId) return;
+        const alert = AlertEngine.alerts[GameState.selectedAlertId];
+        if (!alert) return;
+        TriageConsole.executeCommand('block', [alert.ip], `block ${alert.ip}`);
+      };
+
+      document.getElementById('btn-end-session').onclick = () => {
+        endTrainingSession();
+      };
+
+      document.getElementById('btn-restart-session').onclick = () => {
+        restartSession();
+      };
+    }
+
+    // ----------------------------------------------------
+    // Initialization on window load
+    // ----------------------------------------------------
+    window.onload = () => {
+      initSessionConfig();
+      const loaded = loadProgress();
+      TriageConsole.init();
+      setupGUIActions();
+
+      // Auto-focus console on click anywhere, unless clicking on interactive GUI controls or modal elements
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('button, select, input, option, a, textarea')) {
+          const inp = document.getElementById('console-input');
+          if (inp) inp.focus();
+        }
+      });
+
+      UIUpdater.init(loaded);
+      LogEngine.init();
+
+      if (loaded) {
+        TriageConsole.log(`[+] PROGRESS RESTORED: Resuming at Task ${GameState.currentTask}/50.`, "color-green");
+        TriageConsole.log(`Current Score: ${GameState.score}/1020. Type 'progress' to review status.`, "color-cyan");
+      }
+
+      // Auto-save every 15 seconds
+      setInterval(() => {
+        saveProgress();
+      }, 15000);
+    };
+  </script>
+</body>
+</html>
