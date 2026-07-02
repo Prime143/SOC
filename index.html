@@ -954,7 +954,7 @@
         
         <div style="display: flex; flex-direction: column; gap: 5px;">
           <label style="font-size: 0.75rem; font-weight: bold; color: var(--cyan);">GEMINI API KEY:</label>
-          <input type="password" id="settings-api-key" placeholder="Enter Gemini API Key (AIzaSy...)" 
+          <input type="password" id="settings-api-key" placeholder="Enter Gemini API Key..." 
                  style="background: #0d1b1e; border: 1px solid var(--border); color: var(--green); padding: 8px; font-family: monospace; font-size: 0.85rem; outline: none; width: 100%; border-radius: 3px;" />
         </div>
 
@@ -1090,7 +1090,8 @@
       blocklist: new Set(),
       selectedAlertId: null,
       logFeedPaused: false,
-      logBuffer: []
+      logBuffer: [],
+      geminiChatActive: false
     };
 
     // Task brief DB
@@ -1106,7 +1107,7 @@
         hints: [
           "Look at the events feed. Multiple SSH login fails from same IP.",
           "Brute forcing SSH outputs SSH_AUTH_FAIL logs.",
-          "The active threat is: {ATTACK_TYPE}."
+          "The active threat is: <attack-type>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>identify {ATTACK_TYPE}</code> based on the active log patterns.",
@@ -1122,7 +1123,7 @@
         hints: [
           "Scroll through the logs or hover to pause scrolling.",
           "Look for [ATTN: TARGET EVENT] in the events feed.",
-          "The source IP in that SQL Inject log is: {TARGET_IP}."
+          "The source IP in that SQL Inject log is: <IP-address>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>srcip {TARGET_IP}</code>.",
@@ -1137,8 +1138,8 @@
         prompt: "Command: port <port-number>\nExample: port 8080",
         hints: [
           "Check standard HTTP alternative port ranges.",
-          "Common web proxy and Tomcat servers use port 8080.",
-          "Type command: port 8080."
+          "Common web proxy and Tomcat servers use standard web proxy ports.",
+          "Type command: port <port-number>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>port 8080</code>.",
@@ -1153,8 +1154,8 @@
         prompt: "Command: port <port-number>\nExample: port 23",
         hints: [
           "Telnet is an unencrypted remote administration protocol, predecessor of SSH.",
-          "Mirai flooded Telnet scanners globally. Telnet standard port is 23.",
-          "Type: port 23"
+          "Mirai flooded Telnet scanners globally. Identify the standard telnet port.",
+          "Type: port <port-number>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>port 23</code>.",
@@ -1169,8 +1170,8 @@
         prompt: "Command: port <port-number>\nExample: port 502",
         hints: [
           "Modbus is an industrial SCADA protocol used to control PLCs.",
-          "The standard TCP port assigned to Modbus is 502.",
-          "Type command: port 502."
+          "The standard TCP port assigned to Modbus.",
+          "Type command: port <port-number>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>port 502</code>.",
@@ -1184,9 +1185,9 @@
         desc: "Identify the abuse contact domain of the registrar for external host IP 203.0.113.45.\n\nType: recommend <domain>",
         prompt: "Command: recommend <domain>\nExample: recommend external-asset-routing.net",
         hints: [
-          "Run the command: whois 203.0.113.45",
+          "Run command: whois <IP-address>",
           "Look at the 'Abuse Contact' field in the output.",
-          "The domain is: external-asset-routing.net."
+          "The domain is: <domain-name>."
         ],
         explanation: {
           walkthrough: "Run <code>whois 203.0.113.45</code>, then type <code>recommend external-asset-routing.net</code>.",
@@ -1200,7 +1201,7 @@
         desc: "Query the geographic location registry to locate the city associated with suspected attacker IP 185.220.101.6.\n\nType: recommend <city-name>",
         prompt: "Command: recommend <city>\nExample: recommend Amsterdam",
         hints: [
-          "Run the command: geoip 185.220.101.6",
+          "Run command: geoip <IP-address>",
           "Identify the city reported in the tracking output.",
           "Type the city name listed."
         ],
@@ -1221,8 +1222,8 @@
         desc: "An audit flag indicates systems are vulnerable to DNS Reflection/Amplification attacks. Identify the port used by standard DNS query resolutions.\n\nType: port <port>",
         prompt: "Command: port <port-number>\nExample: port 53",
         hints: [
-          "DNS protocols run on port 53.",
-          "Type command: port 53."
+          "DNS protocols run on standard query ports.",
+          "Type command: port <port-number>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>port 53</code>.",
@@ -1238,7 +1239,7 @@
         hints: [
           "Read timestamps next to each LOG-ID in task briefing.",
           "Chronology depends on HH:MM:SS timestamps.",
-          "Sequence: order {CORRECT_ORDER}"
+          "Sequence: order <log-ids-sequence>"
         ],
         explanation: {
           walkthrough: "Run <code>order {CORRECT_ORDER}</code> based on chronological timestamps.",
@@ -1259,7 +1260,7 @@
         hints: [
           "Scan logs for events with keyword 'HVAC_VENTILATION' or 'FAZIO_PORTAL'.",
           "The logs contain external connection parameters for HVAC maintenance.",
-          "The contractor login originated from IP: {TARGET_VND_IP}."
+          "The contractor login originated from IP: <IP-address>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>srcip {TARGET_VND_IP}</code>.",
@@ -1273,8 +1274,8 @@
         desc: "Security feeds report scans targeting webcams. Identify the streaming protocol utilized by online cameras and media recorders.\n\nType: protocol <name>",
         prompt: "Command: protocol <name>\nExample: protocol rtsp",
         hints: [
-          "Real-Time Streaming Protocol is abbreviated as RTSP.",
-          "Type command: protocol rtsp."
+          "Real-Time Streaming Real-Time Streaming Protocol.",
+          "Type command: protocol <protocol-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>protocol rtsp</code>.",
@@ -1290,7 +1291,7 @@
         hints: [
           "Look for LDAP or SMB sweep logs originating from the AD network.",
           "Check the attacker IP in the scan logs.",
-          "The scanner IP is: {SRC_IP}."
+          "The scanner IP is: <IP-address>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>srcip {SRC_IP}</code>.",
@@ -1306,7 +1307,7 @@
         hints: [
           "Scan logs for HTTP request methods triggering OGNL expressions or 'struts2'.",
           "Check the destination port. Port is usually non-standard SSL or web proxy.",
-          "The port targeted is: {EQFX_PORT}. Type: port {EQFX_PORT}."
+          "The port targeted is: <port-number>. Type: port <port-number>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>port {EQFX_PORT}</code>.",
@@ -1320,8 +1321,8 @@
         desc: "An audit reports SNMP community strings set to 'public'. Identify the protocol associated with this system monitoring alert.\n\nType: protocol <name>",
         prompt: "Command: protocol <name>\nExample: protocol snmp",
         hints: [
-          "Simple Network Management Protocol queries network performance.",
-          "Type command: protocol snmp."
+          "Simple Network Simple Network Management Protocol.",
+          "Type command: protocol <protocol-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>protocol snmp</code>.",
@@ -1336,8 +1337,8 @@
         prompt: "Command: port <port-number>\nExample: port 5060",
         hints: [
           "SIP is standard for voice-over-ip signaling protocols.",
-          "Standard SIP runs on port 5060.",
-          "Type command: port 5060."
+          "Standard SIP runs on standard VoIP ports.",
+          "Type command: port <port-number>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>port 5060</code>.",
@@ -1353,7 +1354,7 @@
         hints: [
           "Search DNS query logs for domain strings starting with 'update' or 'payroll'.",
           "Check the active dnsDomainTask13 in the logs.",
-          "The target domain is: {DOMAIN}."
+          "The target domain is: <domain-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>domain {DOMAIN}</code>.",
@@ -1367,8 +1368,8 @@
         desc: "An internal vulnerability scan flagged a service running expired encryption keys. Identify the network security protocol checked.\n\nType: protocol <name>",
         prompt: "Command: protocol <name>\nExample: protocol ssl",
         hints: [
-          "Secure Sockets Layer/TLS is the encryption layer.",
-          "Type command: protocol ssl."
+          "Secure Sockets Secure Sockets Layer/TLS.",
+          "Type command: protocol <protocol-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>protocol ssl</code>.",
@@ -1382,9 +1383,9 @@
         desc: "Conduct WHOIS reconnaissance on external host IP 194.26.135.11 to find the abuse contact domain name.\n\nType: recommend <domain>",
         prompt: "Command: recommend <domain>\nExample: recommend external-asset-routing.net",
         hints: [
-          "Run command: whois 194.26.135.11",
+          "Run command: whois <IP-address>",
           "Find the domain inside the 'Abuse Contact' parameter.",
-          "The contact domain is: external-asset-routing.net."
+          "The contact domain is: <domain-name>."
         ],
         explanation: {
           walkthrough: "Run <code>whois 194.26.135.11</code>, then type <code>recommend external-asset-routing.net</code>.",
@@ -1398,7 +1399,7 @@
         desc: "Identify the city hosting the suspected gateway proxy IP 82.102.23.4.\n\nType: recommend <city>",
         prompt: "Command: recommend <city-name>\nExample: recommend Sao Paulo",
         hints: [
-          "Run the command: geoip 82.102.23.4",
+          "Run command: geoip <IP-address>",
           "Identify the city field in the tracked geolocation parameters.",
           "Type: recommend <CityName>"
         ],
@@ -1420,8 +1421,8 @@
         prompt: "Command: port <port-number>\nExample: port 21",
         hints: [
           "FTP is the standard protocol for file transport.",
-          "FTP standard port is 21.",
-          "Type: port 21"
+          "FTP standard port.",
+          "Type: port <port-number>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>port 21</code>.",
@@ -1435,8 +1436,8 @@
         desc: "Audit reports flag a corporate wireless node using deprecated authentication. Identify the standard secure wireless encryption protocol targeted for upgrade.\n\nType: protocol <name>",
         prompt: "Command: protocol <name>\nExample: protocol wpa2",
         hints: [
-          "Wi-Fi Protected Access II is abbreviated as WPA2.",
-          "Type command: protocol wpa2."
+          "Wi-Fi Protected Wi-Fi Protected Access II.",
+          "Type command: protocol <protocol-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>protocol wpa2</code>.",
@@ -1450,8 +1451,8 @@
         desc: "Audit logs report scanning traffic targeting corporate SQL databases. Identify the default TCP port used by Microsoft SQL Server (MSSQL).\n\nType: port <port>",
         prompt: "Command: port <port-number>\nExample: port 1433",
         hints: [
-          "MSSQL databases use standard port 1433.",
-          "Type command: port 1433."
+          "MSSQL databases use standard database ports.",
+          "Type command: port <port-number>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>port 1433</code>.",
@@ -1465,8 +1466,8 @@
         desc: "Identify the protocol used to query directory services (Active Directory) over port 389.\n\nType: protocol <name>",
         prompt: "Command: protocol <name>\nExample: protocol ldap",
         hints: [
-          "Lightweight Directory Access Protocol is abbreviated as LDAP.",
-          "Type command: protocol ldap."
+          "Lightweight Directory Lightweight Directory Access Protocol.",
+          "Type command: protocol <protocol-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>protocol ldap</code>.",
@@ -1482,7 +1483,7 @@
         hints: [
           "A stealth scan does not complete the 3-way handshake.",
           "This is commonly known as an Nmap SYN scan.",
-          "Type command: identify nmap-syn-scan."
+          "Type command: identify <attack-type>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>identify nmap-syn-scan</code>.",
@@ -1496,8 +1497,8 @@
         desc: "An audit flags a system allowing unauthenticated SMTP relays. Identify the standard TCP port used by SMTP email relays.\n\nType: port <port>",
         prompt: "Command: port <port-number>\nExample: port 25",
         hints: [
-          "Simple Mail Transfer Protocol runs on port 25.",
-          "Type: port 25"
+          "Simple Mail Transfer Protocol runs on standard SMTP mail ports.",
+          "Type: port <port-number>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>port 25</code>.",
@@ -1516,8 +1517,8 @@
         prompt: "Command: classify <AlertID> <SEVERITY>\nExample: classify ALRT-1002 CRITICAL",
         hints: [
           "Click on each alert card in the right queue to see details.",
-          "Alert {ID1} is a C2 beacon. Alert {ID2} is brute force. Alert {ID3} is port scan.",
-          "Type commands: classify {ID1} CRITICAL, classify {ID2} HIGH, classify {ID3} WARNING"
+          "Alert <AlertID> is a C2 beacon. Alert <AlertID> is brute force. Alert <AlertID> is port scan.",
+          "Type commands: classify <AlertID> CRITICAL, classify <AlertID> HIGH, classify <AlertID> WARNING"
         ],
         explanation: {
           walkthrough: "Click each alert card. Execute <code>classify &lt;AlertID&gt; CRITICAL|HIGH|WARNING</code>.",
@@ -1566,7 +1567,7 @@
         hints: [
           "Check the alert queue or briefing details.",
           "Use the exact ID of the alert in the queue or classify a simulated alert ID.",
-          "If the queue is empty, run `classify ALRT-9999 FALSE_POSITIVE` to override."
+          "If the queue is empty, run `classify <AlertID> FALSE_POSITIVE` to override."
         ],
         explanation: {
           walkthrough: "Run command: <code>classify ALRT-9999 FALSE_POSITIVE</code>.",
@@ -1581,7 +1582,7 @@
         prompt: "Command: classify ALRT-SQL HIGH",
         hints: [
           "Triage rules specify Database brute-forcing is categorized as HIGH.",
-          "Type command: classify ALRT-SQL HIGH."
+          "Type command: classify <AlertID> <SEVERITY>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>classify ALRT-SQL HIGH</code>.",
@@ -1596,7 +1597,7 @@
         prompt: "Command: classify ALRT-C2 CRITICAL",
         hints: [
           "C2 Beaconing triggers immediate network containment protocols, classifying it as CRITICAL.",
-          "Type command: classify ALRT-C2 CRITICAL."
+          "Type command: classify <AlertID> <SEVERITY>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>classify ALRT-C2 CRITICAL</code>.",
@@ -1611,7 +1612,7 @@
         prompt: "Command: classify ALRT-DHCP INFO",
         hints: [
           "DHCP logs provide background telemetry but present low immediate threat context, placing them under INFO.",
-          "Type command: classify ALRT-DHCP INFO."
+          "Type command: classify <AlertID> <SEVERITY>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>classify ALRT-DHCP INFO</code>.",
@@ -1626,7 +1627,7 @@
         prompt: "Command: classify ALRT-PING WARNING",
         hints: [
           "Perimeter pings are pre-attack scanning actions, classified as WARNING.",
-          "Type command: classify ALRT-PING WARNING."
+          "Type command: classify <AlertID> <SEVERITY>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>classify ALRT-PING WARNING</code>.",
@@ -1641,8 +1642,8 @@
         prompt: "Command: domain <domain-name>\nExample: domain update-microsoft.com",
         hints: [
           "Check the Cozy Bear task details. The fake domain ends in '.com'.",
-          "The domain is: update-microsoft.com.",
-          "Type command: domain update-microsoft.com."
+          "The domain is: <domain-name>.",
+          "Type command: domain <domain-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>domain update-microsoft.com</code>.",
@@ -1657,8 +1658,8 @@
         prompt: "Command: process <process-name>\nExample: process nginx",
         hints: [
           "Look for memory leak anomalies or SSL alerts in logs.",
-          "Check the running processes handling HTTPS. It's 'nginx'.",
-          "Type: process nginx"
+          "Check the running processes handling HTTPS. Identify the process name.",
+          "Type: process <process-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>process nginx</code>.",
@@ -1674,7 +1675,7 @@
         hints: [
           "Look for 'DNS_PHISHING' or 'WEB_PROXY' logs targeting banking URLs.",
           "A query for a domain like 'secure-bank-login-verify.net' was executed.",
-          "The victim user is: {USER}. Type: compromised-user {USER}."
+          "The victim user is: <username>. Type: compromised-user <username>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>compromised-user {USER}</code>.",
@@ -1690,7 +1691,7 @@
         hints: [
           "Check for terminal scripts launching outbound connections.",
           "Attackers frequently use powershell.exe to download DLL payloads.",
-          "Type: process powershell.exe"
+          "Type: process <process-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>process powershell.exe</code>.",
@@ -1705,7 +1706,7 @@
         prompt: "Command: classify ALRT-USB HIGH",
         hints: [
           "Physical USB attachments are classified as HIGH threat vectors.",
-          "Type command: classify ALRT-USB HIGH."
+          "Type command: classify <AlertID> <SEVERITY>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>classify ALRT-USB HIGH</code>.",
@@ -1720,8 +1721,8 @@
         prompt: "Command: compromised-user <username>\nExample: compromised-user admin-root",
         hints: [
           "Look for root credential sessions or domain controller login activity.",
-          "The admin username is: admin-root.",
-          "Type command: compromised-user admin-root."
+          "The admin username is: <username>.",
+          "Type command: compromised-user <username>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>compromised-user admin-root</code>.",
@@ -1736,8 +1737,8 @@
         prompt: "Command: bypass <method-name>\nExample: bypass mfa-fatigue",
         hints: [
           "Attackers flood users with push notifications until they approve.",
-          "This credential abuse bypass is called MFA Fatigue.",
-          "Type: bypass mfa-fatigue"
+          "This credential abuse bypass.",
+          "Type: bypass <method>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>bypass mfa-fatigue</code>.",
@@ -1752,8 +1753,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend A",
         hints: [
           "Proxy filters examine anomalies inside user-agent headers.",
-          "Select Option A. Type: recommend A.",
-          "Type command: recommend A."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend A</code>.",
@@ -1768,7 +1769,7 @@
         prompt: "Command: classify ALRT-SMTP WARNING",
         hints: [
           "High volume mail alerts indicate potential spam relays or host malware outbreaks, classified as WARNING.",
-          "Type command: classify ALRT-SMTP WARNING."
+          "Type command: classify <AlertID> <SEVERITY>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>classify ALRT-SMTP WARNING</code>.",
@@ -1784,7 +1785,7 @@
         hints: [
           "The script execution bypass parameter is: -ExecutionPolicy Bypass.",
           "This parameter is sent to powershell.exe.",
-          "Type command: process powershell.exe."
+          "Type command: process <process-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>process powershell.exe</code>.",
@@ -1799,8 +1800,8 @@
         prompt: "Command: file <filename>\nExample: file invoice.xlsm",
         hints: [
           "The spreadsheet macro extension is '.xlsm'.",
-          "The file is: invoice.xlsm.",
-          "Type command: file invoice.xlsm."
+          "The file is: <filename>.",
+          "Type command: file <filename>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>file invoice.xlsm</code>.",
@@ -1815,8 +1816,8 @@
         prompt: "Command: file <filename>\nExample: file document.pdf",
         hints: [
           "The document format is a PDF binary.",
-          "The file name is: document.pdf.",
-          "Type command: file document.pdf."
+          "The file name is: <filename>.",
+          "Type command: file <filename>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>file document.pdf</code>.",
@@ -1831,7 +1832,7 @@
         prompt: "Command: classify ALRT-ADMIN-ADD HIGH",
         hints: [
           "Local admin group additions are classified as HIGH threat severity.",
-          "Type command: classify ALRT-ADMIN-ADD HIGH."
+          "Type command: classify <AlertID> <SEVERITY>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>classify ALRT-ADMIN-ADD HIGH</code>.",
@@ -1846,7 +1847,7 @@
         prompt: "Command: classify ALRT-DNS-AMP HIGH",
         hints: [
           "High volume amplification queries present high network infrastructure risks, placing them under HIGH.",
-          "Type command: classify ALRT-DNS-AMP HIGH."
+          "Type command: classify <AlertID> <SEVERITY>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>classify ALRT-DNS-AMP HIGH</code>.",
@@ -1861,8 +1862,8 @@
         prompt: "Command: compromised-user <username>\nExample: compromised-user service-scan",
         hints: [
           "Check for account sweeps targeting system users like backup or services.",
-          "The target account username is: service-scan.",
-          "Type command: compromised-user service-scan."
+          "The target account username is: <username>.",
+          "Type command: compromised-user <username>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>compromised-user service-scan</code>.",
@@ -1877,8 +1878,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend A",
         hints: [
           "Browser whitelist group policies disable installing untrusted extensions.",
-          "Select Option A. Type: recommend A.",
-          "Type command: recommend A."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend A</code>.",
@@ -1893,8 +1894,8 @@
         prompt: "Command: process <process-name>\nExample: process powershell.exe",
         hints: [
           "The executable uses the argument: -EncodedCommand.",
-          "The process file is: powershell.exe.",
-          "Type command: process powershell.exe."
+          "The process file is: <process-name>.",
+          "Type command: process <process-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>process powershell.exe</code>.",
@@ -1909,7 +1910,7 @@
         prompt: "Command: classify ALRT-DB-DEL CRITICAL",
         hints: [
           "Database backup deletions indicate active ransomware preparation, classified as CRITICAL.",
-          "Type command: classify ALRT-DB-DEL CRITICAL."
+          "Type command: classify <AlertID> <SEVERITY>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>classify ALRT-DB-DEL CRITICAL</code>.",
@@ -1924,8 +1925,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend A",
         hints: [
           "FIDO2 hardware credentials prevent phishing credential entry.",
-          "Select Option A. Type: recommend A.",
-          "Type command: recommend A."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend A</code>.",
@@ -1945,7 +1946,7 @@
         hints: [
           "Compare timestamps for each entry.",
           "Ensure chronological sequence matching HH:MM:SS format.",
-          "Sequence: order {CORRECT_ORDER}"
+          "Sequence: order <log-ids-sequence>"
         ],
         explanation: {
           walkthrough: "Run <code>order {CORRECT_ORDER}</code>.",
@@ -1966,7 +1967,7 @@
         hints: [
           "LSASS reads are highly restricted security events.",
           "The utility used is a standard credential harvester: mimikatz.exe.",
-          "Type: process mimikatz.exe"
+          "Type: process <process-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>process mimikatz.exe</code>.",
@@ -1980,7 +1981,7 @@
         desc: "An attacker pivoted to active directories. Identify the three internal destination IPs scanned over SMB port 445.\n\nType: lateral <ip1> <ip2> <ip3>",
         prompt: "Command: lateral <ip1> <ip2> <ip3>\nExample: lateral 10.142.12.15 10.142.12.33 10.142.12.44",
         hints: [
-          "Look for SMB port 445 connection requests from source host: {SRC_IP}.",
+          "Look for SMB port 445 connection requests from source host: <IP-address>.",
           "Identify the three target destination IPs.",
           "Type: lateral {IP1} {IP2} {IP3}"
         ],
@@ -2001,8 +2002,8 @@
         desc: "Identify the remote execution management protocol that listens on default HTTP port 5985 and HTTPS port 5986.\n\nType: protocol <name>",
         prompt: "Command: protocol <name>\nExample: protocol winrm",
         hints: [
-          "Windows Remote Management is abbreviated as WinRM.",
-          "Type command: protocol winrm."
+          "Windows Windows Remote Management.",
+          "Type command: protocol <protocol-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>protocol winrm</code>.",
@@ -2018,7 +2019,7 @@
         hints: [
           "Check registry logs or scheduled process trees.",
           "A process registry key was added inside 'HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'.",
-          "The payload is: {PROCESS}. Type: persistence {PROCESS}"
+          "The payload is: <process-name>. Type: persistence <process-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>persistence {PROCESS}</code>.",
@@ -2034,7 +2035,7 @@
         hints: [
           "Logon Type 10 indicates a remote interactive login.",
           "This is commonly associated with Remote Desktop Protocol.",
-          "Type command: protocol rdp."
+          "Type command: protocol <protocol-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>protocol rdp</code>.",
@@ -2048,8 +2049,8 @@
         desc: "Audit logs report Logon Event ID 4625 (Failed Logon) with an authentication protocol using port 22. Identify the protocol.\n\nType: protocol <name>",
         prompt: "Command: protocol <name>\nExample: protocol ssh",
         hints: [
-          "Failed authentication logs on port 22 refer to Secure Shell.",
-          "Type command: protocol ssh."
+          "Failed authentication logs on port 22.",
+          "Type command: protocol <protocol-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>protocol ssh</code>.",
@@ -2065,7 +2066,7 @@
         hints: [
           "Web shell executions trace to server folders like tomcat/webapps.",
           "The uploaded backdoor ends in '.jsp'.",
-          "The shell filename is: cmd.jsp. Type: webshell cmd.jsp"
+          "The shell filename is: cmd.jsp. Type: webshell <filename>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>webshell cmd.jsp</code>.",
@@ -2080,8 +2081,8 @@
         prompt: "Command: webshell <file-name>\nExample: webshell r57.php",
         hints: [
           "The web shell script has a '.php' extension.",
-          "The file is: r57.php.",
-          "Type: webshell r57.php"
+          "The file is: <filename>.",
+          "Type: webshell <filename>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>webshell r57.php</code>.",
@@ -2096,8 +2097,8 @@
         prompt: "Command: port <port-number>\nExample: port 102",
         hints: [
           "Stuxnet communicates with Siemens S7-300 programmable logic controllers.",
-          "The standard Siemens S7 communication protocol runs on TCP port 102.",
-          "Type: port 102"
+          "The standard Siemens S7 communication protocol runs on standard industrial PLC ports.",
+          "Type: port <port-number>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>port 102</code>.",
@@ -2113,7 +2114,7 @@
         hints: [
           "Look for Kerberos ticket service request event logs (Event ID 4769).",
           "Check for ticket requests targeting service accounts.",
-          "The compromised account username is: {USER}."
+          "The compromised account username is: <username>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>compromised-user {USER}</code>.",
@@ -2128,8 +2129,8 @@
         prompt: "Command: process <process-name>\nExample: process wiper.exe",
         hints: [
           "Search logs for volume shadow copy deletions and raw disk writes.",
-          "The wiper binary is named 'wiper.exe'.",
-          "Type: process wiper.exe"
+          "The wiper binary is named '<process-name>'.",
+          "Type: process <process-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>process wiper.exe</code>.",
@@ -2145,7 +2146,7 @@
         hints: [
           "Look for long, base64-encoded subdomains queried on port 53.",
           "The target domain ends in '.xyz' or matches dynamic DNS bypass paths.",
-          "The domain is: {DOMAIN}. Type: domain {DOMAIN}"
+          "The domain is: <domain-name>. Type: domain <domain-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>domain {DOMAIN}</code>.",
@@ -2160,8 +2161,8 @@
         prompt: "Command: process <process-name>\nExample: process service.exe",
         hints: [
           "The service executes out of user temp directories.",
-          "The process file is: service.exe.",
-          "Type: process service.exe"
+          "The process file is: <process-name>.",
+          "Type: process <process-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>process service.exe</code>.",
@@ -2177,7 +2178,7 @@
         hints: [
           "Event ID 4697 registers new service creation events.",
           "The process name is: backdoor.exe.",
-          "Type: process backdoor.exe"
+          "Type: process <process-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>process backdoor.exe</code>.",
@@ -2192,8 +2193,8 @@
         prompt: "Command: process <process-name>\nExample: process vssadmin.exe",
         hints: [
           "The command executed is: vssadmin delete shadows /all.",
-          "The process is: vssadmin.exe.",
-          "Type: process vssadmin.exe"
+          "The process is: <process-name>.",
+          "Type: process <process-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>process vssadmin.exe</code>.",
@@ -2207,8 +2208,8 @@
         desc: "Identify the default TCP port utilized by Cobalt Strike teamserver management listeners.\n\nType: port <port>",
         prompt: "Command: port <port-number>\nExample: port 50050",
         hints: [
-          "Cobalt Strike teamserver standard communications run on port 50050.",
-          "Type: port 50050"
+          "Cobalt Strike teamserver standard communications run on standard teamserver ports.",
+          "Type: port <port-number>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>port 50050</code>.",
@@ -2223,8 +2224,8 @@
         prompt: "Command: process <process-name>\nExample: process teamviewer.exe",
         hints: [
           "The utility provides graphical desktop control sharing.",
-          "The process is: teamviewer.exe.",
-          "Type: process teamviewer.exe"
+          "The process is: <process-name>.",
+          "Type: process <process-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>process teamviewer.exe</code>.",
@@ -2239,8 +2240,8 @@
         prompt: "Command: file <filename>\nExample: file login-db.db",
         hints: [
           "Chrome stores credentials in a file named 'Login Data'.",
-          "The target file is: login-db.db.",
-          "Type: file login-db.db"
+          "The target file is: <filename>.",
+          "Type: file <filename>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>file login-db.db</code>.",
@@ -2255,8 +2256,8 @@
         prompt: "Command: process <process-name>\nExample: process svchost.exe",
         hints: [
           "Process hollowing targets critical svchost, explorer, or spoolsv processes.",
-          "The standard service host target is: svchost.exe.",
-          "Type command: process svchost.exe."
+          "The standard service host target is: <process-name>.",
+          "Type command: process <process-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>process svchost.exe</code>.",
@@ -2271,8 +2272,8 @@
         prompt: "Command: file <filename>\nExample: file explorer.exe",
         hints: [
           "The utility is the default desktop file shell manager.",
-          "The file is: explorer.exe.",
-          "Type command: file explorer.exe."
+          "The file is: <filename>.",
+          "Type command: file <filename>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>file explorer.exe</code>.",
@@ -2287,8 +2288,8 @@
         prompt: "Command: process <process-name>\nExample: process schtasks.exe",
         hints: [
           "The tool manages system tasks.",
-          "The utility is: schtasks.exe.",
-          "Type command: process schtasks.exe."
+          "The utility is: <process-name>.",
+          "Type command: process <process-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>process schtasks.exe</code>.",
@@ -2303,7 +2304,7 @@
         prompt: "Command: process <process-name>\nExample: process wmiprvse.exe",
         hints: [
           "The Windows Management Instrumentation provider service process is: wmiprvse.exe.",
-          "Type command: process wmiprvse.exe."
+          "Type command: process <process-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>process wmiprvse.exe</code>.",
@@ -2319,7 +2320,7 @@
         hints: [
           "The Local Security Authority Subsystem Service handles logon credentials.",
           "The target process file is: lsass.exe.",
-          "Type command: process lsass.exe."
+          "Type command: process <process-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>process lsass.exe</code>.",
@@ -2335,7 +2336,7 @@
         hints: [
           "Examine time fields in the task briefing.",
           "Arrange the logs from earliest hour to latest.",
-          "Sequence: order {CORRECT_ORDER}"
+          "Sequence: order <log-ids-sequence>"
         ],
         explanation: {
           walkthrough: "Run <code>order {CORRECT_ORDER}</code>.",
@@ -2359,8 +2360,8 @@
         prompt: "Command: block <IP>\nExample: block 203.0.113.99",
         hints: [
           "Check the red containment status panel on the left sidebar for the IP.",
-          "The source attacker IP is: {ATTACKER_IP}.",
-          "Type command: block {ATTACKER_IP}"
+          "The source attacker IP is: <IP-address>.",
+          "Type command: block <IP-address>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>block {ATTACKER_IP}</code>.",
@@ -2378,8 +2379,8 @@
         prompt: "Command: block <IP>\nExample: block 198.51.100.82",
         hints: [
           "Look at the C2 server IP address in the configuration.",
-          "The exfiltration C2 IP is: 198.51.100.82.",
-          "Type command: block 198.51.100.82."
+          "The exfiltration C2 IP is: <IP-address>.",
+          "Type command: block <IP-address>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>block 198.51.100.82</code>.",
@@ -2394,8 +2395,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend A",
         hints: [
           "Isolating infected endpoints prevents the lateral propagation of malware.",
-          "Select Option A. Type: recommend A.",
-          "Type command: recommend A."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend A</code>.",
@@ -2409,8 +2410,8 @@
         desc: "Identify the external C2 server beacon destination IP and apply firewall containment blocks.\n\nType: block <IP>",
         prompt: "Command: block <IP>\nExample: block 203.0.113.99",
         hints: [
-          "The external malware beacon target C2 server IP is: 203.0.113.99.",
-          "Type command: block 203.0.113.99."
+          "The external malware beacon target C2 server IP is: <IP-address>.",
+          "Type command: block <IP-address>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>block 203.0.113.99</code>.",
@@ -2426,7 +2427,7 @@
         hints: [
           "The credentials stolen are authorization headers.",
           "The tokens are called bearer tokens.",
-          "Type: token bearer-token"
+          "Type: token <token-type>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>token bearer-token</code>.",
@@ -2441,8 +2442,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend A",
         hints: [
           "TOTP codes or hardware FIDO tokens do not rely on push approvals.",
-          "Select Option A. Type: recommend A.",
-          "Type command: recommend A."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend A</code>.",
@@ -2476,8 +2477,8 @@
         prompt: "Command: block <IP-address>\nExample: block 198.51.100.12",
         hints: [
           "Look for RDP connections on port 3389.",
-          "The external IP establishing RDP sessions is: {SRC_IP}.",
-          "Type command: block {SRC_IP}."
+          "The external IP establishing RDP sessions is: <IP-address>.",
+          "Type command: block <IP-address>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>block {SRC_IP}</code>.",
@@ -2492,8 +2493,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend A",
         hints: [
           "Disabling account logons stops active credential usage across subnets.",
-          "Select Option A. Type: recommend A.",
-          "Type command: recommend A."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend A</code>.",
@@ -2508,8 +2509,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend A",
         hints: [
           "Resetting domain passwords invalidates compromised hashes.",
-          "Select Option A. Type: recommend A.",
-          "Type command: recommend A."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend A</code>.",
@@ -2523,8 +2524,8 @@
         desc: "An alert logs administrative actions originating from a known Tor exit node IP. Block the Tor gateway IP address.\n\nType: block <IP>",
         prompt: "Command: block <IP>\nExample: block 185.220.101.6",
         hints: [
-          "The Tor exit node IP is: 185.220.101.6.",
-          "Type command: block 185.220.101.6."
+          "The Tor exit node IP is: <IP-address>.",
+          "Type command: block <IP-address>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>block 185.220.101.6</code>.",
@@ -2539,8 +2540,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend A",
         hints: [
           "Isolating compromised DCs stops malicious replication changes.",
-          "Select Option A. Type: recommend A.",
-          "Type command: recommend A."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend A</code>.",
@@ -2556,7 +2557,7 @@
         hints: [
           "The session token hijacked is for a remote user.",
           "The token is: vpn-session.",
-          "Type: token vpn-session"
+          "Type: token <token-type>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>token vpn-session</code>.",
@@ -2572,7 +2573,7 @@
         hints: [
           "The exposed key belongs to AWS credentials.",
           "The token type is: aws-access-key.",
-          "Type: token aws-access-key"
+          "Type: token <token-type>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>token aws-access-key</code>.",
@@ -2586,8 +2587,8 @@
         desc: "An external IP is flooding system interfaces with volumetric traffic. Block the source attacker IP address.\n\nType: block <IP>",
         prompt: "Command: block <IP>\nExample: block 198.51.100.12",
         hints: [
-          "The source IP conducting the flood is: 198.51.100.12.",
-          "Type command: block 198.51.100.12."
+          "The source IP conducting the flood is: <IP-address>.",
+          "Type command: block <IP-address>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>block 198.51.100.12</code>.",
@@ -2602,8 +2603,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend A",
         hints: [
           "SMB runs on port 445.",
-          "Select Option A. Type: recommend A.",
-          "Type command: recommend A."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend A</code>.",
@@ -2617,8 +2618,8 @@
         desc: "An attacker is executing system commands via an uploaded web shell. Block the external source IP address.\n\nType: block <IP>",
         prompt: "Command: block <IP>\nExample: block 185.220.101.6",
         hints: [
-          "The external IP sending commands to the web shell is: 185.220.101.6.",
-          "Type command: block 185.220.101.6."
+          "The external IP sending commands to the web shell is: <IP-address>.",
+          "Type command: block <IP-address>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>block 185.220.101.6</code>.",
@@ -2632,8 +2633,8 @@
         desc: "An alert flags dynamic updates originating from a hijacked domain. Block the external domain IP.\n\nType: block <IP>",
         prompt: "Command: block <IP>\nExample: block 203.0.113.45",
         hints: [
-          "The hijacked update domain IP is: 203.0.113.45.",
-          "Type command: block 203.0.113.45."
+          "The hijacked update domain IP is: <IP-address>.",
+          "Type command: block <IP-address>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>block 203.0.113.45</code>.",
@@ -2648,8 +2649,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend A",
         hints: [
           "SSH runs on port 22.",
-          "Select Option A. Type: recommend A.",
-          "Type command: recommend A."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend A</code>.",
@@ -2664,8 +2665,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend A",
         hints: [
           "Network segmentation isolates industrial systems from enterprise IT.",
-          "Select Option A. Type: recommend A.",
-          "Type command: recommend A."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend A</code>.",
@@ -2680,8 +2681,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend A",
         hints: [
           "Revoking permissions limits the impact of database compromises.",
-          "Select Option A. Type: recommend A.",
-          "Type command: recommend A."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend A</code>.",
@@ -2695,8 +2696,8 @@
         desc: "An attacker is hosting credit card skimming scripts on a malicious CDN domain. Block the CDN server IP.\n\nType: block <IP>",
         prompt: "Command: block <IP>\nExample: block 198.51.100.82",
         hints: [
-          "The malicious CDN domain IP is: 198.51.100.82.",
-          "Type command: block 198.51.100.82."
+          "The malicious CDN domain IP is: <IP-address>.",
+          "Type command: block <IP-address>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>block 198.51.100.82</code>.",
@@ -2712,7 +2713,7 @@
         hints: [
           "The compromised token is an OAuth key.",
           "The token type is: oauth-token.",
-          "Type: token oauth-token"
+          "Type: token <token-type>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>token oauth-token</code>.",
@@ -2728,7 +2729,7 @@
         hints: [
           "The exposed secret is a cloud provider API key.",
           "The token type is: cloud-api-key.",
-          "Type: token cloud-api-key"
+          "Type: token <token-type>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>token cloud-api-key</code>.",
@@ -2743,8 +2744,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend A",
         hints: [
           "Disabling service account logins blocks further programmatic attacks.",
-          "Select Option A. Type: recommend A.",
-          "Type command: recommend A."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend A</code>.",
@@ -2764,7 +2765,7 @@
         hints: [
           "The DLL coordinates with business logic updates.",
           "The exact backdoor filename is: solarwinds.businesslayer.dll.",
-          "Type: file solarwinds.businesslayer.dll"
+          "Type: file <filename>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>file solarwinds.businesslayer.dll</code>.",
@@ -2780,7 +2781,7 @@
         hints: [
           "The application targeted handles VoIP messaging desk clients.",
           "The executable name is: 3cxdesktopapp.exe.",
-          "Type: process 3cxdesktopapp.exe"
+          "Type: process <process-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>process 3cxdesktopapp.exe</code>.",
@@ -2796,7 +2797,7 @@
         hints: [
           "The library handles LZMA compression inside SSH daemons.",
           "The shared object library is: liblzma.so.",
-          "Type: file liblzma.so"
+          "Type: file <filename>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>file liblzma.so</code>.",
@@ -2811,8 +2812,8 @@
         prompt: "Command: process <process-name>\nExample: process agentmon.exe",
         hints: [
           "The target process monitors client node configurations.",
-          "The process file is: agentmon.exe.",
-          "Type: process agentmon.exe"
+          "The process file is: <process-name>.",
+          "Type: process <process-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>process agentmon.exe</code>.",
@@ -2827,7 +2828,7 @@
         prompt: "Command: process <process-name>\nExample: process spoolsv.exe",
         hints: [
           "The printer spooler system daemon process is spoolsv.exe.",
-          "Type: process spoolsv.exe"
+          "Type: process <process-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>process spoolsv.exe</code>.",
@@ -2843,7 +2844,7 @@
         hints: [
           "Look for email logs or web proxy lookups to update domains.",
           "The malicious domain is 'update-microsoft.com'.",
-          "Type: domain update-microsoft.com"
+          "Type: domain <domain-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>domain update-microsoft.com</code>.",
@@ -2858,8 +2859,8 @@
         prompt: "Command: srcip <IP-address>\nExample: srcip 10.142.12.33",
         hints: [
           "Look for SMTP logs or X-Agent service callbacks.",
-          "The internal mail server resides on address: {MAIL_IP}.",
-          "Type: srcip {MAIL_IP}"
+          "The internal mail server resides on address: <IP-address>.",
+          "Type: srcip <IP-address>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>srcip {MAIL_IP}</code>.",
@@ -2874,8 +2875,8 @@
         prompt: "Command: port <port-number>\nExample: port 30005",
         hints: [
           "Look for SWIFT messaging network connections on non-standard ports.",
-          "The target backup channel ran on port 30005.",
-          "Type: port 30005"
+          "The target backup channel ran on standard backup ports.",
+          "Type: port <port-number>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>port 30005</code>.",
@@ -2891,7 +2892,7 @@
         hints: [
           "Look for disk wiping logs or process names.",
           "The wiper tool is 'killdisk.exe'.",
-          "Type: process killdisk.exe"
+          "Type: process <process-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>process killdisk.exe</code>.",
@@ -2905,9 +2906,9 @@
         desc: "Threat intelligence: APT34 uses DNS-based beacon payloads to callback. Identify the internal host IP and external C2 IP.\n\nType: beacon <internal-host-ip> <c2-ip>",
         prompt: "Command: beacon <internal-ip> <c2-ip>\nExample: beacon 10.142.12.15 198.51.100.82",
         hints: [
-          "Check for periodic HTTP queries to C2 server: {C2_IP}.",
-          "Identify the internal infected host IP: {HOST_IP}.",
-          "Type: beacon {HOST_IP} {C2_IP}"
+          "Check for periodic HTTP queries to C2 server: <IP-address>.",
+          "Identify the internal infected host IP: <IP-address>.",
+          "Type: beacon <IP-address> <IP-address>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>beacon {HOST_IP} {C2_IP}</code>.",
@@ -2929,7 +2930,7 @@
         hints: [
           "WannaCry checks a long random character domain at startup.",
           "The domain starts with 'iuqerfsodp' and ends in '.com'.",
-          "Type: domain iuqerfsodp9ifjaposdfjhgosurijfaewrwergwea.com"
+          "Type: domain <domain-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>domain iuqerfsodp9ifjaposdfjhgosurijfaewrwergwea.com</code>.",
@@ -2944,8 +2945,8 @@
         prompt: "Command: exploit <exploit-name>\nExample: exploit eternalblue",
         hints: [
           "The exploit targets vulnerability CVE-2017-0144 in SMBv1.",
-          "The code name of this leaked Windows exploit is 'eternalblue'.",
-          "Type: exploit eternalblue"
+          "The code name of this leaked Windows exploit.",
+          "Type: exploit <exploit-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>exploit eternalblue</code>.",
@@ -2961,7 +2962,7 @@
         hints: [
           "iMessage registration and transport relies on the daemon: 'imagent'.",
           "The exploit hijacked imagent via PDF parsing exploits.",
-          "Type: process imagent"
+          "Type: process <process-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>process imagent</code>.",
@@ -2977,7 +2978,7 @@
         hints: [
           "Look for processes running out of user folders rather than System32.",
           "The binary replaces the letter 'o' with a zero: svch0st.exe.",
-          "Type: process svch0st.exe"
+          "Type: process <process-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>process svch0st.exe</code>.",
@@ -2992,8 +2993,8 @@
         prompt: "Command: extension <extension-name>\nExample: extension .lockbit",
         hints: [
           "Look at the log files. Backups carry new extensions like '.lockbit'.",
-          "LockBit appends '.lockbit'. Type: extension .lockbit.",
-          "Type: extension .lockbit"
+          "LockBit appends '.lockbit'. Type: extension <extension>.",
+          "Type: extension <extension>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>extension .lockbit</code>.",
@@ -3008,7 +3009,7 @@
         prompt: "Command: process <process-name>\nExample: process vssadmin.exe",
         hints: [
           "The utility used is 'vssadmin.exe'.",
-          "Type: process vssadmin.exe"
+          "Type: process <process-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>process vssadmin.exe</code>.",
@@ -3023,8 +3024,8 @@
         prompt: "Command: srcip <IP-address>\nExample: srcip 198.51.100.12",
         hints: [
           "Look for high-bandwidth web requests or exfil events.",
-          "The destination backup server external IP is: {EXFIL_IP}.",
-          "Type: srcip {EXFIL_IP}"
+          "The destination backup server external IP is: <IP-address>.",
+          "Type: srcip <IP-address>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>srcip {EXFIL_IP}</code>.",
@@ -3040,7 +3041,7 @@
         hints: [
           "Check console access logs for backup operator usernames.",
           "The service account compromised is: backup_svc.",
-          "Type: compromised-user backup_svc"
+          "Type: compromised-user <username>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>compromised-user backup_svc</code>.",
@@ -3055,8 +3056,8 @@
         prompt: "Command: domain <domain-name>\nExample: domain cdns-google.com",
         hints: [
           "Check outbound DNS queries from checkout portal pages.",
-          "The domain masquerades as a Google CDN: cdns-google.com.",
-          "Type: domain cdns-google.com"
+          "The domain masquerades as a Google CDN.",
+          "Type: domain <domain-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>domain cdns-google.com</code>.",
@@ -3070,9 +3071,9 @@
         desc: "Historical incident: Volt Typhoon hijacked critical infrastructure by using administrative Windows tools (Living-off-the-Land).\n\nIdentify the built-in networking command tool used to discover active domain shares.\n\nType: process <name>",
         prompt: "Command: process <process-name>\nExample: process net.exe",
         hints: [
-          "The utility used displays active shares: 'net.exe view /domain'.",
-          "The process file is: net.exe.",
-          "Type: process net.exe"
+          "The utility used displays active shares.",
+          "The process file is: <process-name>.",
+          "Type: process <process-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>process net.exe</code>.",
@@ -3086,9 +3087,9 @@
         desc: "During post-incident cleanup, locate the tool used to delete persistence scheduled tasks.\n\nType: process <name>",
         prompt: "Command: process <process-name>\nExample: process schtasks.exe",
         hints: [
-          "The deletion command syntax is: schtasks.exe /delete /tn 'update_service'.",
-          "The process is: schtasks.exe.",
-          "Type command: process schtasks.exe."
+          "The deletion command syntax is: schtasks.exe /delete /tn '<service-name>'.",
+          "The process is: <process-name>.",
+          "Type command: process <process-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>process schtasks.exe</code>.",
@@ -3102,8 +3103,8 @@
         desc: "An attacker created an registry autorun persistence payload. Identify the persistence payload process name to clean it.\n\nType: persistence <process-name>",
         prompt: "Command: persistence <process-name>\nExample: persistence wininit-update.exe",
         hints: [
-          "The registry autorun process is: {PROCESS}.",
-          "Type command: persistence {PROCESS}."
+          "The registry autorun process is: <process-name>.",
+          "Type command: persistence <process-name>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>persistence {PROCESS}</code>.",
@@ -3118,8 +3119,8 @@
         prompt: "Command: webshell <file-name>\nExample: webshell backdoor.aspx",
         hints: [
           "The shell uses ASP.NET file extensions (.aspx).",
-          "The file is: backdoor.aspx.",
-          "Type command: webshell backdoor.aspx."
+          "The file is: <filename>.",
+          "Type command: webshell <filename>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>webshell backdoor.aspx</code>.",
@@ -3134,8 +3135,8 @@
         prompt: "Command: file <filename>\nExample: file crontab",
         hints: [
           "System scheduled cron profiles are managed inside the crontab configuration.",
-          "The file name is: crontab.",
-          "Type command: file crontab."
+          "The file name is: <filename>.",
+          "Type command: file <filename>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>file crontab</code>.",
@@ -3150,8 +3151,8 @@
         prompt: "Command: file <filename>\nExample: file rootkit.ko",
         hints: [
           "Linux compiled kernel object extensions are '.ko'.",
-          "The target file is: rootkit.ko.",
-          "Type command: file rootkit.ko."
+          "The target file is: <filename>.",
+          "Type command: file <filename>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>file rootkit.ko</code>.",
@@ -3170,7 +3171,7 @@
         prompt: "Command: summary attack=supply-chain vector=update affected=18000 severity=critical contained=yes",
         hints: [
           "Use the exact fields: attack=supply-chain vector=update affected=18000 severity=critical contained=yes.",
-          "Type command: summary attack=supply-chain vector=update affected=18000 severity=critical contained=yes."
+          "Type command: summary attack=<attack> vector=<vector> affected=<count> severity=<severity> contained=<yes/no>."
         ],
         explanation: {
           walkthrough: "Run command: <code>summary attack=supply-chain vector=update affected=18000 severity=critical contained=yes</code>.",
@@ -3193,8 +3194,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend C",
         hints: [
           "Security policies require SBOM audits and Software signing to restrict unauthorized DLL executions.",
-          "Select Option C (formerly option C in Struts remediation). Type: recommend C.",
-          "Type command: recommend C."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend C</code>.",
@@ -3209,7 +3210,7 @@
         prompt: "Command: summary attack=ransomware vector=phishing affected=5 severity=critical contained=yes",
         hints: [
           "Follow the exact parameter values: attack=ransomware vector=phishing affected=5 severity=critical contained=yes.",
-          "Type: summary attack=ransomware vector=phishing affected=5 severity=critical contained=yes"
+          "Type: summary attack=<attack> vector=<vector> affected=<count> severity=<severity> contained=<yes/no>"
         ],
         explanation: {
           walkthrough: "Run command: <code>summary attack=ransomware vector=phishing affected=5 severity=critical contained=yes</code>.",
@@ -3233,7 +3234,7 @@
         prompt: "Command: recommend <A/B/C/D>\nExample: recommend C",
         hints: [
           "Supply chain attacks compromise signed software modules. Zero-trust verification and SBOM audits identify dependencies.",
-          "Select Option C. Type: recommend C."
+          "Select Option <letter>. Type: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend C</code>.",
@@ -3248,8 +3249,8 @@
         prompt: "Command: recommend <A/B/C/D>\nExample: recommend A",
         hints: [
           "SMS is highly vulnerable to SIM swaps. App-based MFA (TOTP) or hardware tokens (FIDO) do not rely on carrier cellular numbers.",
-          "Select Option A. Type: recommend A.",
-          "Type: recommend A"
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type: recommend <choice-letter>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend A</code>.",
@@ -3264,8 +3265,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend B",
         hints: [
           "IMDSv2 uses session-oriented tokens to prevent SSRF credential theft.",
-          "Select Option B. Type: recommend B.",
-          "Type command: recommend B."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend B</code>.",
@@ -3280,8 +3281,8 @@
         prompt: "Command: protocol <name>\nExample: protocol ldap",
         hints: [
           "JNDI lookups connect to remote directory services like LDAP or RMI.",
-          "The most common vector exploited utilized LDAP. Type: protocol ldap.",
-          "Type: protocol ldap"
+          "The most common vector exploited utilized LDAP. Type: protocol <protocol-name>.",
+          "Type: protocol <protocol-name>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>protocol ldap</code>.",
@@ -3296,8 +3297,8 @@
         prompt: "Command: bypass <method-name>\nExample: bypass mfa-fatigue",
         hints: [
           "Attackers flood users with push notifications until they approve.",
-          "This credential abuse bypass is called MFA Fatigue.",
-          "Type: bypass mfa-fatigue"
+          "This credential abuse bypass.",
+          "Type: bypass <method>"
         ],
         explanation: {
           walkthrough: "Run the command: <code>bypass mfa-fatigue</code>.",
@@ -3312,7 +3313,7 @@
         prompt: "Command: summary attack=exfiltration vector=database affected=100000 severity=high contained=yes",
         hints: [
           "Use the exact syntax fields: attack=exfiltration vector=database affected=100000 severity=high contained=yes.",
-          "Type command: summary attack=exfiltration vector=database affected=100000 severity=high contained=yes."
+          "Type command: summary attack=<attack> vector=<vector> affected=<count> severity=<severity> contained=<yes/no>."
         ],
         explanation: {
           walkthrough: "Run command: <code>summary attack=exfiltration vector=database affected=100000 severity=high contained=yes</code>.",
@@ -3335,8 +3336,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend A",
         hints: [
           "Securing RDP requires Network Level Authentication and VPN access restrictions.",
-          "Select Option A. Type: recommend A.",
-          "Type command: recommend A."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend A</code>.",
@@ -3351,8 +3352,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend B",
         hints: [
           "Office GPOs block macro executions in files downloaded from external origins.",
-          "Select Option B. Type: recommend B.",
-          "Type command: recommend B."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend B</code>.",
@@ -3367,7 +3368,7 @@
         prompt: "Command: summary attack=exploit vector=struts affected=1 severity=critical contained=yes",
         hints: [
           "Follow the parameter fields: attack=exploit vector=struts affected=1 severity=critical contained=yes.",
-          "Type command: summary attack=exploit vector=struts affected=1 severity=critical contained=yes."
+          "Type command: summary attack=<attack> vector=<vector> affected=<count> severity=<severity> contained=<yes/no>."
         ],
         explanation: {
           walkthrough: "Run command: <code>summary attack=exploit vector=struts affected=1 severity=critical contained=yes</code>.",
@@ -3390,8 +3391,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend A",
         hints: [
           "DNS filtering detects query payload lengths and blocks dynamic lookups.",
-          "Select Option A. Type: recommend A.",
-          "Type command: recommend A."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend A</code>.",
@@ -3406,7 +3407,7 @@
         prompt: "Command: summary attack=wiper vector=phishing affected=100 severity=critical contained=yes",
         hints: [
           "Use the parameters: attack=wiper vector=phishing affected=100 severity=critical contained=yes.",
-          "Type command: summary attack=wiper vector=phishing affected=100 severity=critical contained=yes."
+          "Type command: summary attack=<attack> vector=<vector> affected=<count> severity=<severity> contained=<yes/no>."
         ],
         explanation: {
           walkthrough: "Run command: <code>summary attack=wiper vector=phishing affected=100 severity=critical contained=yes</code>.",
@@ -3429,8 +3430,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend A",
         hints: [
           "ICS protection relies on network segmentation and encrypted protocols (like Modbus Secure).",
-          "Select Option A. Type: recommend A.",
-          "Type command: recommend A."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend A</code>.",
@@ -3445,7 +3446,7 @@
         prompt: "Command: summary attack=bec vector=phishing affected=1 severity=high contained=yes",
         hints: [
           "Use fields: attack=bec vector=phishing affected=1 severity=high contained=yes.",
-          "Type command: summary attack=bec vector=phishing affected=1 severity=high contained=yes."
+          "Type command: summary attack=<attack> vector=<vector> affected=<count> severity=<severity> contained=<yes/no>."
         ],
         explanation: {
           walkthrough: "Run command: <code>summary attack=bec vector=phishing affected=1 severity=high contained=yes</code>.",
@@ -3468,8 +3469,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend B",
         hints: [
           "Group Managed Service Accounts generate complex, rotating keys that resist offline cracking.",
-          "Select Option B. Type: recommend B.",
-          "Type command: recommend B."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend B</code>.",
@@ -3484,7 +3485,7 @@
         prompt: "Command: summary attack=ransomware vector=eternalblue affected=200000 severity=critical contained=yes",
         hints: [
           "Use the fields: attack=ransomware vector=eternalblue affected=200000 severity=critical contained=yes.",
-          "Type command: summary attack=ransomware vector=eternalblue affected=200000 severity=critical contained=yes."
+          "Type command: summary attack=<attack> vector=<vector> affected=<count> severity=<severity> contained=<yes/no>."
         ],
         explanation: {
           walkthrough: "Run command: <code>summary attack=ransomware vector=eternalblue affected=200000 severity=critical contained=yes</code>.",
@@ -3507,8 +3508,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend C",
         hints: [
           "Credential Guard isolates LSASS within a virtualized container.",
-          "Select Option C. Type: recommend C.",
-          "Type command: recommend C."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend C</code>.",
@@ -3523,7 +3524,7 @@
         prompt: "Command: summary attack=webshell vector=upload affected=1 severity=high contained=yes",
         hints: [
           "Use variables: attack=webshell vector=upload affected=1 severity=high contained=yes.",
-          "Type command: summary attack=webshell vector=upload affected=1 severity=high contained=yes."
+          "Type command: summary attack=<attack> vector=<vector> affected=<count> severity=<severity> contained=<yes/no>."
         ],
         explanation: {
           walkthrough: "Run command: <code>summary attack=webshell vector=upload affected=1 severity=high contained=yes</code>.",
@@ -3546,8 +3547,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend B",
         hints: [
           "Validating user identity requires biometric or out-of-band confirmations.",
-          "Select Option B. Type: recommend B.",
-          "Type command: recommend B."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend B</code>.",
@@ -3562,7 +3563,7 @@
         prompt: "Command: summary attack=phishing vector=email affected=500 severity=high contained=yes",
         hints: [
           "Use fields: attack=phishing vector=email affected=500 severity=high contained=yes.",
-          "Type command: summary attack=phishing vector=email affected=500 severity=high contained=yes."
+          "Type command: summary attack=<attack> vector=<vector> affected=<count> severity=<severity> contained=<yes/no>."
         ],
         explanation: {
           walkthrough: "Run command: <code>summary attack=phishing vector=email affected=500 severity=high contained=yes</code>.",
@@ -3585,8 +3586,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend C",
         hints: [
           "Application whitelisting restricts the execution of administrative tools to authorized accounts.",
-          "Select Option C. Type: recommend C.",
-          "Type command: recommend C."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend C</code>.",
@@ -3601,7 +3602,7 @@
         prompt: "Command: summary attack=lateral-movement vector=smb affected=10 severity=high contained=yes",
         hints: [
           "Use values: attack=lateral-movement vector=smb affected=10 severity=high contained=yes.",
-          "Type command: summary attack=lateral-movement vector=smb affected=10 severity=high contained=yes."
+          "Type command: summary attack=<attack> vector=<vector> affected=<count> severity=<severity> contained=<yes/no>."
         ],
         explanation: {
           walkthrough: "Run command: <code>summary attack=lateral-movement vector=smb affected=10 severity=high contained=yes</code>.",
@@ -3624,8 +3625,8 @@
         prompt: "Command: recommend <choice-letter>\nExample: recommend C",
         hints: [
           "Advanced threat defense requires Zero Trust, phishing-resistant keys, and continuous auditing.",
-          "Select Option C. Type: recommend C.",
-          "Type command: recommend C."
+          "Select Option <letter>. Type: recommend <choice-letter>.",
+          "Type command: recommend <choice-letter>."
         ],
         explanation: {
           walkthrough: "Run the command: <code>recommend C</code>.",
@@ -4285,6 +4286,32 @@
 
         this.log(`ANALYST@AEGIS-SOC:~$ ${input}`, 'color-green');
 
+        if (GameState.geminiChatActive) {
+          const lowerInput = input.toLowerCase();
+          if (['exit', 'close', 'quit', 'bye', 'stop', 'exit chat', 'close chat'].some(word => lowerInput === word || lowerInput.includes('exit') || lowerInput.includes('close') || lowerInput.includes('quit'))) {
+            GameState.geminiChatActive = false;
+            this.log("[+] Exiting Gemini Chat Mode. Normal terminal commands restored.", "color-green");
+            return;
+          }
+          chatWithGemini(input);
+          return;
+        }
+
+        if (input.toLowerCase() === 'gemini') {
+          GameState.geminiChatActive = true;
+          this.log("[+] Gemini Chat Mode initiated. Direct communication channel established.", "color-cyan");
+          this.log("[+] Commands will not be interpreted by AEGIS-SOC until you exit.", "color-cyan");
+          this.log("[+] Type your prompt to Gemini. Type 'exit' or 'close' to return to normal terminal.", "color-cyan");
+          
+          const currentKey = localStorage.getItem('gemini_api_key');
+          if (!currentKey || currentKey === '') {
+            localStorage.setItem('gemini_api_key', 'AQ.Ab8RN6L5cAXVsZSAYcfkqR-pFnIgvp6u6KT7WJKwxjJRrSFqrQ');
+            localStorage.setItem('gemini_ai_enabled', 'true');
+            this.log("[*] Pre-configured Gemini API Key saved to browser storage.", "color-dim");
+          }
+          return;
+        }
+
         const tokens = input.split(/\s+/);
         const cmd = tokens[0].toLowerCase();
         const args = tokens.slice(1);
@@ -4496,7 +4523,7 @@ Scan complete: 4 ports open.`, "color-green");
       const apiKey = localStorage.getItem('gemini_api_key');
       if (!apiKey) {
         TriageConsole.log("[!] Error: No Gemini API Key configured in Settings.", "color-amber");
-        return false;
+        return null;
       }
       
       TriageConsole.log("[*] AI Evaluator: Analyzing answer with Gemini...", "color-cyan");
@@ -4527,6 +4554,24 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
                 text: systemPrompt
               }]
             }],
+            safetySettings: [
+              {
+                category: "HARM_CATEGORY_HARASSMENT",
+                threshold: "BLOCK_NONE"
+              },
+              {
+                category: "HARM_CATEGORY_HATE_SPEECH",
+                threshold: "BLOCK_NONE"
+              },
+              {
+                category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                threshold: "BLOCK_NONE"
+              },
+              {
+                category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                threshold: "BLOCK_NONE"
+              }
+            ],
             generationConfig: {
               responseMimeType: "application/json"
             }
@@ -4534,15 +4579,47 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         });
         
         if (!response.ok) {
-          const err = await response.json();
-          console.error("Gemini API error:", err);
-          TriageConsole.log(`[!] AI Evaluator Error: API call failed (${response.status}). Check API key in settings.`, "color-red");
-          return false;
+          let errMsg = "";
+          try {
+            const err = await response.json();
+            console.error("Gemini API error:", err);
+            if (err && err.error && err.error.message) {
+              errMsg = `: ${err.error.message}`;
+            }
+          } catch(e) {
+            console.error("Failed to parse Gemini API error JSON:", e);
+          }
+          TriageConsole.log(`[!] AI Evaluator Error: API call failed (${response.status})${errMsg}.`, "color-red");
+          return null;
         }
         
         const data = await response.json();
-        const text = data.candidates[0].content.parts[0].text;
-        const res = JSON.parse(text);
+        if (!data.candidates || data.candidates.length === 0 || !data.candidates[0].content || !data.candidates[0].content.parts || data.candidates[0].content.parts.length === 0) {
+          let blockReason = "";
+          if (data.candidates && data.candidates[0] && data.candidates[0].finishReason) {
+            blockReason = ` (Reason: ${data.candidates[0].finishReason})`;
+          }
+          TriageConsole.log(`[!] AI Evaluator Error: Empty or blocked response from Gemini API${blockReason}.`, "color-red");
+          return null;
+        }
+
+        let text = data.candidates[0].content.parts[0].text;
+        if (!text) {
+          TriageConsole.log("[!] AI Evaluator Error: Empty text response returned from Gemini API.", "color-red");
+          return null;
+        }
+
+        // Clean markdown code blocks if Gemini accidentally returned them
+        text = text.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+
+        let res;
+        try {
+          res = JSON.parse(text);
+        } catch(e) {
+          console.error("Failed to parse response text as JSON:", text, e);
+          TriageConsole.log("[!] AI Evaluator Error: Failed to parse Gemini response JSON.", "color-red");
+          return null;
+        }
         
         if (res.feedback) {
           TriageConsole.log(`[AI Feedback]: ${res.feedback}`, res.verified ? "color-green" : "color-amber");
@@ -4550,8 +4627,88 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         return res.verified === true;
       } catch(e) {
         console.error("Gemini invocation failed:", e);
-        TriageConsole.log("[!] AI Evaluator Error: Failed to contact Gemini API.", "color-red");
-        return false;
+        TriageConsole.log("[!] AI Evaluator Error: Failed to contact Gemini API: " + e.message, "color-red");
+        return null;
+      }
+    }
+
+    async function chatWithGemini(userPrompt) {
+      const apiKey = localStorage.getItem('gemini_api_key') || 'AQ.Ab8RN6L5cAXVsZSAYcfkqR-pFnIgvp6u6KT7WJKwxjJRrSFqrQ';
+      if (!apiKey) {
+        TriageConsole.log("[!] Error: No Gemini API Key configured in Settings.", "color-amber");
+        return;
+      }
+      
+      TriageConsole.log("[*] Gemini is thinking...", "color-cyan");
+      
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: userPrompt
+              }]
+            }],
+            safetySettings: [
+              {
+                category: "HARM_CATEGORY_HARASSMENT",
+                threshold: "BLOCK_NONE"
+              },
+              {
+                category: "HARM_CATEGORY_HATE_SPEECH",
+                threshold: "BLOCK_NONE"
+              },
+              {
+                category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                threshold: "BLOCK_NONE"
+              },
+              {
+                category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                threshold: "BLOCK_NONE"
+              }
+            ]
+          })
+        });
+        
+        if (!response.ok) {
+          let errMsg = "";
+          try {
+            const err = await response.json();
+            console.error("Gemini API error:", err);
+            if (err && err.error && err.error.message) {
+              errMsg = `: ${err.error.message}`;
+            }
+          } catch(e) {
+            console.error("Failed to parse Gemini API error JSON:", e);
+          }
+          TriageConsole.log(`[!] Gemini API Call Failed (${response.status})${errMsg}.`, "color-red");
+          return;
+        }
+        
+        const data = await response.json();
+        if (!data.candidates || data.candidates.length === 0 || !data.candidates[0].content || !data.candidates[0].content.parts || data.candidates[0].content.parts.length === 0) {
+          let blockReason = "";
+          if (data.candidates && data.candidates[0] && data.candidates[0].finishReason) {
+            blockReason = ` (Reason: ${data.candidates[0].finishReason})`;
+          }
+          TriageConsole.log(`[!] Gemini API Error: Empty or blocked response${blockReason}.`, "color-red");
+          return;
+        }
+
+        const text = data.candidates[0].content.parts[0].text;
+        if (!text) {
+          TriageConsole.log("[!] Gemini API Error: Empty text response returned.", "color-red");
+          return;
+        }
+
+        TriageConsole.log(`[Gemini]: ${text}`, "color-green");
+      } catch(e) {
+        console.error("Gemini chat failed:", e);
+        TriageConsole.log("[!] Error: Failed to contact Gemini API: " + e.message, "color-red");
       }
     }
 
@@ -4633,7 +4790,19 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         const apiKey = localStorage.getItem('gemini_api_key');
 
         if (aiEnabled && apiKey && taskId !== 76) {
-          verified = await verifyWithGemini(cmd, args, brief, fullCommand);
+          const aiResult = await verifyWithGemini(cmd, args, brief, fullCommand);
+          if (aiResult === null) {
+            TriageConsole.log("[*] AI API call failed. Falling back to local static verification...", "color-cyan");
+            if (brief && typeof brief.verify === 'function') {
+              try {
+                verified = brief.verify(cmd, args, GameState.config, task);
+              } catch(e) {
+                console.error("Fallback verification error on task " + taskId, e);
+              }
+            }
+          } else {
+            verified = aiResult;
+          }
         } else {
           if (brief && typeof brief.verify === 'function') {
             try {
@@ -5225,6 +5394,7 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       GameState.commandHistory = [];
       GameState.historyIndex = -1;
       GameState.selectedAlertId = null;
+      GameState.geminiChatActive = false;
 
       try {
         localStorage.removeItem(SAVE_KEY);
