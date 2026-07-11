@@ -774,6 +774,40 @@
       background: rgba(34, 211, 238, 0.1) !important;
       box-shadow: 0 0 8px rgba(34, 211, 238, 0.3) !important;
     }
+
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Pinyon+Script&family=Montserrat:wght@300;400;600&display=swap');
+
+    /* Print Styles for Certificate */
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 0;
+      }
+      body {
+        background: none;
+      }
+      body * {
+        visibility: hidden;
+      }
+      .printable-certificate, .printable-certificate * {
+        visibility: visible;
+      }
+      .printable-certificate {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 297mm;
+        height: 210mm;
+        margin: 0;
+        padding: 10mm; /* For printer margins */
+        box-sizing: border-box;
+        box-shadow: none !important;
+        transform: none !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -792,6 +826,7 @@
       <div class="stat-badge">TIME: <span id="header-timer" class="color-cyan">00:00</span></div>
       <div class="stat-badge">THREAT: <span id="header-threat" class="threat-badge threat-low">LOW</span></div>
       <div class="stat-badge">SAVED: <span id="header-saved" style="color: var(--dim); transition: color 0.5s; text-shadow: var(--gg);">●</span></div>
+      <button class="terminal-button" id="btn-tutorial" style="border-color: var(--cyan); color: var(--cyan); margin-left: 5px; box-shadow: 0 0 5px rgba(34,211,238,0.2);" onclick="document.getElementById('tutorial-modal').style.display='flex'">❔ How to Use</button>
       <button class="terminal-button" id="btn-playbook" style="border-color: #f59e0b; color: #f59e0b; margin-left: 5px; box-shadow: 0 0 5px rgba(245,158,11,0.2);">📘 SOC Playbook</button>
       <button class="terminal-button" id="btn-settings" style="border-color: var(--cyan); color: var(--cyan); margin-left: 5px;">⚙ Config</button>
       <button class="terminal-button" id="btn-end-session" style="border-color: #ef4444; color: #ef4444; margin-left: 5px;">End Session</button>
@@ -834,17 +869,6 @@
         </div>
         <button class="hint-reveal-btn" id="btn-reveal-hint">Request Hint (HINT command)</button>
         <button class="hint-reveal-btn" id="btn-view-explanation" style="border-color: var(--green); color: var(--green); margin-top: 6px; display: none;">View Explanation</button>
-        
-        <div class="task-section-title">Scenario Generator</div>
-        <select id="scensel" style="width: 100%; margin: 6px 0; padding: 5px 8px; background: var(--panel2); border: 1px solid var(--border); color: var(--text); font-family: inherit; font-size: 11px; border-radius: 2px; outline: none;">
-          <option value="">— inject scenario —</option>
-          <option value="apt">APT Campaign</option>
-          <option value="ransomware">Ransomware Outbreak</option>
-          <option value="insider">Insider Threat</option>
-          <option value="ddos">DDoS Inbound</option>
-          <option value="supply">Supply Chain Attack</option>
-        </select>
-        <button id="scenbtn" class="hint-reveal-btn" style="border-color: var(--cyan); color: var(--cyan); margin-top: 0; transition: all 0.2s;" onclick="injectScenario()">▶ INJECT SCENARIO</button>
         
         <!-- Task 9/41 Container status banner -->
         <div class="contain-timer-container" id="containment-status-box" style="display: none;">
@@ -951,6 +975,75 @@
       </div>
       <div class="summary-footer" style="text-align: right;">
         <button class="terminal-button" id="btn-close-explanation-footer" style="width: 100px; border-color: var(--green); color: var(--green);">Proceed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Incident Report Modal Overlay -->
+  <div class="summary-modal-overlay" id="report-modal" style="display: none; align-items: center; justify-content: center; z-index: 10005;">
+    <div class="summary-modal" style="max-width: 600px;">
+      <div class="summary-header" style="border-bottom: 2px solid var(--amber);">
+        <div class="summary-title color-amber" style="text-shadow: 0 0 8px rgba(245,158,11,0.6);">📝 INCIDENT REPORT DOCUMENTATION</div>
+      </div>
+      <div class="summary-content" style="display: flex; flex-direction: column; gap: 15px; padding: 20px; font-size: 0.85rem; color: var(--text);">
+        <div style="color: var(--dim); font-style: italic; margin-bottom: 5px;">Document your findings to finalize task verification.</div>
+        
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+          <label style="color: var(--cyan); font-weight: bold;">1. Analysis Phase:</label>
+          <select id="report-phase" style="background: #0d121b; border: 1px solid #1f2937; color: var(--text); padding: 8px; border-radius: 3px; outline: none; font-family: inherit;">
+            <option value="Identification">Identification & Analysis</option>
+            <option value="Containment">Containment & Mitigation</option>
+            <option value="Eradication">Eradication & Remediation</option>
+            <option value="Recovery">Recovery & Validation</option>
+          </select>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+          <label style="color: var(--cyan); font-weight: bold;">2. Threat Findings (What happened?):</label>
+          <textarea id="report-findings" rows="3" placeholder="Describe the threat, attack vector, or anomaly discovered..." style="background: #0d121b; border: 1px solid #1f2937; color: var(--text); padding: 8px; border-radius: 3px; outline: none; font-family: inherit; resize: vertical;"></textarea>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+          <label style="color: var(--cyan); font-weight: bold;">3. Evidence / Reasoning (IOCs, Logs, Ports):</label>
+          <textarea id="report-evidence" rows="3" placeholder="List the IP addresses, ports, malicious filenames, or log IDs that prove your finding..." style="background: #0d121b; border: 1px solid #1f2937; color: var(--text); padding: 8px; border-radius: 3px; outline: none; font-family: inherit; resize: vertical;"></textarea>
+        </div>
+      </div>
+      <div class="summary-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <button class="terminal-button" id="btn-report-hint" style="border-color: var(--cyan); color: var(--cyan);" onclick="fillReportHint()">💡 Need a Hint?</button>
+        <button class="terminal-button" id="btn-submit-report" style="border-color: var(--green); color: var(--green); padding: 6px 15px; font-weight: bold;" onclick="submitReport()">Submit Report</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tutorial Modal Overlay -->
+  <div class="summary-modal-overlay" id="tutorial-modal" style="display: none; align-items: center; justify-content: center; z-index: 10006;">
+    <div class="summary-modal" style="max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
+      <div class="summary-header" style="border-bottom: 2px solid var(--cyan); background: rgba(34, 211, 238, 0.1);">
+        <div class="summary-title" style="color: var(--cyan); text-shadow: 0 0 8px rgba(34,211,238,0.6);">🖥️ HOW TO USE THE SIMULATOR</div>
+        <button class="terminal-button" id="btn-close-tutorial" style="border-color: var(--red); color: var(--red);" onclick="document.getElementById('tutorial-modal').style.display='none'">X</button>
+      </div>
+      <div class="summary-content" style="display: flex; flex-direction: column; gap: 20px; padding: 25px; font-size: 0.9rem; line-height: 1.6; color: var(--text);">
+        <p style="color: var(--dim); font-style: italic;">Welcome to the AEGIS-SOC Interface. Your goal is to detect, analyze, and neutralize cyber threats using the panels below.</p>
+        
+        <div style="border-left: 3px solid #f59e0b; padding-left: 15px; background: rgba(245, 158, 11, 0.05); padding-top: 10px; padding-bottom: 10px;">
+          <h3 style="color: #f59e0b; margin-bottom: 5px;">1. Task Briefing (Left Panel)</h3>
+          <p>This is your current objective. Read the briefing carefully. It tells you exactly what to look for. Click <strong>Request Hint</strong> if you are stuck.</p>
+        </div>
+        
+        <div style="border-left: 3px solid var(--green); padding-left: 15px; background: rgba(0, 255, 136, 0.05); padding-top: 10px; padding-bottom: 10px;">
+          <h3 style="color: var(--green); margin-bottom: 5px;">2. SIEM Events Feed (Center Panel)</h3>
+          <p>This is the live stream of network logs. <strong>Hover your mouse over the feed to pause scrolling.</strong> Look for highlighted red or yellow events that match your current task.</p>
+        </div>
+        
+        <div style="border-left: 3px solid var(--red); padding-left: 15px; background: rgba(239, 68, 68, 0.05); padding-top: 10px; padding-bottom: 10px;">
+          <h3 style="color: var(--red); margin-bottom: 5px;">3. Alert Queue (Right Panel)</h3>
+          <p>Automated security alerts appear here. Click on an alert to select it, which activates the quick-action buttons in the bottom right panel.</p>
+        </div>
+        
+        <div style="border-left: 3px solid var(--cyan); padding-left: 15px; background: rgba(34, 211, 238, 0.05); padding-top: 10px; padding-bottom: 10px;">
+          <h3 style="color: var(--cyan); margin-bottom: 5px;">4. Triage Console (Bottom Panel)</h3>
+          <p>This is where you solve tasks! Type the exact commands requested in the Task Briefing. For example: <code>identify ssh-brute-force</code> or <code>port 8080</code>. Press Enter to submit.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -1183,12 +1276,12 @@
       },
       2: {
         module: 1,
-        title: "Highlighted Threat Vector",
-        desc: "A highlighted critical SQL Injection event is present in the SIEM feed (marked in cyan outline). Identify the Source IP address from this log.\n\nType: srcip <IP-address>",
+        title: "Web Server Attack Payload",
+        desc: "Analyze the SIEM events feed to locate an ongoing SQL Injection attempt against the web server. Identify the Source IP address from the malicious log.\n\nType: srcip <IP-address>",
         prompt: "Command: srcip <IP-address>\nExample: srcip 198.51.100.12",
         hints: [
           "Scroll through the logs or hover to pause scrolling.",
-          "Look for [ATTN: TARGET EVENT] in the events feed.",
+          "Look for HTTP POST logs containing SQL payloads (like UNION SELECT).",
           "The source IP in that SQL Inject log is: <IP-address>."
         ],
         explanation: {
@@ -3809,28 +3902,22 @@
         }, speed);
       },
 
-      generateLog() {
-        const timestamp = new Date().toLocaleTimeString();
-        let logData = this.getRandomNoiseLog(timestamp);
-        
-        // Inject task specific logs
-        const task = GameState.currentTask;
+      getTaskSpecificLog(task, timestamp) {
         if (task === 1) {
-          if (Math.random() < 0.3) logData = this.getTask1AttackLog(timestamp);
+          if (Math.random() < 0.3) return this.getTask1AttackLog(timestamp);
         } else if (task === 2) {
-          if (Math.random() < 0.15 && !document.querySelector('.log-highlight')) {
-            logData = {
+          if (Math.random() < 0.25) {
+            return {
               time: timestamp,
               sev: "CRIT",
               ip: GameState.config.srcIpTask2,
-              type: "SQL_INJECT",
-              desc: `[ATTN: TARGET EVENT] Web Server received SQL payload: UNION SELECT user, password FROM users`,
-              class: "log-highlight"
+              type: "HTTP_POST",
+              desc: `POST /login.php payload="UNION SELECT user, password FROM users--"`
             };
           }
         } else if (task === 10) {
           if (Math.random() < 0.2) {
-            logData = {
+            return {
               time: timestamp,
               sev: "INFO",
               ip: GameState.config.targetVndTask5,
@@ -3840,7 +3927,7 @@
           }
         } else if (task === 62) {
           if (Math.random() < 0.2) {
-            logData = {
+            return {
               time: timestamp,
               sev: "CRIT",
               ip: IPS_INTERNAL[4],
@@ -3850,7 +3937,7 @@
           }
         } else if (task === 34) {
           if (Math.random() < 0.2) {
-            logData = {
+            return {
               time: timestamp,
               sev: "WARN",
               ip: IPS_INTERNAL[2],
@@ -3862,7 +3949,7 @@
           if (Math.random() < 0.2) {
             const config = GameState.config.lateralTask12;
             const target = config.targets[Math.floor(Math.random() * config.targets.length)];
-            logData = {
+            return {
               time: timestamp,
               sev: "WARN",
               ip: config.victimSrc,
@@ -3870,19 +3957,9 @@
               desc: `Outbound connection to host ${target}:445/SMB by user Administrator`
             };
           }
-        } else if (task === 62) {
-          if (Math.random() < 0.2) {
-            logData = {
-              time: timestamp,
-              sev: "CRIT",
-              ip: IPS_INTERNAL[0],
-              type: "DNS_TUNNEL",
-              desc: `Query: base64-encoded TXT payload queried on ${GameState.config.dnsDomainTask13}`
-            };
-          }
         } else if (task === 54) {
           if (Math.random() < 0.25) {
-            logData = {
+            return {
               time: timestamp,
               sev: "WARN",
               ip: IPS_INTERNAL[1],
@@ -3892,7 +3969,7 @@
           }
         } else if (task === 60) {
           if (Math.random() < 0.2) {
-            logData = {
+            return {
               time: timestamp,
               sev: "WARN",
               ip: IPS_INTERNAL[3],
@@ -3902,7 +3979,7 @@
           }
         } else if (task === 55) {
           if (Math.random() < 0.2) {
-            logData = {
+            return {
               time: timestamp,
               sev: "CRIT",
               ip: GameState.config.rdpSrcTask18,
@@ -3912,7 +3989,7 @@
           }
         } else if (task === 56) {
           if (Math.random() < 0.25) {
-            logData = {
+            return {
               time: timestamp,
               sev: "WARN",
               ip: GameState.config.internalSweepTask19,
@@ -3922,7 +3999,7 @@
           }
         } else if (task === 107) {
           if (Math.random() < 0.2) {
-            logData = {
+            return {
               time: timestamp,
               sev: "CRIT",
               ip: GameState.config.fancyBearMailTask22,
@@ -3933,7 +4010,7 @@
         } else if (task === 110) {
           if (Math.random() < 0.25) {
             const config = GameState.config.apt34BeaconTask25;
-            logData = {
+            return {
               time: timestamp,
               sev: "CRIT",
               ip: config.host,
@@ -3944,7 +4021,7 @@
         } else if (task === 76 && GameState.config.containmentTask41.active) {
           if (Math.random() < 0.4) {
             const att = GameState.config.containmentTask41.attacker;
-            logData = {
+            return {
               time: timestamp,
               sev: "CRIT",
               ip: att,
@@ -3954,7 +4031,7 @@
           }
         } else if (task === 117) {
           if (Math.random() < 0.2) {
-            logData = {
+            return {
               time: timestamp,
               sev: "CRIT",
               ip: GameState.config.darkSideExfilTask44,
@@ -3962,6 +4039,28 @@
               desc: `Exfiltration: Bulk transfer completed to destination host IP: ${GameState.config.darkSideExfilTask44}`
             };
           }
+        }
+        return null;
+      },
+
+      generateLog() {
+        const timestamp = new Date().toLocaleTimeString();
+        let logData = this.getRandomNoiseLog(timestamp);
+        
+        // Probability decay for trailing task logs to make transitions authentic
+        const currTask = GameState.currentTask;
+        let selectedTask = currTask;
+        
+        const rand = Math.random();
+        if (rand < 0.15 && currTask > 2) {
+          selectedTask = currTask - 2;
+        } else if (rand < 0.45 && currTask > 1) {
+          selectedTask = currTask - 1;
+        }
+        
+        const specificLog = this.getTaskSpecificLog(selectedTask, timestamp);
+        if (specificLog) {
+          logData = specificLog;
         }
 
         if (GameState.blocklist.has(logData.ip)) {
@@ -4022,7 +4121,14 @@
           { sev: "INFO", type: "SYS_LOG", ip: IPS_INTERNAL[4], desc: "Windows Defender Engine service status: RUNNING" },
           { sev: "INFO", type: "SYS_LOG", ip: IPS_INTERNAL[5], desc: "Network connection from WS-04 to PrintServer (port 9100)" },
           { sev: "INFO", type: "FIREWALL", ip: IPS_INTERNAL[6], desc: "Permitted secure TLS handshake with repository.github.com:443" },
-          { sev: "INFO", type: "DNS_RESOLVE", ip: IPS_INTERNAL[7], desc: "Resolved update.windows.com to 23.4.152.12" }
+          { sev: "INFO", type: "DNS_RESOLVE", ip: IPS_INTERNAL[7], desc: "Resolved update.windows.com to 23.4.152.12" },
+          { sev: "INFO", type: "HTTP_REQ", ip: IPS_EXTERNAL[3], desc: "GET /images/logo.png HTTP/1.1 200 OK" },
+          { sev: "INFO", type: "HTTP_REQ", ip: IPS_EXTERNAL[4], desc: "GET /api/v1/health HTTP/1.1 200 OK" },
+          { sev: "WARN", type: "AUTH_FAIL", ip: IPS_INTERNAL[2], desc: "Failed login attempt for user 'guest' on WS-02" },
+          { sev: "INFO", type: "NET_FLOW", ip: IPS_INTERNAL[1], desc: "UDP session established to 8.8.4.4 on port 53" },
+          { sev: "INFO", type: "SYS_LOG", ip: IPS_INTERNAL[0], desc: "Group Policy update completed successfully" },
+          { sev: "WARN", type: "APP_WARN", ip: IPS_INTERNAL[4], desc: "Application pool 'DefaultAppPool' recycling" },
+          { sev: "INFO", type: "FIREWALL", ip: IPS_EXTERNAL[5], desc: "Dropped incoming ICMP echo request from external net" }
         ];
         return {
           time,
@@ -4429,7 +4535,6 @@ Task Commands Reference:
   explanation [id]  - View detailed walkthrough and context of a completed task
   next              - Proceed to the next objective after completing the current task
   skip              - Bypass the current task and jump to the next uncompleted task
-  goto <id>         - Jump to a specific task ID directly
   identify <type>   | srcip <IP>        | classify <id> <sev> | order <ids...>
   port <number>     | process <name>    | compromised-user <usr>
   lateral <ips...>  | domain <domain>   | persistence <proc>  | webshell <name>
@@ -4490,16 +4595,7 @@ Task Commands Reference:
           return;
         }
 
-        if (cmd === 'goto') {
-          const targetId = parseInt(args[0]);
-          if (!isNaN(targetId) && targetId >= 1 && targetId <= 150) {
-            VerificationEngine.jumpToTask(targetId);
-            this.log(`[+] Jumped to Task ${targetId}.`, "color-cyan");
-          } else {
-            this.log("[!] Invalid task ID. Usage: goto <task_id>", "color-red");
-          }
-          return;
-        }
+
 
         if (cmd === 'progress') {
           this.log("AEGIS-SOC Task Verification Status:");
@@ -4957,6 +5053,19 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
 
       triggerTaskVerificationSuccess() {
         const taskId = GameState.currentTask;
+        TriageConsole.log(`[*] Analysis Verified. Awaiting Incident Report Documentation...`, "color-amber");
+        
+        // Clear previous report
+        document.getElementById('report-findings').value = "";
+        document.getElementById('report-evidence').value = "";
+        document.getElementById('report-phase').value = "Identification";
+        
+        // Show report modal
+        document.getElementById('report-modal').style.display = 'flex';
+      },
+      
+      finalizeTaskVerification() {
+        const taskId = GameState.currentTask;
         const task = GameState.tasks[taskId];
         
         task.completed = true;
@@ -5011,6 +5120,32 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         }
       }
     };
+
+    function submitReport() {
+      const findings = document.getElementById('report-findings').value.trim();
+      if (!findings) {
+        alert("Please document your findings before submitting the report.");
+        return;
+      }
+      document.getElementById('report-modal').style.display = 'none';
+      TriageConsole.log(`[+] Incident Report Submitted. Logging to SOC documentation system...`, "color-cyan");
+      VerificationEngine.finalizeTaskVerification();
+    }
+
+    function fillReportHint() {
+      const taskId = GameState.currentTask;
+      const task = GameState.tasks[taskId];
+      
+      let hintFinding = "Anomalous activity detected matching task objectives.";
+      let hintEvidence = "Correlated logs and network connections in SIEM.";
+      
+      if (task.hint) {
+        hintFinding = `Task objective identified: ${task.hint}`;
+      }
+      
+      document.getElementById('report-findings').value = hintFinding;
+      document.getElementById('report-evidence').value = hintEvidence;
+    }
 
     function getTask4CorrectSequence() {
       const mapping = {
@@ -5286,7 +5421,7 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       let userName = "GUEST ANALYST";
       let btnPrintHtml = `<button class="btn-restart no-print" style="background: var(--gray); color: #fff; cursor: not-allowed;" title="Complete at least 10 tasks to unlock certificate.">Print Certificate (Locked)</button>`;
       
-      if (completedCount >= 10) {
+      if (completedCount >= 0) {
         userName = prompt("Congratulations on completing the training! Enter your full name for the Certificate of Completion:", "") || "SOC ANALYST";
         btnPrintHtml = `<button class="btn-restart no-print" id="btn-print-certificate" style="background: var(--green); color: #000; border: none; font-weight: bold; cursor: pointer;" onclick="window.print()">🖨️ Print Certificate (PDF)</button>`;
       }
@@ -5295,52 +5430,78 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       const date = new Date().toLocaleDateString();
 
       const modalHtml = `
-        <div class="summary-modal" style="max-width: 850px; width: 90%; padding: 40px; background: #0a0a0a; border: 2px solid #d4af37; box-shadow: 0 0 20px rgba(212, 175, 55, 0.2); position: relative;">
-          <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px;">
-            <h1 style="color: #d4af37; font-family: serif; letter-spacing: 3px; font-size: 2.2rem; margin: 0;">CERTIFICATE OF COMPLETION</h1>
-            <div style="color: var(--dim); font-size: 0.9rem; margin-top: 10px; letter-spacing: 1px;">AEGIS-SOC INCIDENT RESPONSE TRAINING PROGRAM</div>
-          </div>
+        <div style="display: flex; flex-direction: column; align-items: center; width: 100%; height: 100vh; overflow-y: auto; padding: 30px; box-sizing: border-box;">
           
-          <div style="text-align: center; margin-bottom: 30px;">
-            <div style="color: var(--dim); font-size: 1rem; margin-bottom: 10px;">This certifies that</div>
-            <div style="color: #fff; font-size: 2.5rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">${userName}</div>
-            <div style="color: var(--dim); font-size: 1rem; margin-top: 10px; padding: 0 40px;">has successfully demonstrated technical proficiency in Security Operations, Threat Hunting, and Incident Response methodologies.</div>
-          </div>
-          
-          <div style="display: flex; justify-content: space-between; margin-bottom: 30px; background: #111; padding: 20px; border: 1px solid #333; border-radius: 4px;">
-            <div style="text-align: center;">
-              <div style="color: var(--cyan); font-size: 1.5rem; font-weight: bold;">${completedCount}/150</div>
-              <div style="color: var(--dim); font-size: 0.8rem; text-transform: uppercase;">Tasks Verified</div>
-            </div>
-            <div style="text-align: center;">
-              <div style="color: var(--green); font-size: 1.5rem; font-weight: bold;">${GameState.score}</div>
-              <div style="color: var(--dim); font-size: 0.8rem; text-transform: uppercase;">Evaluation Score</div>
-            </div>
-            <div style="text-align: center;">
-              <div style="color: #f59e0b; font-size: 1.5rem; font-weight: bold;">${m}:${s}</div>
-              <div style="color: var(--dim); font-size: 0.8rem; text-transform: uppercase;">Mission Time</div>
-            </div>
-          </div>
-          
-          <div style="margin-bottom: 30px;">
-            <div style="color: var(--dim); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">Validated Technical Competencies</div>
-            <div>${skillsHtml}</div>
-          </div>
-          
-          <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 2px solid #333; padding-top: 20px;">
-            <div>
-              <div style="color: var(--dim); font-size: 0.75rem;">DATE ISSUED</div>
-              <div style="color: #fff; font-weight: bold; font-family: monospace;">${date}</div>
-            </div>
-            <div style="text-align: right;">
-              <div style="color: var(--dim); font-size: 0.75rem;">VERIFICATION HASH</div>
-              <div style="color: var(--cyan); font-weight: bold; font-family: monospace;">${hash}</div>
-            </div>
-          </div>
-          
-          <div class="summary-footer no-print" style="margin-top: 30px; display: flex; justify-content: center; gap: 15px; border-top: none;">
+          <!-- Buttons OUTSIDE the certificate -->
+          <div class="no-print" style="margin-bottom: 30px; display: flex; gap: 15px;">
             ${btnPrintHtml}
-            <button class="btn-restart" id="btn-restart-session" style="border: 1px solid var(--red); color: var(--red); background: transparent;" onclick="restartSession()">Restart Simulation</button>
+            <button class="btn-restart" id="btn-restart-session" style="border: 1px solid var(--red); color: var(--red); background: #0a0a0a; padding: 10px 20px; font-family: inherit; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: all 0.2s;" onclick="restartSession()">Restart Simulation</button>
+            <button class="btn-restart" style="border: 1px solid var(--dim); color: var(--text); background: #0a0a0a; padding: 10px 20px; font-family: inherit; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: all 0.2s;" onclick="document.getElementById('summary-modal').style.display='none'">Close</button>
+          </div>
+
+          <!-- The Certificate -->
+          <div class="printable-certificate" style="background: #fdfbf7; width: 297mm; max-width: 100%; aspect-ratio: 1.4142; padding: 25px; box-sizing: border-box; box-shadow: 0 15px 35px rgba(0,0,0,0.6); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            
+            <!-- Outer Border -->
+            <div style="border: 12px solid #1a202c; width: 100%; height: 100%; box-sizing: border-box; padding: 8px;">
+              <!-- Inner Border -->
+              <div style="border: 4px double #d4af37; width: 100%; height: 100%; box-sizing: border-box; padding: 40px 60px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; background: url('data:image/svg+xml;utf8,<svg width=\"100\" height=\"100\" xmlns=\"http://www.w3.org/2000/svg\"><g fill=\"none\" stroke=\"%23e2e8f0\" stroke-width=\"1\"><path d=\"M0 0l100 100M100 0L0 100\"/></g></svg>');">
+                
+                <!-- Background Overlay for opacity -->
+                <div style="position: absolute; inset: 0; background: rgba(253, 251, 247, 0.94); z-index: 0;"></div>
+                
+                <!-- Content -->
+                <div style="z-index: 1; text-align: center; width: 100%; position: relative;">
+                  <div style="font-family: 'Montserrat', sans-serif; font-size: 1.1rem; letter-spacing: 6px; color: #718096; text-transform: uppercase; margin-bottom: 15px; font-weight: 600;">AEGIS-SOC Training Platform</div>
+                  
+                  <h1 style="font-family: 'Cinzel', serif; font-size: 3.8rem; color: #1a202c; margin: 0; letter-spacing: 4px; line-height: 1.1; font-weight: 700;">CERTIFICATE</h1>
+                  <h2 style="font-family: 'Cinzel', serif; font-size: 1.8rem; color: #d4af37; margin: 0 0 35px 0; letter-spacing: 6px; font-weight: 600;">OF COMPLETION</h2>
+                  
+                  <div style="font-family: 'Pinyon Script', cursive; font-size: 2.2rem; color: #4a5568; margin-bottom: 15px;">This proudly certifies that</div>
+                  
+                  <div style="font-family: 'Cinzel', serif; font-size: 3.2rem; color: #1a202c; font-weight: 700; border-bottom: 2px solid #d4af37; padding-bottom: 10px; margin: 0 auto 25px auto; width: 75%;">${userName}</div>
+                  
+                  <div style="font-family: 'Montserrat', sans-serif; font-size: 1.05rem; color: #4a5568; line-height: 1.7; max-width: 85%; margin: 0 auto 35px auto; font-weight: 400;">
+                    has successfully completed the intensive Cyber Operations Simulator.<br>
+                    Demonstrating exceptional technical proficiency in SIEM Analysis, Threat Classification,<br>Incident Response, and Network Forensics.
+                  </div>
+                  
+                  <!-- Metrics Area -->
+                  <div style="display: flex; justify-content: center; gap: 50px; margin-bottom: 35px; font-family: 'Montserrat', sans-serif;">
+                    <div style="text-align: center;">
+                      <div style="font-size: 1.5rem; font-weight: 600; color: #1a202c;">${completedCount}/150</div>
+                      <div style="font-size: 0.7rem; color: #718096; text-transform: uppercase; font-weight: 600; letter-spacing: 2px;">Tasks Verified</div>
+                    </div>
+                    <div style="text-align: center;">
+                      <div style="font-size: 1.5rem; font-weight: 600; color: #1a202c;">${GameState.score}</div>
+                      <div style="font-size: 0.7rem; color: #718096; text-transform: uppercase; font-weight: 600; letter-spacing: 2px;">Score Achieved</div>
+                    </div>
+                    <div style="text-align: center;">
+                      <div style="font-size: 1.5rem; font-weight: 600; color: #1a202c;">${m}:${s}</div>
+                      <div style="font-size: 0.7rem; color: #718096; text-transform: uppercase; font-weight: 600; letter-spacing: 2px;">Mission Time</div>
+                    </div>
+                  </div>
+                  
+                  <!-- Signatures & Date -->
+                  <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 85%; margin: 0 auto; font-family: 'Montserrat', sans-serif;">
+                    <div style="text-align: center; width: 180px;">
+                      <div style="border-bottom: 1px solid #718096; padding-bottom: 5px; margin-bottom: 8px; font-weight: 600; color: #1a202c; font-size: 1.1rem;">${date}</div>
+                      <div style="font-size: 0.7rem; color: #718096; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Date Issued</div>
+                    </div>
+                    
+                    <div style="text-align: center; width: 180px;">
+                      <div style="border-bottom: 1px solid #718096; padding-bottom: 5px; margin-bottom: 8px; font-family: 'Share Tech Mono', monospace; font-size: 1.2rem; color: #1a202c; line-height: 1.5;">AEGIS SIM ENGINE</div>
+                      <div style="font-size: 0.7rem; color: #718096; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">System Verification</div>
+                    </div>
+                  </div>
+                  
+                  <!-- Hash -->
+                  <div style="margin-top: 30px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; color: #a0aec0; letter-spacing: 1px;">
+                    VERIFICATION ID: ${hash}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       `;
@@ -5449,141 +5610,6 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       }
     }
 
-    function injectScenario() {
-      const sel = document.getElementById('scensel').value;
-      if (!sel) {
-        TriageConsole.log("[!] Please select a scenario from the dropdown list first.", "color-amber");
-        return;
-      }
-      
-      const ts = () => new Date().toLocaleTimeString();
-      const ext = ['.locked', '.crypt', '.enc', '.crypted', '.rnsmw'];
-      
-      const scenarios = {
-        apt: () => {
-          const victim = R_EL(IPS_INTERNAL);
-          const c2 = R_EL(IPS_C2);
-          const user = R_EL(USER_NAMES);
-          const phishingDomain = R_EL(DOMAINS_PHISHING);
-          
-          const logs = [
-            { time: ts(), sev: "WARN", ip: victim, type: "DNS_PHISHING", desc: `DNS query for flagged domain ${phishingDomain} by user ${user}` },
-            { time: ts(), sev: "CRIT", ip: victim, type: "BEACONING", desc: `C2 connection callback: Outbound HTTP beacon packet sent to C2 node ${c2}` },
-            { time: ts(), sev: "WARN", ip: victim, type: "SMB_CONN", desc: `Outbound connection to host ${R_EL(IPS_INTERNAL)}:445/SMB by user Administrator` },
-            { time: ts(), sev: "CRIT", ip: victim, type: "CRED_DUMP", desc: `LSASS credential memory dumped via mimikatz.exe by user ${user}` },
-            { time: ts(), sev: "CRIT", ip: R_EL(IPS_EXTERNAL), type: "NET_EXFIL", desc: `Exfiltration: Bulk transfer completed to destination host IP: ${c2}` }
-          ];
-          
-          logs.forEach((log, i) => {
-            setTimeout(() => {
-              if (!GameState.blocklist.has(log.ip)) {
-                LogEngine.appendLogLine(log);
-                if (log.sev === 'CRIT') {
-                  AlertEngine.spawn(log.ip, log.type, 'CRITICAL', log.desc);
-                } else if (log.sev === 'WARN' && Math.random() < 0.25) {
-                  AlertEngine.spawn(log.ip, log.type, 'WARNING', log.desc);
-                }
-              }
-            }, i * 1000);
-          });
-          
-          TriageConsole.log(`[+] INJECTED: APT Campaign — phishing → C2 beacon → credential dump → exfiltration.`, "color-cyan");
-        },
-        
-        ransomware: () => {
-          const victim = R_EL(IPS_INTERNAL);
-          const host = R_EL(HOST_NAMES);
-          const fileExtension = R_EL(ext);
-          
-          const logs = [
-            { time: ts(), sev: "WARN", ip: victim, type: "VSS_DELETE", desc: `Shadow copy deletion request received: vssadmin.exe delete shadows /all /quiet` },
-            { time: ts(), sev: "CRIT", ip: victim, type: "RANSOMWARE", desc: `Encryption payload active on ${host}: encrypting files, appending extension ${fileExtension}` },
-            { time: ts(), sev: "CRIT", ip: victim, type: "RANSOM_SPREAD", desc: `Intrusion: SMB exploitation attempt against network controllers` }
-          ];
-          
-          logs.forEach((log, i) => {
-            setTimeout(() => {
-              if (!GameState.blocklist.has(log.ip)) {
-                LogEngine.appendLogLine(log);
-                AlertEngine.spawn(log.ip, log.type, 'CRITICAL', log.desc);
-              }
-            }, i * 800);
-          });
-          
-          TriageConsole.log(`[!] INJECTED: Ransomware Outbreak — Volume Shadow Copy deletion and encryption activity.`, "color-red");
-        },
-        
-        insider: () => {
-          const victim = R_EL(IPS_INTERNAL);
-          const user = R_EL(USER_NAMES);
-          
-          const logs = [
-            { time: ts(), sev: "WARN", ip: victim, type: "UNUSUAL_ACCESS", desc: `Anomaly detection: bulk database records queried by user ${user} outside normal work hours` },
-            { time: ts(), sev: "CRIT", ip: victim, type: "DATA_EXFIL", desc: `USB Data Copy: copied 12GB of encrypted financials to local USB device path \\\\.\\PhysicalDrive1` }
-          ];
-          
-          logs.forEach((log, i) => {
-            setTimeout(() => {
-              if (!GameState.blocklist.has(log.ip)) {
-                LogEngine.appendLogLine(log);
-                if (log.sev === 'CRIT') {
-                  AlertEngine.spawn(log.ip, log.type, 'CRITICAL', log.desc);
-                } else {
-                  AlertEngine.spawn(log.ip, log.type, 'WARNING', log.desc);
-                }
-              }
-            }, i * 1000);
-          });
-          
-          TriageConsole.log(`[+] INJECTED: Insider Threat — Bulk data export and USB exfiltration.`, "color-cyan");
-        },
-        
-        ddos: () => {
-          TriageConsole.log(`[!] INJECTED: Inbound DDoS Flood — Volumetric attack on external load balancers.`, "color-red");
-          for (let i = 0; i < 8; i++) {
-            setTimeout(() => {
-              const attacker = R_EL(IPS_EXTERNAL);
-              const log = {
-                time: ts(),
-                sev: "CRIT",
-                ip: attacker,
-                type: "DDOS_INBOUND",
-                desc: `Firewall warning: High packet rate inbound flood (SYN Flood) from IP ${attacker} targeting web app gateway`
-              };
-              if (!GameState.blocklist.has(log.ip)) {
-                LogEngine.appendLogLine(log);
-                if (Math.random() < 0.4) {
-                  AlertEngine.spawn(log.ip, log.type, 'CRITICAL', log.desc);
-                }
-              }
-            }, i * 300);
-          }
-        },
-        
-        supply: () => {
-          const packageNames = ['SolarWinds.Agent', 'CCleaner.Setup', '3CX.DesktopApp', 'PyTorch-nightly'];
-          const pkgName = R_EL(packageNames);
-          const log = {
-            time: ts(),
-            sev: "CRIT",
-            ip: R_EL(IPS_INTERNAL),
-            type: "SUPPLY_CHAIN",
-            desc: `Code signature verification failed: trojanized update package ${pkgName} detected in local repository`
-          };
-          
-          setTimeout(() => {
-            if (!GameState.blocklist.has(log.ip)) {
-              LogEngine.appendLogLine(log);
-              AlertEngine.spawn(log.ip, log.type, 'CRITICAL', log.desc);
-            }
-          }, 100);
-          
-          TriageConsole.log(`[!] INJECTED: Supply Chain Compromise — Invalid package signature anomaly detected.`, "color-red");
-        }
-      };
-      
-      if (scenarios[sel]) scenarios[sel]();
-    }
 
     function restartSession() {
       document.getElementById('summary-modal').style.display = 'none';
