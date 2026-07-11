@@ -5419,9 +5419,9 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       const skillsHtml = skills.map(s => `<span style="background: rgba(0, 255, 136, 0.1); border: 1px solid var(--green); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; margin-right: 5px; display: inline-block; margin-bottom: 5px; color: var(--green);">✓ ${s}</span>`).join("");
 
       let userName = "GUEST ANALYST";
-      let btnPrintHtml = `<button class="btn-restart no-print" style="background: var(--gray); color: #fff; cursor: not-allowed;" title="Complete at least 10 tasks to unlock certificate.">Print Certificate (Locked)</button>`;
+      let btnPrintHtml = `<button class="btn-restart no-print" style="background: var(--gray); color: #fff; cursor: not-allowed;" title="Complete all 150 tasks to unlock certificate.">Print Certificate (Locked)</button>`;
       
-      if (completedCount >= 0) {
+      if (completedCount >= 150) {
         userName = prompt("Congratulations on completing the training! Enter your full name for the Certificate of Completion:", "") || "SOC ANALYST";
         btnPrintHtml = `<button class="btn-restart no-print" id="btn-print-certificate" style="background: var(--green); color: #000; border: none; font-weight: bold; cursor: pointer;" onclick="window.print()">🖨️ Print Certificate (PDF)</button>`;
       }
