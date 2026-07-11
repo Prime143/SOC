@@ -4491,9 +4491,7 @@
           
           const currentKey = localStorage.getItem('gemini_api_key');
           if (!currentKey || currentKey === '') {
-            localStorage.setItem('gemini_api_key', 'AQ.Ab8RN6L5cAXVsZSAYcfkqR-pFnIgvp6u6KT7WJKwxjJRrSFqrQ');
-            localStorage.setItem('gemini_ai_enabled', 'true');
-            this.log("[*] Pre-configured Gemini API Key saved to browser storage.", "color-dim");
+            this.log("[!] Error: No Gemini API Key configured. Please add your API key in Settings.", "color-amber");
           }
           return;
         }
@@ -4704,7 +4702,8 @@ Scan complete: 4 ports open.`, "color-green");
           
           if (isPrivateIP(ip)) {
             this.log(`[!] CRITICAL ERR: Denied. Cannot block internal subnet addresses (${ip}). Points penalized for unsafe action!`, "color-red");
-            GameState.score = Math.max(0, GameState.score - 10);
+            GameState.penalties += 10;
+            GameState.score = calculateTotalScore();
             UIUpdater.updateHeader();
             return;
           }
@@ -4842,7 +4841,7 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
     }
 
     async function chatWithGemini(userPrompt) {
-      const apiKey = localStorage.getItem('gemini_api_key') || 'AQ.Ab8RN6L5cAXVsZSAYcfkqR-pFnIgvp6u6KT7WJKwxjJRrSFqrQ';
+      const apiKey = localStorage.getItem('gemini_api_key');
       if (!apiKey) {
         TriageConsole.log("[!] Error: No Gemini API Key configured in Settings.", "color-amber");
         return;
@@ -5161,7 +5160,7 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       Object.values(GameState.tasks).forEach(t => {
         if (t.completed) sum += t.points;
       });
-      return sum;
+      return Math.max(0, sum - (GameState.penalties || 0));
     }
 
     function isPrivateIP(ip) {
@@ -5538,6 +5537,7 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
           currentTask: GameState.currentTask,
           currentModule: GameState.currentModule,
           score: GameState.score,
+          penalties: GameState.penalties || 0,
           elapsedTime: GameState.elapsedTime,
           blocklist: Array.from(GameState.blocklist),
           tasks: serializedTasks,
@@ -5568,6 +5568,7 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         GameState.currentTask = data.currentTask || 1;
         GameState.currentModule = data.currentModule || 1;
         GameState.score = data.score || 0;
+        GameState.penalties = data.penalties || 0;
         GameState.elapsedTime = data.elapsedTime || 0;
         GameState.blocklist = new Set(data.blocklist || []);
         GameState.commandHistory = data.commandHistory || [];
@@ -5617,6 +5618,7 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       GameState.currentModule = 1;
       GameState.currentTask = 1;
       GameState.score = 0;
+      GameState.penalties = 0;
       GameState.blocklist.clear();
       GameState.commandHistory = [];
       GameState.historyIndex = -1;
@@ -5724,7 +5726,8 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
           TriageConsole.log("[-] Classify alerts using severity levels (CRITICAL, HIGH, etc.). False Positive is invalid severity.", "color-red");
         } else {
           TriageConsole.log("[-] INCORRECT classification: Alert is a true positive incident.", "color-red");
-          GameState.score = Math.max(0, GameState.score - 5);
+          GameState.penalties += 5;
+          GameState.score = calculateTotalScore();
           UIUpdater.updateHeader();
         }
       };
@@ -5755,7 +5758,8 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         
         if (GameState.currentTask !== 26) {
           TriageConsole.log("[-] Escalation Audits: Point penalty applied. Investigation was incomplete.", "color-red");
-          GameState.score = Math.max(0, GameState.score - 5);
+          GameState.penalties += 5;
+          GameState.score = calculateTotalScore();
           UIUpdater.updateHeader();
         }
       };
