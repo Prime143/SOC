@@ -1594,6 +1594,9 @@
     </div>
 
     <div class="siem-top-telemetry">
+      <div class="telemetry-chip operator-badge" id="chip-operator-badge" onclick="openOnboardingModal()" title="Click to edit Candidate Name for Certificate">
+        <span style="color: #c084fc;">OPERATOR:</span> <strong id="header-candidate-name">ANALYST</strong> <span style="font-size: 0.65rem; color: var(--text-dim); margin-left: 2px;">✏️</span>
+      </div>
       <div class="telemetry-chip">
         <span style="color: var(--blue);">INGEST:</span> <strong id="top-eps-counter">42 EPS</strong>
       </div>
@@ -1601,7 +1604,7 @@
         <span style="color: var(--amber);">IPS:</span> INLINE-SHUN
       </div>
       <div class="telemetry-chip">
-        SCORE: <strong id="header-score" style="color: var(--splunk-green);">000/3000</strong>
+        SCORE: <strong id="header-score" style="color: var(--splunk-green);">000/3000</strong> <span id="header-penalty-badge" style="display: none; color: #ef4444; font-size: 0.68rem; margin-left: 2px;"></span>
       </div>
       <div class="telemetry-chip">
         THREAT: <span id="header-threat" class="threat-badge threat-low">LOW</span>
@@ -2150,6 +2153,53 @@
     <!-- 7. SESSION SUMMARY / CERTIFICATE MODAL -->
   <div class="siem-modal-overlay" id="summary-modal" style="display: none; z-index: 9999;"></div>
 
+  <!-- 8. CANDIDATE ONBOARDING & CLEARANCE REGISTRATION MODAL -->
+  <div class="siem-modal-overlay" id="onboarding-modal" style="display: none; z-index: 9998;">
+    <div class="siem-modal-window" style="width: 520px; border-top: 3px solid #38bdf8;">
+      <div class="siem-modal-header">
+        <div class="siem-modal-title">
+          <span>🛡️ Operator Clearance &amp; Certificate Registration</span>
+        </div>
+        <button class="modal-close-icon" onclick="closeOnboardingModal()">&times;</button>
+      </div>
+      <div class="siem-modal-body" style="padding: 16px 20px;">
+        <div style="font-size: 0.78rem; color: #cbd5e1; margin-bottom: 14px; line-height: 1.45;">
+          Enter your official identity details before starting your session. This name is permanently printed on your official <strong>AEGIS-SOC Certificate of Completion</strong>.
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 0.74rem; font-weight: 700; color: #94a3b8; margin-bottom: 5px;">
+            ANALYST FULL NAME (FOR CERTIFICATE) *
+          </label>
+          <input type="text" id="onboard-candidate-name" placeholder="e.g. Alex Morgan / Yash Ukande" style="width: 100%; background: #050810; border: 1px solid #23314a; border-radius: 4px; padding: 8px 12px; color: #fff; font-size: 0.85rem; outline: none; font-family: var(--font-ui);" />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+          <div>
+            <label style="display: block; font-size: 0.72rem; font-weight: 700; color: #94a3b8; margin-bottom: 5px;">
+              STUDENT / OPERATOR ID
+            </label>
+            <input type="text" id="onboard-candidate-id" placeholder="e.g. SOC-2026-081" style="width: 100%; background: #050810; border: 1px solid #23314a; border-radius: 4px; padding: 7px 10px; color: #fff; font-size: 0.8rem; outline: none; font-family: var(--font-mono);" />
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.72rem; font-weight: 700; color: #94a3b8; margin-bottom: 5px;">
+              INSTITUTION / BATCH
+            </label>
+            <input type="text" id="onboard-candidate-org" placeholder="e.g. Cyber Security Batch A" style="width: 100%; background: #050810; border: 1px solid #23314a; border-radius: 4px; padding: 7px 10px; color: #fff; font-size: 0.8rem; outline: none; font-family: var(--font-ui);" />
+          </div>
+        </div>
+
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 4px; padding: 10px; font-size: 0.72rem; color: #fca5a5; margin-bottom: 14px; line-height: 1.4;">
+          ⚠️ <strong>AUDIT WARNING:</strong> Skipping tasks, using field hints, or running automated aid commands will deduct <strong>negative point penalties</strong> from your score and appear on your final certificate audit.
+        </div>
+      </div>
+      <div class="siem-modal-footer">
+        <button class="terminal-button" onclick="closeOnboardingModal()">Dismiss</button>
+        <button class="terminal-button btn-primary" id="btn-save-onboarding">Confirm &amp; Begin Session ➔</button>
+      </div>
+    </div>
+  </div>
+
   <div id="crt-scanlines"></div>
 
 
@@ -2421,9 +2471,13 @@ alert tcp $EXTERNAL_NET any -> $HTTP_SERVERS 80 (msg:"ET EXPLOIT SQL Injection U
 
     // Session State
     let GameState = {
+      candidateName: localStorage.getItem('aegis_candidate_name') || '',
+      candidateId: localStorage.getItem('aegis_candidate_id') || '',
+      candidateOrg: localStorage.getItem('aegis_candidate_org') || '',
       currentModule: 1, 
       currentTask: 1,   
       score: 0,
+      penalties: 0,
       elapsedTime: 0,   
       sessionTimerInterval: null,
       taskOrder: [], // Dynamic shuffling of task sequences
@@ -5789,14 +5843,8 @@ alert tcp $EXTERNAL_NET any -> $HTTP_SERVERS 80 (msg:"ET EXPLOIT SQL Injection U
 
         task.hintsUsed++;
         
-        let cost = 0;
-        if (task.hintsUsed === 2) {
-          cost = 5;
-          task.points -= 5;
-        } else if (task.hintsUsed === 3) {
-          cost = 10;
-          task.points -= 10;
-        }
+        let cost = task.hintsUsed * 5; // Hint 1: 5 pts, Hint 2: 10 pts, Hint 3: 15 pts
+        GameState.penalties = (GameState.penalties || 0) + cost;
 
         GameState.score = calculateTotalScore();
         UIUpdater.updateHeader();
@@ -5806,7 +5854,7 @@ alert tcp $EXTERNAL_NET any -> $HTTP_SERVERS 80 (msg:"ET EXPLOIT SQL Injection U
         let hintText = configBrief.hints[task.hintsUsed - 1];
         hintText = this.formatHintVariables(hintText, taskId);
 
-        TriageConsole.log(`[+] Hint ${task.hintsUsed} revealed. Cost: -${cost} points.`, "color-cyan");
+        TriageConsole.log(`[-] PENALTY APPLIED: -${cost} pts for requesting Field Hint ${task.hintsUsed}. (Total penalties: -${GameState.penalties} pts)`, "color-amber");
         TriageConsole.log(`HINT: ${hintText}`, "color-amber");
         if (typeof saveProgress === 'function') saveProgress();
       },
@@ -6074,9 +6122,16 @@ Task Commands Reference:
           return;
         }
 
-        if (cmd === 'solve' || cmd === 'solution') {
+        if (cmd === 'solve' || cmd === 'solution' || cmd === 'cheat' || cmd === 'cheats' || cmd === 'bypass') {
           if (typeof autoSolveCurrentTask === 'function') {
             autoSolveCurrentTask();
+          }
+          return;
+        }
+
+        if (cmd === 'autofill' || cmd === 'fill') {
+          if (typeof autoFillCurrentTask === 'function') {
+            autoFillCurrentTask();
           }
           return;
         }
@@ -6109,6 +6164,10 @@ Task Commands Reference:
         }
 
         if (cmd === 'skip') {
+          GameState.penalties = (GameState.penalties || 0) + 15;
+          GameState.score = calculateTotalScore();
+          UIUpdater.updateHeader();
+          this.log(`[-] PENALTY APPLIED: -15 pts for skipping incident without resolution. (Total penalties: -${GameState.penalties} pts)`, "color-red");
           VerificationEngine.jumpToTask('next_uncompleted');
           this.log(`[+] Task skipped. You can revisit it later.`, "color-cyan");
           return;
@@ -6715,7 +6774,7 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       Object.values(GameState.tasks).forEach(t => {
         if (t.completed) sum += t.points;
       });
-      return Math.max(0, sum - (GameState.penalties || 0));
+      return sum - (GameState.penalties || 0);
     }
 
     function isPrivateIP(ip) {
@@ -6771,7 +6830,35 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       },
 
       updateHeader() {
-        document.getElementById('header-score').innerText = `${String(GameState.score).padStart(3, '0')}/3000`;
+        const scoreEl = document.getElementById('header-score');
+        const penBadge = document.getElementById('header-penalty-badge');
+        const hudScore = document.getElementById('hud-score-display');
+        const opNameEl = document.getElementById('header-candidate-name');
+
+        if (opNameEl) {
+          opNameEl.innerText = GameState.candidateName || localStorage.getItem('aegis_candidate_name') || 'ANALYST';
+        }
+
+        const scoreVal = GameState.score;
+        if (scoreEl) {
+          scoreEl.innerText = `${scoreVal}/3000`;
+          scoreEl.style.color = scoreVal < 0 ? 'var(--red)' : (scoreVal > 0 ? 'var(--splunk-green)' : '#cbd5e1');
+        }
+
+        if (penBadge) {
+          if (GameState.penalties > 0) {
+            penBadge.style.display = 'inline';
+            penBadge.innerText = `(-${GameState.penalties} pen)`;
+          } else {
+            penBadge.style.display = 'none';
+          }
+        }
+
+        if (hudScore) {
+          hudScore.innerText = `Score: ${scoreVal}/3000 ${GameState.penalties > 0 ? `(-${GameState.penalties} pen)` : ''}`;
+          hudScore.style.color = scoreVal < 0 ? 'var(--red)' : 'var(--splunk-green)';
+        }
+
         const originalId = GameState.taskOrder ? GameState.taskOrder[GameState.currentTask - 1] : GameState.currentTask;
         const mBrief = taskBriefings[originalId];
         document.getElementById('active-task-header').innerText = `[MODULE ${mBrief.module}: ${getModuleName(mBrief.module)}] // Task ${GameState.currentTask}: ${mBrief.title}`;
@@ -7051,12 +7138,26 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
 
       const skillsHtml = skills.map(s => `<span style="background: rgba(0, 255, 136, 0.1); border: 1px solid var(--green); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; margin-right: 5px; display: inline-block; margin-bottom: 5px; color: var(--green);">✓ ${s}</span>`).join("");
 
-      let userName = "GUEST ANALYST";
-      let btnPrintHtml = `<button class="btn-restart no-print" style="background: var(--gray); color: #fff; cursor: not-allowed;" title="Complete all 150 tasks to unlock certificate.">Print Certificate (Locked)</button>`;
-      
-      if (completedCount >= 150) {
-        userName = prompt("Congratulations on completing the training! Enter your full name for the Certificate of Completion:", "") || "SOC ANALYST";
-        btnPrintHtml = `<button class="btn-restart no-print" id="btn-print-certificate" style="background: var(--green); color: #000; border: none; font-weight: bold; cursor: pointer;" onclick="window.print()">🖨️ Print Certificate (PDF)</button>`;
+      const rawCandidate = GameState.candidateName || localStorage.getItem('aegis_candidate_name');
+      const candidateId = GameState.candidateId || localStorage.getItem('aegis_candidate_id') || 'SOC-ANALYST';
+      const candidateOrg = GameState.candidateOrg || localStorage.getItem('aegis_candidate_org') || 'AEGIS CYBER OPERATIONS';
+
+      let userName = rawCandidate ? rawCandidate.trim().toUpperCase() : "SOC ANALYST";
+      let btnPrintHtml = `<button class="btn-restart no-print" id="btn-print-certificate" style="background: var(--green); color: #000; border: none; font-weight: bold; cursor: pointer; padding: 10px 20px; text-transform: uppercase;" onclick="window.print()">🖨️ Print Certificate (PDF)</button>`;
+
+      if (!rawCandidate) {
+        let inputName = null;
+        try {
+          if (typeof prompt === 'function') {
+            inputName = prompt("Enter your full name for the Certificate of Completion:", "");
+          }
+        } catch (e) {}
+        if (inputName && inputName.trim()) {
+          userName = inputName.trim().toUpperCase();
+          GameState.candidateName = userName;
+          localStorage.setItem('aegis_candidate_name', userName);
+          UIUpdater.updateHeader();
+        }
       }
 
       const hash = `AEGIS-${Math.abs((userName + GameState.score + Date.now()).split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0)).toString(16).toUpperCase()}-${completedCount}`;
@@ -7088,32 +7189,46 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
                   <div style="font-family: 'Montserrat', sans-serif; font-size: 1.1rem; letter-spacing: 6px; color: #718096; text-transform: uppercase; margin-bottom: 15px; font-weight: 600;">AEGIS-SOC Training Platform</div>
                   
                   <h1 style="font-family: 'Cinzel', serif; font-size: 3.8rem; color: #1a202c; margin: 0; letter-spacing: 4px; line-height: 1.1; font-weight: 700;">CERTIFICATE</h1>
-                  <h2 style="font-family: 'Cinzel', serif; font-size: 1.8rem; color: #d4af37; margin: 0 0 35px 0; letter-spacing: 6px; font-weight: 600;">OF COMPLETION</h2>
+                  <h2 style="font-family: 'Cinzel', serif; font-size: 1.8rem; color: #d4af37; margin: 0 0 30px 0; letter-spacing: 6px; font-weight: 600;">OF COMPLETION</h2>
                   
-                  <div style="font-family: 'Pinyon Script', cursive; font-size: 2.2rem; color: #4a5568; margin-bottom: 15px;">This proudly certifies that</div>
+                  <div style="font-family: 'Pinyon Script', cursive; font-size: 2.2rem; color: #4a5568; margin-bottom: 12px;">This proudly certifies that</div>
                   
-                  <div style="font-family: 'Cinzel', serif; font-size: 3.2rem; color: #1a202c; font-weight: 700; border-bottom: 2px solid #d4af37; padding-bottom: 10px; margin: 0 auto 25px auto; width: 75%;">${userName}</div>
+                  <div style="font-family: 'Cinzel', serif; font-size: 3.2rem; color: #1a202c; font-weight: 700; border-bottom: 2px solid #d4af37; padding-bottom: 8px; margin: 0 auto 8px auto; width: 75%;">${userName}</div>
                   
-                  <div style="font-family: 'Montserrat', sans-serif; font-size: 1.05rem; color: #4a5568; line-height: 1.7; max-width: 85%; margin: 0 auto 35px auto; font-weight: 400;">
-                    has successfully completed the intensive Cyber Operations Simulator.<br>
-                    Demonstrating exceptional technical proficiency in SIEM Analysis, Threat Classification,<br>Incident Response, and Network Forensics.
+                  <div style="font-family: 'Share Tech Mono', monospace; font-size: 0.82rem; color: #64748b; margin-bottom: 22px; letter-spacing: 1px;">
+                    OPERATOR ID: <strong style="color: #0f172a;">${candidateId}</strong> &nbsp;|&nbsp; UNIT / BATCH: <strong style="color: #0f172a;">${candidateOrg}</strong>
+                  </div>
+
+                  <div style="font-family: 'Montserrat', sans-serif; font-size: 1.05rem; color: #4a5568; line-height: 1.7; max-width: 85%; margin: 0 auto 28px auto; font-weight: 400;">
+                    has successfully participated in the intensive Cyber Operations Simulator.<br>
+                    Demonstrating technical proficiency in SIEM Analysis, Threat Classification,<br>Incident Response, and Network Forensics.
                   </div>
                   
                   <!-- Metrics Area -->
-                  <div style="display: flex; justify-content: center; gap: 50px; margin-bottom: 35px; font-family: 'Montserrat', sans-serif;">
+                  <div style="display: flex; justify-content: center; gap: 40px; margin-bottom: 25px; font-family: 'Montserrat', sans-serif;">
                     <div style="text-align: center;">
                       <div style="font-size: 1.5rem; font-weight: 600; color: #1a202c;">${completedCount}/150</div>
                       <div style="font-size: 0.7rem; color: #718096; text-transform: uppercase; font-weight: 600; letter-spacing: 2px;">Tasks Verified</div>
                     </div>
                     <div style="text-align: center;">
-                      <div style="font-size: 1.5rem; font-weight: 600; color: #1a202c;">${GameState.score}</div>
+                      <div style="font-size: 1.5rem; font-weight: 600; color: ${GameState.score < 0 ? '#dc2626' : '#1a202c'};">${GameState.score}/3000</div>
                       <div style="font-size: 0.7rem; color: #718096; text-transform: uppercase; font-weight: 600; letter-spacing: 2px;">Score Achieved</div>
+                    </div>
+                    <div style="text-align: center;">
+                      <div style="font-size: 1.5rem; font-weight: 600; color: #dc2626;">-${GameState.penalties || 0} PTS</div>
+                      <div style="font-size: 0.7rem; color: #718096; text-transform: uppercase; font-weight: 600; letter-spacing: 2px;">Penalties (Hints/Skips/Aids)</div>
                     </div>
                     <div style="text-align: center;">
                       <div style="font-size: 1.5rem; font-weight: 600; color: #1a202c;">${m}:${s}</div>
                       <div style="font-size: 0.7rem; color: #718096; text-transform: uppercase; font-weight: 600; letter-spacing: 2px;">Mission Time</div>
                     </div>
                   </div>
+
+                  ${GameState.penalties > 0 ? `
+                  <div style="background: rgba(220, 38, 38, 0.08); border: 1px solid rgba(220, 38, 38, 0.3); border-radius: 4px; padding: 7px 14px; margin: 0 auto 20px auto; width: 75%; font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; color: #b91c1c; text-align: center;">
+                    ⚠️ AUDIT LOG: ${GameState.penalties} points in deductions recorded due to automated aids, hint lookups, or incident skips.
+                  </div>
+                  ` : ''}
                   
                   <!-- Signatures & Date -->
                   <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 85%; margin: 0 auto; font-family: 'Montserrat', sans-serif;">
@@ -7129,7 +7244,7 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
                   </div>
                   
                   <!-- Hash -->
-                  <div style="margin-top: 30px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; color: #a0aec0; letter-spacing: 1px;">
+                  <div style="margin-top: 25px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; color: #a0aec0; letter-spacing: 1px;">
                     VERIFICATION ID: ${hash}
                   </div>
                 </div>
@@ -7168,6 +7283,9 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         });
 
         const data = {
+          candidateName: GameState.candidateName || localStorage.getItem('aegis_candidate_name') || '',
+          candidateId: GameState.candidateId || localStorage.getItem('aegis_candidate_id') || '',
+          candidateOrg: GameState.candidateOrg || localStorage.getItem('aegis_candidate_org') || '',
           currentTask: GameState.currentTask,
           currentModule: GameState.currentModule,
           score: GameState.score,
@@ -7199,6 +7317,19 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         if (!raw) return false;
         const data = JSON.parse(raw);
         if (!data) return false;
+
+        if (data.candidateName) {
+          GameState.candidateName = data.candidateName;
+          localStorage.setItem('aegis_candidate_name', data.candidateName);
+        }
+        if (data.candidateId) {
+          GameState.candidateId = data.candidateId;
+          localStorage.setItem('aegis_candidate_id', data.candidateId);
+        }
+        if (data.candidateOrg) {
+          GameState.candidateOrg = data.candidateOrg;
+          localStorage.setItem('aegis_candidate_org', data.candidateOrg);
+        }
 
         GameState.currentTask = data.currentTask || 1;
         GameState.currentModule = data.currentModule || 1;
@@ -7274,6 +7405,59 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
 
       UIUpdater.init(false);
       LogEngine.init();
+    }
+
+    // ----------------------------------------------------
+    // Operator Onboarding & Clearance Controls
+    // ----------------------------------------------------
+    function openOnboardingModal() {
+      const modal = document.getElementById('onboarding-modal');
+      if (!modal) return;
+      const nameInput = document.getElementById('onboard-candidate-name');
+      const idInput = document.getElementById('onboard-candidate-id');
+      const orgInput = document.getElementById('onboard-candidate-org');
+
+      if (nameInput) nameInput.value = GameState.candidateName || localStorage.getItem('aegis_candidate_name') || '';
+      if (idInput) idInput.value = GameState.candidateId || localStorage.getItem('aegis_candidate_id') || '';
+      if (orgInput) orgInput.value = GameState.candidateOrg || localStorage.getItem('aegis_candidate_org') || '';
+
+      modal.style.display = 'flex';
+      setTimeout(() => { if (nameInput) nameInput.focus(); }, 100);
+    }
+
+    function closeOnboardingModal() {
+      const modal = document.getElementById('onboarding-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function saveOnboardingDetails() {
+      const nameInput = document.getElementById('onboard-candidate-name');
+      const idInput = document.getElementById('onboard-candidate-id');
+      const orgInput = document.getElementById('onboard-candidate-org');
+
+      const nameVal = nameInput ? nameInput.value.trim() : '';
+      const idVal = idInput ? idInput.value.trim() : '';
+      const orgVal = orgInput ? orgInput.value.trim() : '';
+
+      if (!nameVal) {
+        alert('Please enter your full name for the certificate.');
+        if (nameInput) nameInput.focus();
+        return;
+      }
+
+      GameState.candidateName = nameVal;
+      GameState.candidateId = idVal || ('SOC-' + Math.floor(1000 + Math.random() * 9000));
+      GameState.candidateOrg = orgVal || 'CYBER DEFENSE OPERATIONS';
+
+      localStorage.setItem('aegis_candidate_name', GameState.candidateName);
+      localStorage.setItem('aegis_candidate_id', GameState.candidateId);
+      localStorage.setItem('aegis_candidate_org', GameState.candidateOrg);
+
+      closeOnboardingModal();
+      UIUpdater.updateHeader();
+      saveProgress();
+
+      TriageConsole.log(`[+] OPERATOR REGISTERED: ${GameState.candidateName} (ID: ${GameState.candidateId}). Bound to Certificate.`, 'color-green');
     }
 
     // ----------------------------------------------------
@@ -7556,6 +7740,12 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       const brief = taskBriefings[taskId];
       if (!brief) return;
 
+      // Apply penalty for automated assistance
+      GameState.penalties = (GameState.penalties || 0) + 10;
+      GameState.score = calculateTotalScore();
+      UIUpdater.updateHeader();
+      TriageConsole.log(`[-] AUTOMATED AID PENALTY: -10 pts deducted for auto-filling solution command. (Total penalties: -${GameState.penalties} pts)`, 'color-amber');
+
       const sol = getTaskSolution(taskId);
       const input = document.getElementById('case-answer-input');
       const feedbackBox = document.getElementById('dossier-feedback-banner');
@@ -7570,7 +7760,7 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
           feedbackBox.innerHTML = `
             <div class="feedback-icon">⚡</div>
             <div class="feedback-content">
-              <strong style="color: #38bdf8;">Multi-Step Commands Loaded</strong><br>
+              <strong style="color: #38bdf8;">Multi-Step Commands Loaded (-10 pts penalty)</strong><br>
               <span>Commands: <code>${sol.join(' | ')}</code></span><br>
               <span style="color: var(--splunk-green); font-weight: bold;">Click "Auto-Solve &amp; Advance" to run all at once!</span>
             </div>
@@ -7588,8 +7778,8 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
           feedbackBox.innerHTML = `
             <div class="feedback-icon">⚡</div>
             <div class="feedback-content">
-              <strong style="color: #38bdf8;">Verified Command Loaded: <code>${sol}</code></strong><br>
-              <span>${brief.explanation && brief.explanation.context ? brief.explanation.context : 'Standard cybersecurity incident triage rule.'}</span><br>
+              <strong style="color: #38bdf8;">Verified Command Loaded (-10 pts penalty)</strong><br>
+              <span>Command: <code>${sol}</code> &nbsp;|&nbsp; ${brief.explanation && brief.explanation.context ? brief.explanation.context : 'Standard triage rule.'}</span><br>
               <span style="color: var(--splunk-green); font-weight: bold;">Press Enter or click "Submit Analysis" to verify!</span>
             </div>
           `;
@@ -7602,6 +7792,12 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       const taskId = GameState.tasks[stepId] ? (GameState.tasks[stepId].originalId || stepId) : stepId;
       const brief = taskBriefings[taskId];
       if (!brief) return;
+
+      // Apply penalty for automated solve / cheat
+      GameState.penalties = (GameState.penalties || 0) + 20;
+      GameState.score = calculateTotalScore();
+      UIUpdater.updateHeader();
+      TriageConsole.log(`[-] CHEAT / AUTO-SOLVE PENALTY: -20 pts deducted for automated solution bypass. (Total penalties: -${GameState.penalties} pts)`, 'color-red');
 
       const sol = getTaskSolution(taskId);
       TriageConsole.log(`[🚀 AUTO-SOLVE] Executing verified solution for Task ${taskId}: ${brief.title}...`, 'color-amber');
@@ -7839,6 +8035,10 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       });
 
       bind('btn-skip-task', 'click', () => {
+        GameState.penalties = (GameState.penalties || 0) + 15;
+        GameState.score = calculateTotalScore();
+        UIUpdater.updateHeader();
+        TriageConsole.log(`[-] PENALTY APPLIED: -15 pts for skipping incident without investigation. (Total penalties: -${GameState.penalties} pts)`, 'color-red');
         VerificationEngine.jumpToTask('next_uncompleted');
         TriageConsole.log('[+] Incident skipped. You can revisit it later.', 'color-cyan');
       });
@@ -8029,6 +8229,14 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       });
       bind('btn-end-session', 'click', () => endTrainingSession());
 
+      bind('btn-save-onboarding', 'click', () => saveOnboardingDetails());
+      const nameInput = document.getElementById('onboard-candidate-name');
+      if (nameInput) {
+        nameInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') saveOnboardingDetails();
+        });
+      }
+
       document.querySelectorAll('.academy-tab-btn').forEach(btn => {
         btn.onclick = () => openAcademyTab(btn.dataset.tab);
       });
@@ -8048,6 +8256,13 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       if (loaded) {
         TriageConsole.log(`[+] PROGRESS RESTORED: Resuming at Task ${GameState.currentTask}/150.`, "color-green");
         TriageConsole.log(`Current Score: ${GameState.score}/3000. Type 'progress' to review status.`, "color-cyan");
+      }
+
+      // Automatically trigger Candidate Clearance / Name Entry before starting session if not registered
+      if (!localStorage.getItem('aegis_candidate_name')) {
+        setTimeout(() => {
+          openOnboardingModal();
+        }, 350);
       }
 
       // Auto-save every 15 seconds
