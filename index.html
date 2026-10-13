@@ -934,6 +934,297 @@
       box-shadow: 0 0 10px rgba(16, 185, 129, 0.35);
     }
 
+    /* Case Dossier Progress HUD & Workflow Tracker */
+    .dossier-progress-hud {
+      background: linear-gradient(180deg, #101726, #0c121e) !important;
+      border: 1px solid #1e293b !important;
+      border-left: 3px solid var(--blue) !important;
+      padding: 10px 12px;
+    }
+    .dossier-module-pill {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 2px 7px;
+      border-radius: 3px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .dossier-task-pill {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 2px 7px;
+      border-radius: 3px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+    .dossier-nav-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0;
+    }
+    .dossier-nav-btn {
+      background: #111827;
+      border: 1px solid #374151;
+      color: #d1d5db;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .dossier-nav-btn:hover {
+      background: #1f2937;
+      border-color: #4b5563;
+      color: #fff;
+    }
+    .dossier-nav-btn.primary {
+      background: rgba(16, 185, 129, 0.18);
+      border-color: var(--splunk-green);
+      color: #10b981;
+    }
+    .dossier-nav-btn.primary:hover {
+      background: var(--splunk-green);
+      color: #040910;
+    }
+    .dossier-progress-track {
+      flex: 1;
+      height: 6px;
+      background: #0b0f19;
+      border-radius: 3px;
+      overflow: hidden;
+      border: 1px solid #1e293b;
+    }
+    .dossier-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #0284c7, #10b981);
+      transition: width 0.3s ease;
+    }
+    .dossier-pct-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #38bdf8;
+      font-family: var(--font-mono);
+      min-width: 38px;
+      text-align: right;
+    }
+
+    .soc-pipeline-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin: 8px 0 6px 0;
+    }
+    .pipeline-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4px 2px;
+      background: #080c14;
+      border: 1px solid #1e293b;
+      border-radius: 3px;
+      font-size: 0.62rem;
+      color: #64748b;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+    .pipeline-step .step-num {
+      font-weight: 800;
+      font-size: 0.65rem;
+      margin-bottom: 1px;
+    }
+    .pipeline-step.completed {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.08);
+      color: #10b981;
+    }
+    .pipeline-step.active {
+      border-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      font-weight: 700;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
+    }
+
+    .where-work-happens-banner {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px dashed #334155;
+      border-radius: 4px;
+      padding: 6px 8px;
+      font-size: 0.69rem;
+      color: #94a3b8;
+      line-height: 1.35;
+      margin-top: 4px;
+    }
+
+    /* Live Feedback Alert Box inside Case Dossier */
+    .dossier-feedback-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 4px;
+      font-size: 0.74rem;
+      line-height: 1.35;
+      margin-top: 4px;
+      margin-bottom: 6px;
+      transition: all 0.25s ease;
+    }
+    .dossier-feedback-box.info {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid #1e293b;
+      color: #cbd5e1;
+    }
+    .dossier-feedback-box.success {
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid #10b981;
+      color: #ecfdf5;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+    }
+    .dossier-feedback-box.error {
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid #ef4444;
+      color: #fee2e2;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+    }
+    .dossier-feedback-box.solution {
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid #38bdf8;
+      color: #f0f9ff;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+    }
+    .feedback-icon {
+      font-size: 1rem;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .feedback-content {
+      flex: 1;
+    }
+    .btn-dossier-next {
+      background: #10b981;
+      color: #020617;
+      border: none;
+      font-weight: 700;
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+    }
+    .btn-dossier-next:hover {
+      opacity: 0.9;
+    }
+    .btn-dossier-expl {
+      background: #1e293b;
+      color: #38bdf8;
+      border: 1px solid #38bdf8;
+      font-weight: 600;
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .btn-dossier-expl:hover {
+      background: #38bdf8;
+      color: #020617;
+    }
+
+    /* Active Incident Correlator in Telemetry Pane */
+    .active-incident-correlator {
+      background: #090e18;
+      border-bottom: 1px solid #1a263c;
+      padding: 5px 12px;
+      font-size: 0.69rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .correlator-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 6px #38bdf8;
+      animation: pulse-dot 1.8s infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Curriculum Progress List */
+    .task-checklist {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .task-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid #1e293b;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .task-item:hover {
+      background: rgba(30, 41, 59, 0.8);
+      border-color: #38bdf8;
+      color: #f1f5f9;
+    }
+    .task-item.active {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: #38bdf8;
+      color: #38bdf8;
+      font-weight: 600;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    }
+    .task-item.verified {
+      background: rgba(16, 185, 129, 0.08);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #10b981;
+    }
+    .badge-done {
+      background: rgba(16, 185, 129, 0.2);
+      color: #10b981;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 0.64rem;
+      font-weight: 700;
+    }
+    .badge-active {
+      background: rgba(56, 189, 248, 0.25);
+      color: #38bdf8;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 0.64rem;
+      font-weight: 700;
+    }
+    .badge-pending {
+      background: rgba(51, 65, 85, 0.4);
+      color: #64748b;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 0.64rem;
+    }
+
     /* CLI Terminal Tab */
     .terminal-view-container {
       flex: 1;
@@ -1443,6 +1734,11 @@
         </div>
       </div>
 
+      <div class="active-incident-correlator" id="active-incident-correlator">
+        <span class="correlator-dot"></span>
+        <span>TELEMETRY CORRELATION STREAM: <strong>Task <span id="corr-task-id">1</span> (<span id="corr-task-name">Perimeter Attack Vector</span>)</strong> — Telemetry logs below correlate to active case objective</span>
+      </div>
+
       <div class="log-table-wrapper" id="log-table-wrapper">
         <div class="log-feed-header-row">
           <span></span>
@@ -1470,6 +1766,54 @@
       <!-- TAB 1: INCIDENT CASE DOSSIER -->
       <div class="workbench-tab-content" id="wb-content-dossier">
         <div class="dossier-view-container">
+
+          <!-- SOC INCIDENT LIFECYCLE & PROGRESS HUD -->
+          <div class="dossier-card dossier-progress-hud">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <span class="dossier-module-pill" id="hud-module-badge">MODULE 1 // RECONNAISSANCE</span>
+                <span class="dossier-task-pill" id="hud-task-number">TASK 1 OF 150</span>
+              </div>
+              <div style="font-size: 0.76rem; font-weight: bold; color: var(--splunk-green);" id="hud-score-display">
+                Score: 000/3000
+              </div>
+            </div>
+
+            <!-- In-Dossier Quick Navigation -->
+            <div class="dossier-nav-bar">
+              <button type="button" class="dossier-nav-btn" id="dossier-prev-btn" title="Go to previous task">⬅ Prev</button>
+              <div class="dossier-progress-track">
+                <div class="dossier-progress-fill" id="hud-progress-fill" style="width: 0%;"></div>
+              </div>
+              <span class="dossier-pct-label" id="hud-pct-label">0.0%</span>
+              <button type="button" class="dossier-nav-btn primary" id="dossier-next-btn" title="Advance to next task">Next ➔</button>
+            </div>
+
+            <!-- 4-Stage SOC Pipeline Breadcrumb -->
+            <div class="soc-pipeline-steps" id="soc-pipeline-steps">
+              <div class="pipeline-step completed" id="pipe-step-1">
+                <span class="step-num">1</span>
+                <span class="step-label">Telemetry Ingest</span>
+              </div>
+              <div class="pipeline-step completed" id="pipe-step-2">
+                <span class="step-num">2</span>
+                <span class="step-label">Sensor Correlation</span>
+              </div>
+              <div class="pipeline-step active" id="pipe-step-3">
+                <span class="step-num">3</span>
+                <span class="step-label">Analysis &amp; Triage ⚡</span>
+              </div>
+              <div class="pipeline-step pending" id="pipe-step-4">
+                <span class="step-num">4</span>
+                <span class="step-label">Active Mitigation 🔒</span>
+              </div>
+            </div>
+
+            <div class="where-work-happens-banner" id="where-work-happens-banner">
+              📍 <strong>Where You Are Working:</strong> Investigate telemetry logs on the left ➔ Submit findings or auto-fill below ➔ Progress updates automatically.
+            </div>
+          </div>
+
           <div class="dossier-card">
             <div class="dossier-card-title">🎯 Investigation Target & Scope</div>
             <div class="objective-box" id="objective-desc">
@@ -1512,6 +1856,16 @@
               <div style="font-size: 0.72rem; color: var(--text-dim);">
                 Execute findings via the input below or type commands directly into the Analyst CLI tab:
               </div>
+
+              <!-- LIVE STATUS / FEEDBACK BANNER -->
+              <div id="dossier-feedback-banner" class="dossier-feedback-box info">
+                <div class="feedback-icon" id="feedback-icon">📍</div>
+                <div class="feedback-content" id="feedback-content">
+                  <strong>Current Objective:</strong> Inspect scope above &amp; submit analysis.<br>
+                  <span style="color: var(--text-dim); font-size: 0.7rem;">Type your answer below or click <strong>⚡ Auto-Fill Solution</strong>.</span>
+                </div>
+              </div>
+
               <div class="answer-input-row">
                 <input type="text" class="answer-text-input" id="case-answer-input" placeholder="e.g. 198.51.100.12 or scan 10.142.12.15..." />
                 <button class="btn-submit-answer" id="btn-submit-case-answer">Submit Analysis</button>
@@ -6201,6 +6555,19 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
             const firstLine = brief.prompt.split('\n')[0];
             TriageConsole.log(`[?] Expected format: ${firstLine}`, "color-gray");
           }
+          const feedbackBox = document.getElementById('dossier-feedback-banner');
+          if (feedbackBox) {
+            feedbackBox.className = 'dossier-feedback-box error';
+            const firstLine = brief && brief.prompt ? brief.prompt.split('\n')[0] : 'Check syntax format';
+            feedbackBox.innerHTML = `
+              <div class="feedback-icon">❌</div>
+              <div class="feedback-content">
+                <strong style="color: #ef4444;">Analysis Mismatch — Try Again</strong><br>
+                <span>Submitted: <code>${fullCommand}</code> | Expected: <code>${firstLine}</code></span><br>
+                <span style="color: #fcd34d;">Tip: Click <strong>⚡ Auto-Fill Solution</strong> below to reveal the exact command!</span>
+              </div>
+            `;
+          }
         }
       },
 
@@ -6223,6 +6590,17 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
           this.finalizeTaskVerification();
         } else {
           TriageConsole.log(`[-] INCORRECT IP blocked. This is not the primary threat source. Attack continues!`, "color-red");
+          const feedbackBox = document.getElementById('dossier-feedback-banner');
+          if (feedbackBox) {
+            feedbackBox.className = 'dossier-feedback-box error';
+            feedbackBox.innerHTML = `
+              <div class="feedback-icon">🚨</div>
+              <div class="feedback-content">
+                <strong style="color: #ef4444;">Containment Failed: Incorrect IP ${blockedIp}</strong><br>
+                <span>The attack is ongoing! Block the active attacker IP highlighted above.</span>
+              </div>
+            `;
+          }
         }
       },
 
@@ -6251,6 +6629,31 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         const btnExpl = document.getElementById('btn-view-explanation');
         if (btnExpl) {
           btnExpl.style.display = 'inline-block';
+        }
+
+        // Live visual celebration banner inside Case Dossier
+        const feedbackBox = document.getElementById('dossier-feedback-banner');
+        if (feedbackBox) {
+          feedbackBox.className = 'dossier-feedback-box success';
+          feedbackBox.innerHTML = `
+            <div class="feedback-icon">🎉</div>
+            <div class="feedback-content">
+              <strong style="color: var(--splunk-green); font-size: 0.8rem;">OBJECTIVE VERIFIED &amp; SOLVED! (+${task.points} pts)</strong><br>
+              <span>Task ${taskId}: ${task.name} completed! Total Score: <strong>${GameState.score}/3000</strong></span>
+              <div style="display: flex; gap: 8px; margin-top: 6px;">
+                <button type="button" class="btn-dossier-next" id="btn-dossier-feedback-next" onclick="VerificationEngine.jumpToTask('next_uncompleted')">Next Task ➔</button>
+                <button type="button" class="btn-dossier-expl" onclick="showExplanationModal(${taskId})">Walkthrough 📖</button>
+              </div>
+              <div style="font-size: 0.68rem; color: #a7f3d0; margin-top: 4px;" id="dossier-advance-msg">Advancing to next task in 2s...</div>
+            </div>
+          `;
+          if (window.dossierAdvanceTimer) clearTimeout(window.dossierAdvanceTimer);
+          window.dossierAdvanceTimer = setTimeout(() => {
+            const msg = document.getElementById('dossier-advance-msg');
+            if (msg && GameState.currentTask === taskId) {
+              VerificationEngine.jumpToTask('next_uncompleted');
+            }
+          }, 2000);
         }
         
         if (typeof saveProgress === 'function') saveProgress();
@@ -6404,8 +6807,78 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         const stepId = GameState.currentTask;
         const taskId = GameState.tasks[stepId] ? GameState.tasks[stepId].originalId || stepId : stepId;
         const brief = taskBriefings[taskId];
+        if (!brief) return;
         
-        document.getElementById('current-module-badge').innerText = `M${brief.module}`;
+        const modBadge = document.getElementById('current-module-badge');
+        if (modBadge) modBadge.innerText = `M${brief.module}`;
+
+        // Synchronize Case Dossier Progress HUD
+        const completedCount = Object.values(GameState.tasks).filter(t => t.completed).length;
+        const progressPercent = ((completedCount / 150) * 100).toFixed(1);
+        
+        const hudMod = document.getElementById('hud-module-badge');
+        if (hudMod) hudMod.innerText = `MODULE ${brief.module} // ${getModuleName(brief.module).toUpperCase()}`;
+        
+        const hudTask = document.getElementById('hud-task-number');
+        if (hudTask) hudTask.innerText = `TASK ${stepId} OF 150`;
+
+        const hudScore = document.getElementById('hud-score-display');
+        if (hudScore) hudScore.innerText = `Score: ${String(GameState.score).padStart(3, '0')}/3000`;
+
+        const hudFill = document.getElementById('hud-progress-fill');
+        if (hudFill) hudFill.style.width = `${progressPercent}%`;
+
+        const hudPct = document.getElementById('hud-pct-label');
+        if (hudPct) hudPct.innerText = `${progressPercent}%`;
+
+        // Update Telemetry active incident correlation indicator
+        const corrId = document.getElementById('corr-task-id');
+        if (corrId) corrId.innerText = stepId;
+        const corrName = document.getElementById('corr-task-name');
+        if (corrName) corrName.innerText = brief.title;
+
+        // Update pipeline step states
+        const pipe1 = document.getElementById('pipe-step-1');
+        const pipe2 = document.getElementById('pipe-step-2');
+        const pipe3 = document.getElementById('pipe-step-3');
+        const pipe4 = document.getElementById('pipe-step-4');
+        if (pipe1 && pipe2 && pipe3 && pipe4) {
+          pipe1.className = stepId > 5 ? 'pipeline-step completed' : 'pipeline-step active';
+          pipe2.className = stepId > 15 ? 'pipeline-step completed' : (stepId > 5 ? 'pipeline-step active' : 'pipeline-step pending');
+          pipe3.className = stepId > 75 ? 'pipeline-step completed' : (stepId > 15 ? 'pipeline-step active' : 'pipeline-step pending');
+          pipe4.className = stepId > 75 ? 'pipeline-step active' : 'pipeline-step pending';
+        }
+
+        // Update Dossier Feedback Banner
+        const feedbackBox = document.getElementById('dossier-feedback-banner');
+        const isCurrentDone = GameState.tasks[stepId] && GameState.tasks[stepId].completed;
+        if (feedbackBox) {
+          if (isCurrentDone) {
+            feedbackBox.className = 'dossier-feedback-box success';
+            feedbackBox.innerHTML = `
+              <div class="feedback-icon">✓</div>
+              <div class="feedback-content">
+                <strong style="color: var(--splunk-green);">Task ${stepId} (${brief.title}) is Already Solved!</strong><br>
+                <span>Points Earned: ${GameState.tasks[stepId].points} pts. Click <strong>Next ➔</strong> to continue or review walkthrough.</span>
+                <div style="display: flex; gap: 8px; margin-top: 6px;">
+                  <button type="button" class="btn-dossier-next" onclick="VerificationEngine.jumpToTask('next_uncompleted')">Next Task ➔</button>
+                  <button type="button" class="btn-dossier-expl" onclick="showExplanationModal(${taskId})">Walkthrough 📖</button>
+                </div>
+              </div>
+            `;
+          } else {
+            feedbackBox.className = 'dossier-feedback-box info';
+            const promptFirstLine = brief.prompt ? brief.prompt.split('\n')[0] : 'Submit findings below';
+            feedbackBox.innerHTML = `
+              <div class="feedback-icon">🎯</div>
+              <div class="feedback-content">
+                <strong>Active Objective (Task ${stepId}):</strong> ${brief.title}<br>
+                <span style="color: var(--text-dim); font-size: 0.72rem;">Expected Format: <code>${promptFirstLine}</code></span><br>
+                <span style="color: #38bdf8; font-size: 0.7rem;">Enter your finding below or click <strong>⚡ Auto-Fill Solution</strong>.</span>
+              </div>
+            `;
+          }
+        }
         
         let descText = brief.desc;
         if (taskId === 51) {
@@ -6445,6 +6918,7 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
 
       renderProgressList() {
         const checklist = document.getElementById('task-checklist-ui');
+        if (!checklist) return;
         checklist.innerHTML = '';
         
         const startIdx = (GameState.currentModule - 1) * 25 + 1;
@@ -6454,15 +6928,20 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
           const t = GameState.tasks[i];
           if (!t) continue;
           const item = document.createElement('li');
-          item.className = `task-item ${i === GameState.currentTask ? 'active' : ''} ${t.completed ? 'verified' : ''}`;
-          item.style.cursor = "pointer";
+          const isCurrent = (i === GameState.currentTask);
+          item.className = `task-item ${isCurrent ? 'active' : ''} ${t.completed ? 'verified' : ''}`;
           
-          let marker = '[ ]';
-          if (t.completed) marker = '[✓]';
-          else if (i === GameState.currentTask) marker = '[>]';
-          else if (t.timeStarted > 0) marker = '[S]';
+          let badgeHtml = '<span class="badge-pending">PENDING</span>';
+          if (t.completed) {
+            badgeHtml = '<span class="badge-done">✓ SOLVED</span>';
+          } else if (isCurrent) {
+            badgeHtml = '<span class="badge-active">⚡ ACTIVE</span>';
+          }
           
-          item.innerText = `${marker} Task ${i}: ${t.name}`;
+          item.innerHTML = `
+            <span><strong>Task ${i}:</strong> ${t.name}</span>
+            ${badgeHtml}
+          `;
           
           item.onclick = () => {
             VerificationEngine.jumpToTask(i);
@@ -7079,12 +7558,24 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
 
       const sol = getTaskSolution(taskId);
       const input = document.getElementById('case-answer-input');
+      const feedbackBox = document.getElementById('dossier-feedback-banner');
 
       if (Array.isArray(sol)) {
         if (input) input.value = sol[0];
         TriageConsole.log(`[⚡ AUTO-FILL] Task ${taskId}: Multi-step triage required.`, 'color-cyan');
         sol.forEach(cmd => TriageConsole.log(`   👉 ${cmd}`, 'color-amber'));
         TriageConsole.log(`[*] Loaded first command into input. Click "Submit Analysis" or "Auto-Solve & Advance".`, 'color-green');
+        if (feedbackBox) {
+          feedbackBox.className = 'dossier-feedback-box solution';
+          feedbackBox.innerHTML = `
+            <div class="feedback-icon">⚡</div>
+            <div class="feedback-content">
+              <strong style="color: #38bdf8;">Multi-Step Commands Loaded</strong><br>
+              <span>Commands: <code>${sol.join(' | ')}</code></span><br>
+              <span style="color: var(--splunk-green); font-weight: bold;">Click "Auto-Solve &amp; Advance" to run all at once!</span>
+            </div>
+          `;
+        }
       } else if (sol) {
         if (input) input.value = sol;
         TriageConsole.log(`[⚡ AUTO-FILL] Task ${taskId} (${brief.title}): Loaded command '${sol}'`, 'color-cyan');
@@ -7092,6 +7583,17 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
           TriageConsole.log(`[💡 CONCEPT] ${brief.explanation.context}`, 'color-gray');
         }
         TriageConsole.log(`[*] Click "Submit Analysis" or hit Enter to complete this case!`, 'color-green');
+        if (feedbackBox) {
+          feedbackBox.className = 'dossier-feedback-box solution';
+          feedbackBox.innerHTML = `
+            <div class="feedback-icon">⚡</div>
+            <div class="feedback-content">
+              <strong style="color: #38bdf8;">Verified Command Loaded: <code>${sol}</code></strong><br>
+              <span>${brief.explanation && brief.explanation.context ? brief.explanation.context : 'Standard cybersecurity incident triage rule.'}</span><br>
+              <span style="color: var(--splunk-green); font-weight: bold;">Press Enter or click "Submit Analysis" to verify!</span>
+            </div>
+          `;
+        }
       }
     }
 
@@ -7370,6 +7872,16 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
 
       bind('btn-quick-solve', 'click', () => {
         autoSolveCurrentTask();
+      });
+
+      bind('dossier-prev-btn', 'click', () => {
+        if (GameState.currentTask > 1) {
+          VerificationEngine.jumpToTask(GameState.currentTask - 1);
+        }
+      });
+
+      bind('dossier-next-btn', 'click', () => {
+        VerificationEngine.jumpToTask('next_uncompleted');
       });
 
       bind('btn-run-query', 'click', () => {
