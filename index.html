@@ -1272,7 +1272,15 @@
         THREAT: <span id="header-threat" class="threat-badge threat-low">LOW</span>
       </div>
       <div class="telemetry-chip">
+        ALERTS: <strong id="header-alerts" style="color: var(--amber);">0</strong>
+      </div>
+      <div class="telemetry-chip">
         SESSION: <strong id="header-timer" style="color: var(--blue);">00:00</strong>
+      </div>
+      <div class="telemetry-chip" title="Progress" style="width: 70px;">
+        <div style="background: #1e293b; height: 6px; border-radius: 3px; overflow: hidden; width: 100%;">
+          <div id="progfill" style="width: 0%; height: 100%; background: var(--splunk-green); transition: width 0.3s;"></div>
+        </div>
       </div>
       <button class="btn-end-session-chip" id="btn-end-session">End Session</button>
     </div>
@@ -1423,6 +1431,22 @@
             <div class="objective-box" id="objective-desc">
               Analyzing perimeter telemetry. Identify the inbound attack vector.
             </div>
+            <div id="containment-status-box" style="display: none; margin-top: 10px; background: rgba(239, 68, 68, 0.12); border: 1px solid #ef4444; border-radius: 4px; padding: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="color: #ef4444; font-weight: bold; font-size: 0.76rem;">🚨 ACTIVE BREACH CONTAINMENT: <span id="containment-target-ip" style="color: #fff; font-family: var(--font-mono);"></span></span>
+                <span id="containment-seconds" style="color: #f59e0b; font-weight: bold; font-family: var(--font-mono);">15s</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #cbd5e1; margin-bottom: 4px;">
+                <span>System Integrity:</span>
+                <span id="compromise-ratio" style="color: #ef4444; font-weight: bold;">0/3 compromised</span>
+              </div>
+              <div style="width: 100%; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden;">
+                <div id="contain-fill-progress" style="width: 0%; height: 100%; background: #ef4444; transition: width 0.3s;"></div>
+              </div>
+              <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 6px;">
+                Action Required: Run <code>block &lt;attacker-ip&gt;</code> before controllers are compromised!
+              </div>
+            </div>
             <div class="dossier-asset-meta">
               <div class="asset-meta-item">Asset: <strong>web-prod-01</strong></div>
               <div class="asset-meta-item">IP: <strong>10.142.12.15</strong></div>
@@ -1490,6 +1514,9 @@
           </div>
           <div id="alert-queue-list">
             <!-- Populated by AlertEngine -->
+          </div>
+          <div id="selected-alert-detail" class="selected-alert-detail-box" style="margin-top: 10px; padding: 10px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; font-size: 0.74rem; line-height: 1.5; color: var(--text-sub);">
+            No alert selected.<br>Click an alert in the queue to load details.
           </div>
           <div class="alert-triage-actions" style="margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px;">
             <button class="alert-triage-btn investigate" id="btn-triage-investigate">🔍 Investigate Host</button>
@@ -1583,10 +1610,10 @@
             <button class="academy-tab-btn active" data-tab="arch">1. Core Architecture</button>
             <button class="academy-tab-btn" data-tab="methods">2. Detection Methods</button>
             <button class="academy-tab-btn" data-tab="snort">3. Snort / Suricata Rules</button>
-            <button class="academy-tab-btn" data-tab="host">4. Host-Based IDPS & Sysmon</button>
-            <button class="academy-tab-btn" data-tab="response">5. Active Response & Shunning</button>
+            <button class="academy-tab-btn" data-tab="hidps">4. Host-Based IDPS & Sysmon</button>
+            <button class="academy-tab-btn" data-tab="ips">5. Active Response & Shunning</button>
             <button class="academy-tab-btn" data-tab="siem">6. SIEM Correlation & Tuning</button>
-            <button class="academy-tab-btn" data-tab="evasion">7. Evasion Techniques</button>
+            <button class="academy-tab-btn" data-tab="tuning">7. Detection Engineering & Tuning</button>
           </div>
           <div class="academy-article" id="academy-content-pane">
             <!-- Populated dynamically -->
@@ -1617,11 +1644,11 @@
           <thead>
             <tr>
               <th>SID</th>
-              <th>ACTION</th>
-              <th>PROTO</th>
-              <th>SRC ➔ DST</th>
+              <th>SENSOR / ENGINE</th>
+              <th>PROTO / PORT</th>
               <th>SIGNATURE MESSAGE / CLASSTYPE</th>
-              <th>REV</th>
+              <th>ACTION</th>
+              <th>SEVERITY</th>
             </tr>
           </thead>
           <tbody id="active-rules-tbody">
@@ -1718,39 +1745,8 @@
     </div>
   </div>
 
-    <!-- Enterprise Compatibility Bridge (Ensures 100% Zero-Error Execution) -->
-  <div id="siem-compat-bridge" style="display: none;">
-    <input type="text" id="filter-search-input" />
-    <div id="log-feed-scroll"></div>
-    <div id="selected-alert-detail"></div>
-    <div id="alert-queue-count"></div>
-    <div id="header-alerts"></div>
-    <div id="progfill"></div>
-    <div id="header-saved"></div>
-    <div id="pane-explorer"></div>
-    <div id="pane-fields"></div>
-    <div id="panel-logs"></div>
-    <div id="panel-tasks"></div>
-    <div id="panel-alerts"></div>
-    <div id="panel-bottom-console"></div>
-    <div id="containment-status-box">
-      <span id="compromise-ratio"></span>
-      <div id="contain-fill-progress"></div>
-      <span id="containment-target-ip"></span>
-      <span id="containment-seconds"></span>
-    </div>
-    <div id="report-modal">
-      <textarea id="report-findings"></textarea>
-      <textarea id="report-evidence"></textarea>
-      <select id="report-phase"><option value="Analysis">Analysis</option></select>
-    </div>
-    <div id="summary-modal">
-      <span id="summary-session-id"></span>
-      <span id="summary-final-score"></span>
-      <span id="summary-total-time"></span>
-      <span id="summary-hints-used"></span>
-    </div>
-  </div>
+    <!-- 7. SESSION SUMMARY / CERTIFICATE MODAL -->
+  <div class="siem-modal-overlay" id="summary-modal" style="display: none; z-index: 9999;"></div>
 
   <div id="crt-scanlines"></div>
 
@@ -4713,17 +4709,53 @@ alert tcp $EXTERNAL_NET any -> $HTTP_SERVERS 80 (msg:"ET EXPLOIT SQL Injection U
 
       resetFilters() {
         this.activeFilterFn = null;
+        this.filterQuery = '';
+        this.activeSensor = 'ALL';
         this.renderFilteredLogs();
       },
 
-      applySearchQuery(query) {
-        const q = query.toLowerCase();
+      applySearchQuery(rawQuery) {
+        if (!rawQuery || !rawQuery.trim()) {
+          this.resetFilters();
+          return;
+        }
+        const q = rawQuery.trim();
+        
+        // Extract key-value filters if present:
+        const sensorMatch = q.match(/(?:observer\.sensor|sensor)\s*=\s*["']?([A-Za-z0-9_-]+)["']?/i);
+        const actionMatch = q.match(/(?:rule\.action|action)\s*=\s*["']?([A-Za-z0-9_-]+)["']?/i);
+        const ipMatch = q.match(/(?:source\.ip|src_ip|ip)\s*=\s*["']?([0-9.]+?)["']?/i);
+        const portMatch = q.match(/(?:dest_port|port)\s*=\s*(\d+)/i);
+        
+        // Extract general search terms by stripping common SPL syntax
+        let stripped = q
+          .replace(/index\s*=\s*[^\s|()]+/gi, '')
+          .replace(/sourcetype\s*=\s*[^\s|()]+/gi, '')
+          .replace(/\|\s*stats[^\n\r|]*/gi, '')
+          .replace(/\|\s*table[^\n\r|]*/gi, '')
+          .replace(/\|\s*head[^\n\r|]*/gi, '')
+          .replace(/observer\.sensor\s*=\s*["']?[^"'\s]+["']?/gi, '')
+          .replace(/rule\.action\s*=\s*["']?[^"'\s]+["']?/gi, '')
+          .replace(/source\.ip\s*=\s*["']?[^"'\s]+["']?/gi, '')
+          .replace(/dest_port\s*=\s*\d+/gi, '')
+          .replace(/[=()"'*]/g, ' ')
+          .replace(/\b(?:AND|OR|NOT)\b/gi, ' ')
+          .trim();
+
+        const keywords = stripped.split(/\s+/).filter(w => w.length > 1).map(w => w.toLowerCase());
+
         this.applyFilter(log => {
-          return (log.desc && log.desc.toLowerCase().includes(q)) ||
-                 (log.ip && log.ip.includes(q)) ||
-                 (log.sensor && log.sensor.toLowerCase().includes(q)) ||
-                 (log.action && log.action.toLowerCase().includes(q)) ||
-                 (log.rule_id && log.rule_id.toLowerCase().includes(q));
+          if (sensorMatch && log.sensor.toUpperCase() !== sensorMatch[1].toUpperCase()) return false;
+          if (actionMatch && log.action.toUpperCase() !== actionMatch[1].toUpperCase()) return false;
+          if (ipMatch && log.ip !== ipMatch[1] && log.dst_ip !== ipMatch[1]) return false;
+          if (portMatch && String(log.port) !== portMatch[1]) return false;
+
+          if (keywords.length > 0) {
+            const haystack = `${log.desc} ${log.ip} ${log.dst_ip || ''} ${log.sensor} ${log.action} ${log.rule_id || ''} ${log.type || ''}`.toLowerCase();
+            const hasAny = keywords.some(k => haystack.includes(k));
+            if (!hasAny) return false;
+          }
+          return true;
         });
       },
 
@@ -4738,7 +4770,7 @@ alert tcp $EXTERNAL_NET any -> $HTTP_SERVERS 80 (msg:"ET EXPLOIT SQL Injection U
           });
         });
 
-        const searchInput = document.getElementById('filter-search-input');
+        const searchInput = document.getElementById('siem-spl-input');
         if (searchInput) {
           searchInput.addEventListener('input', (e) => {
             this.filterQuery = e.target.value.toLowerCase().trim();
@@ -4887,11 +4919,14 @@ alert tcp $EXTERNAL_NET any -> $HTTP_SERVERS 80 (msg:"ET EXPLOIT SQL Injection U
       },
 
       matchesFilter(log) {
+        if (this.activeFilterFn && !this.activeFilterFn(log)) {
+          return false;
+        }
         if (this.activeSensor !== 'ALL' && log.sensor !== this.activeSensor) {
           return false;
         }
         if (this.filterQuery) {
-          const text = (log.ip + ' ' + (log.dst_ip || '') + ' ' + log.desc + ' ' + log.type + ' ' + (log.rule_id || '') + ' ' + log.sensor).toLowerCase();
+          const text = (log.ip + ' ' + (log.dst_ip || '') + ' ' + log.desc + ' ' + log.type + ' ' + (log.rule_id || '') + ' ' + log.sensor + ' ' + log.action).toLowerCase();
           if (!text.includes(this.filterQuery)) return false;
         }
         return true;
@@ -4934,7 +4969,7 @@ alert tcp $EXTERNAL_NET any -> $HTTP_SERVERS 80 (msg:"ET EXPLOIT SQL Injection U
         drawer.innerHTML = `
           <div class="drawer-actions-row">
             <button class="drawer-btn" onclick="filterByExactIP('${data.ip}')">+ Filter IP in Search</button>
-            <button class="drawer-btn" onclick="navigator.clipboard.writeText('${data.ip}'); TriageConsole.log('[+] Copied IOC: ${data.ip}', 'color-green');">📋 Copy IOC</button>
+            <button class="drawer-btn" onclick="copyToClipboard('${data.ip}')">📋 Copy IOC</button>
             <button class="drawer-btn shun" onclick="TriageConsole.executeCommand('block', ['${data.ip}'], 'block ${data.ip}');">🚨 Deploy Inline IPS Shun</button>
             <button class="drawer-btn" onclick="openLogInspector(${index})">🔬 Full Hex Packet Inspector</button>
           </div>
@@ -4951,7 +4986,7 @@ alert tcp $EXTERNAL_NET any -> $HTTP_SERVERS 80 (msg:"ET EXPLOIT SQL Injection U
 
         this.logFeedEl.appendChild(rowContainer);
 
-        const container = document.getElementById('log-table-wrapper') || document.getElementById('log-feed-scroll');
+        const container = document.getElementById('log-table-wrapper');
         if (container) container.scrollTop = container.scrollHeight;
 
         while (this.logFeedEl.childElementCount > this.maxLogs) {
@@ -5318,7 +5353,9 @@ alert tcp $EXTERNAL_NET any -> $HTTP_SERVERS 80 (msg:"ET EXPLOIT SQL Injection U
 
       updateQueueCount() {
         const activeAlerts = Object.values(this.alerts).filter(a => a.status !== "RESOLVED" && a.status !== "FALSE_POSITIVE");
-        document.getElementById('alert-queue-count').innerText = `${activeAlerts.length} Active`;
+        const qCount = document.getElementById('alert-queue-count'); if (qCount) qCount.innerText = `${activeAlerts.length} Active`;
+        const topCount = document.getElementById('top-alerts-count'); if (topCount) topCount.innerText = activeAlerts.length;
+        const hAlerts = document.getElementById('header-alerts'); if (hAlerts) hAlerts.innerText = activeAlerts.length;
         document.getElementById('header-alerts').innerText = activeAlerts.length;
         if (UIUpdater && typeof UIUpdater.updateHeader === 'function') {
           UIUpdater.updateHeader();
@@ -5469,14 +5506,14 @@ alert tcp $EXTERNAL_NET any -> $HTTP_SERVERS 80 (msg:"ET EXPLOIT SQL Injection U
         this.outputEl.innerHTML = '';
       },
 
-      handleInput() {
-        const inputRaw = this.inputEl.value;
+      handleInput(customInput) {
+        const inputRaw = (typeof customInput === 'string' && customInput.trim()) ? customInput : (this.inputEl ? this.inputEl.value : '');
         const input = inputRaw.trim();
         if (!input) return;
 
         GameState.commandHistory.push(input);
         GameState.historyIndex = GameState.commandHistory.length;
-        this.inputEl.value = '';
+        if (this.inputEl) this.inputEl.value = '';
 
         this.log(`ANALYST@AEGIS-SOC:~$ ${input}`, 'color-green');
 
@@ -5581,6 +5618,15 @@ TCP SYN Packet captured from external source host.`, "color-blue");
           this.log(`[+] Active IPS Response: Triggering boundary firewall shun against ${args[0]}...`, "color-red");
           this.executeCommand('block', args, 'block ' + args[0]);
           return;
+        }
+
+        if (cmd === 'escalate') {
+          const activeTaskId = GameState.tasks[GameState.currentTask] ? (GameState.tasks[GameState.currentTask].originalId || GameState.currentTask) : GameState.currentTask;
+          if (activeTaskId === 82) {
+            this.log("[+] Incident escalated to Tier-2 IR Team. Payroll server access contained.", "color-green");
+            VerificationEngine.finalizeTaskVerification();
+            return;
+          }
         }
 
         if (cmd === 'help') {
@@ -6060,37 +6106,45 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         
         let verified = false;
 
-        const aiEnabled = localStorage.getItem('gemini_ai_enabled') === 'true';
-        const apiKey = localStorage.getItem('gemini_api_key');
-
-        if (aiEnabled && apiKey && taskId !== 76) {
-          const aiResult = await verifyWithGemini(cmd, args, brief, fullCommand);
-          if (aiResult === null) {
-            TriageConsole.log("[*] AI API call failed. Falling back to local static verification...", "color-cyan");
-            if (brief && typeof brief.verify === 'function') {
-              try {
-                verified = brief.verify(cmd, args, GameState.config, task);
-              } catch(e) {
-                console.error("Fallback verification error on task " + taskId, e);
-              }
-            }
-          } else {
-            verified = aiResult;
-          }
-        } else {
-          if (brief && typeof brief.verify === 'function') {
-            try {
-              verified = brief.verify(cmd, args, GameState.config, task);
-            } catch(e) {
-              console.error("Verification error on task " + taskId, e);
-            }
+        // 1. Direct verify call
+        if (brief && typeof brief.verify === 'function') {
+          try {
+            verified = brief.verify(cmd, args, GameState.config, task);
+          } catch(e) {
+            console.error("Verification error on task " + taskId, e);
           }
         }
 
+        // 2. If not verified, check if user provided only the answer value without the command keyword
+        if (!verified && brief) {
+          const expectedCmdMatch = (brief.prompt || brief.desc || '').match(/(?:Command|Type):\s*([a-z0-9_-]+)/i);
+          const defaultCmd = expectedCmdMatch ? expectedCmdMatch[1].toLowerCase() : null;
+          if (defaultCmd && defaultCmd !== cmd) {
+            const allTokens = fullCommand.trim().split(/\s+/);
+            try {
+              verified = brief.verify(defaultCmd, allTokens, GameState.config, task);
+            } catch(e) {}
+          }
+        }
+
+        // 3. Check Gemini AI evaluation if enabled
+        const aiEnabled = localStorage.getItem('gemini_ai_enabled') === 'true';
+        const apiKey = localStorage.getItem('gemini_api_key');
+        if (!verified && aiEnabled && apiKey && taskId !== 76) {
+          const aiResult = await verifyWithGemini(cmd, args, brief, fullCommand);
+          if (aiResult === true) verified = true;
+        }
+
         if (verified && taskId !== 76) {
-          this.triggerTaskVerificationSuccess();
-        } else if (!verified && ['identify','srcip','classify','order','port','process','compromised-user','lateral','domain','persistence','webshell','exploit','token','protocol','bypass','file','extension','respond','summary','recommend','beacon'].includes(cmd)) {
+          this.finalizeTaskVerification();
+        } else if (taskId === 76) {
+          // Handled via verifyTask76
+        } else {
           TriageConsole.log("[-] INCORRECT — try again.", "color-red");
+          if (brief && brief.prompt) {
+            const firstLine = brief.prompt.split('\n')[0];
+            TriageConsole.log(`[?] Expected format: ${firstLine}`, "color-gray");
+          }
         }
       },
 
@@ -6101,7 +6155,8 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
           clearInterval(GameState.config.containmentTask41.intervalId);
           GameState.config.containmentTask41.active = false;
           GameState.config.containmentTask41.completed = true;
-          document.getElementById('containment-status-box').style.display = 'none';
+          const contBox = document.getElementById('containment-status-box');
+          if (contBox) contBox.style.display = 'none';
           TriageConsole.log(`[+] SUCCESS: Perimeter firewall sealed. Pipeline controllers protected.`, "color-green");
           
           if (GameState.config.containmentTask41.compromisedCount <= 1) {
@@ -6109,34 +6164,25 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
             GameState.config.containmentTask41.bonusEarned = true;
             TriageConsole.log(`[+] BONUS EARNED: Incident contained before spreading. +10 pts.`, "color-green");
           }
-          this.triggerTaskVerificationSuccess();
+          this.finalizeTaskVerification();
         } else {
           TriageConsole.log(`[-] INCORRECT IP blocked. This is not the primary threat source. Attack continues!`, "color-red");
         }
       },
 
       triggerTaskVerificationSuccess() {
-        const taskId = GameState.currentTask;
-        TriageConsole.log(`[*] Analysis Verified. Awaiting Incident Report Documentation...`, "color-amber");
-        
-        // Clear previous report
-        document.getElementById('report-findings').value = "";
-        document.getElementById('report-evidence').value = "";
-        document.getElementById('report-phase').value = "Identification";
-        
-        // Show report modal
-        document.getElementById('report-modal').style.display = 'flex';
+        this.finalizeTaskVerification();
       },
       
       finalizeTaskVerification() {
         const taskId = GameState.currentTask;
         const task = GameState.tasks[taskId];
+        if (!task) return;
         
         task.completed = true;
-        task.timeTaken = Math.floor((Date.now() - task.timeStarted) / 1000);
+        task.timeTaken = Math.floor((Date.now() - (task.timeStarted || Date.now())) / 1000);
         TriageConsole.log(`[+] VERIFIED ✓ - Task ${taskId} complete. Earned: ${task.points} pts.`, "color-green");
-        TriageConsole.log(`[+] Optional: Type "explanation" to review the detailed walkthrough and real-world context for this task.`, "color-cyan");
-        TriageConsole.log(`[+] Click "Next Task ➔" in the Briefing Panel (or type 'next') to proceed.`, "color-green");
+        TriageConsole.log(`[+] Click "Next Task ➔" or "Walkthrough 📖" in the Case Banner to review.`, "color-cyan");
         
         GameState.score = calculateTotalScore();
         UIUpdater.updateHeader();
@@ -6144,7 +6190,11 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         
         const btnNext = document.getElementById('btn-next-task');
         if (btnNext && GameState.currentTask < 150) {
-          btnNext.style.display = 'block';
+          btnNext.style.display = 'inline-block';
+        }
+        const btnExpl = document.getElementById('btn-view-explanation');
+        if (btnExpl) {
+          btnExpl.style.display = 'inline-block';
         }
         
         if (typeof saveProgress === 'function') saveProgress();
@@ -6177,6 +6227,11 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
           const btnNext = document.getElementById('btn-next-task');
           if (btnNext) btnNext.style.display = 'none';
           
+          const btnExpl = document.getElementById('btn-view-explanation');
+          if (btnExpl) {
+            btnExpl.style.display = GameState.tasks[nextId].completed ? 'inline-block' : 'none';
+          }
+          
           UIUpdater.loadCurrentTask();
           if (typeof saveProgress === 'function') saveProgress();
         } else {
@@ -6185,31 +6240,7 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       }
     };
 
-    function submitReport() {
-      const findings = document.getElementById('report-findings').value.trim();
-      if (!findings) {
-        alert("Please document your findings before submitting the report.");
-        return;
-      }
-      document.getElementById('report-modal').style.display = 'none';
-      TriageConsole.log(`[+] Incident Report Submitted. Logging to SOC documentation system...`, "color-cyan");
-      VerificationEngine.finalizeTaskVerification();
-    }
 
-    function fillReportHint() {
-      const taskId = GameState.currentTask;
-      const task = GameState.tasks[taskId];
-      
-      let hintFinding = "Anomalous activity detected matching task objectives.";
-      let hintEvidence = "Correlated logs and network connections in SIEM.";
-      
-      if (task.hint) {
-        hintFinding = `Task objective identified: ${task.hint}`;
-      }
-      
-      document.getElementById('report-findings').value = hintFinding;
-      document.getElementById('report-evidence').value = hintEvidence;
-    }
 
     function getTask4CorrectSequence() {
       const mapping = {
@@ -6615,7 +6646,7 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         };
 
         localStorage.setItem(SAVE_KEY, JSON.stringify(data));
-        const savedIndicator = document.getElementById('header-saved');
+        const savedIndicator = document.getElementById('save-status-indicator') || document.getElementById('header-saved');
         if (savedIndicator) {
           savedIndicator.style.color = '#00ff88'; // glowing green
           setTimeout(() => {
@@ -6713,375 +6744,131 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
     // ----------------------------------------------------
     // GUI Quick Action Event Handlers
     // ----------------------------------------------------
-    function setupGUIActions() {
-      const bind = (id, event, fn) => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener(event, fn);
-      };
-
-      const logFeedScroll = document.getElementById('log-table-wrapper');
-      if (logFeedScroll) {
-        logFeedScroll.addEventListener('mouseenter', () => {
-          GameState.logFeedPaused = true;
+    // ----------------------------------------------------
+    // Utility & Modal Controls
+    // ----------------------------------------------------
+    function copyToClipboard(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          TriageConsole.log(`[+] Copied IOC: ${text}`, 'color-green');
+        }).catch(() => {
+          fallbackCopy(text);
         });
-        logFeedScroll.addEventListener('mouseleave', () => {
-          GameState.logFeedPaused = false;
-          if (LogEngine.releaseBuffer) LogEngine.releaseBuffer();
-        });
+      } else {
+        fallbackCopy(text);
       }
+    }
 
-      bind('btn-next-task', 'click', () => {
-        VerificationEngine.jumpToTask('next_uncompleted');
-      });
-
-      bind('btn-skip-task', 'click', () => {
-        VerificationEngine.jumpToTask('next_uncompleted');
-        TriageConsole.log('[+] Incident skipped. You can revisit it later.', 'color-cyan');
-      });
-
-      bind('btn-reveal-hint', 'click', () => {
-        HintEngine.revealNextHint();
-      });
-
-      bind('btn-submit-case-answer', 'click', () => {
-        const input = document.getElementById('case-answer-input');
-        if (input && input.value.trim()) {
-          const val = input.value.trim();
-          TriageConsole.log('[*] Submitting analysis: ' + val, 'color-cyan');
-          TriageConsole.handleInput(val);
-          input.value = '';
-        }
-      });
-
-      const caseAnswerInput = document.getElementById('case-answer-input');
-      if (caseAnswerInput) {
-        caseAnswerInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            document.getElementById('btn-submit-case-answer').click();
-          }
-        });
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        TriageConsole.log(`[+] Copied IOC: ${text}`, 'color-green');
+      } catch (e) {
+        TriageConsole.log(`[!] Copy IOC failed: ${text}`, 'color-amber');
       }
-
-      bind('btn-run-query', 'click', () => {
-        const query = document.getElementById('siem-spl-input').value;
-        TriageConsole.log('[*] Executing SPL: ' + query, 'color-cyan');
-        LogEngine.applySearchQuery(query);
-      });
-
-      bind('siem-spl-input', 'keydown', (e) => {
-        if (e.key === 'Enter') {
-          document.getElementById('btn-run-query').click();
-        }
-      });
-
-      bind('nav-btn-playbook', 'click', () => openPlaybookModal());
-      bind('btn-close-playbook', 'click', () => document.getElementById('playbook-modal').style.display = 'none');
-
-      bind('nav-btn-settings', 'click', () => openSettingsModal());
-      bind('btn-close-settings', 'click', () => document.getElementById('settings-modal').style.display = 'none');
-      bind('btn-close-settings-footer', 'click', () => document.getElementById('settings-modal').style.display = 'none');
-
-      bind('btn-save-settings', 'click', () => {
-        const apiKey = document.getElementById('settings-api-key').value.trim();
-        const aiEnabled = document.getElementById('settings-ai-enabled').checked;
-        const crtEnabled = document.getElementById('settings-crt-scanlines-enabled').checked;
-        
-        localStorage.setItem('gemini_api_key', apiKey);
-        localStorage.setItem('gemini_ai_enabled', aiEnabled ? 'true' : 'false');
-        localStorage.setItem('crt_scanlines_enabled', crtEnabled ? 'true' : 'false');
-        
-        document.getElementById('settings-modal').style.display = 'none';
-        TriageConsole.log(`[+] Settings saved. AI verification: ${aiEnabled ? 'ON' : 'OFF'}.`, 'color-green');
-        UIUpdater.applySettings();
-      });
-
-      bind('btn-view-explanation', 'click', () => {
-        const taskId = GameState.currentTask;
-        let targetId = taskId - 1;
-        const task = GameState.tasks[targetId];
-        if (task && task.completed) {
-          showExplanationModal(targetId);
-        }
-      });
-
-      bind('btn-close-explanation', 'click', () => {
-        document.getElementById('explanation-modal').style.display = 'none';
-      });
-      bind('btn-close-explanation-footer', 'click', () => {
-        document.getElementById('explanation-modal').style.display = 'none';
-      });
-
-      // Triage Buttons
-      bind('btn-triage-investigate', 'click', () => {
-        if (!GameState.selectedAlertId) return;
-        const alert = AlertEngine.alerts[GameState.selectedAlertId];
-        if (!alert) return;
-        TriageConsole.log(`Running host investigations for alert IP: ${alert.ip}...`, 'color-cyan');
-        TriageConsole.executeCommand('scan', [alert.ip], `scan ${alert.ip}`);
-      });
-
-      bind('btn-triage-fp', 'click', () => {
-        if (!GameState.selectedAlertId) return;
-        const alert = AlertEngine.alerts[GameState.selectedAlertId];
-        if (!alert) return;
-        TriageConsole.log(`[!] Classified alert ${alert.id} as False Positive.`, 'color-amber');
-        const activeTaskId = GameState.tasks[GameState.currentTask] ? (GameState.tasks[GameState.currentTask].originalId || GameState.currentTask) : GameState.currentTask;
-        if (activeTaskId === 26) {
-          TriageConsole.log("[-] Classify alerts using severity levels (CRITICAL, HIGH, etc.). False Positive is invalid severity.", "color-red");
-        } else {
-          TriageConsole.log("[-] INCORRECT classification: Alert is a true positive incident.", "color-red");
-          GameState.penalties += 5;
-          GameState.score = calculateTotalScore();
-          UIUpdater.updateHeader();
-        }
-      });
-
-      bind('btn-triage-resolve', 'click', () => {
-        if (!GameState.selectedAlertId) return;
-        const id = GameState.selectedAlertId;
-        AlertEngine.updateAlertStatus(id, "RESOLVED");
-        TriageConsole.log(`[+] Alert ${id} marked RESOLVED.`, "color-green");
-      });
-
-      bind('btn-triage-escalate', 'click', () => {
-        if (!GameState.selectedAlertId) return;
-        const id = GameState.selectedAlertId;
-        AlertEngine.updateAlertStatus(id, "ESCALATED");
-        TriageConsole.log(`[+] Alert ${id} escalated to Tier 2.`, "color-amber");
-      });
-
-      bind('btn-triage-block', 'click', () => {
-        if (!GameState.selectedAlertId) return;
-        const alert = AlertEngine.alerts[GameState.selectedAlertId];
-        if (alert) TriageConsole.executeCommand('block', [alert.ip], `block ${alert.ip}`);
-      });
-
-      // Academy & Rules
-      bind('btn-close-academy', 'click', () => document.getElementById('academy-modal').style.display = 'none');
-      bind('btn-close-academy-footer', 'click', () => document.getElementById('academy-modal').style.display = 'none');
-      bind('btn-close-rules', 'click', () => document.getElementById('rules-modal').style.display = 'none');
-      bind('btn-close-inspector', 'click', () => document.getElementById('log-inspector-modal').style.display = 'none');
-      bind('btn-end-session', 'click', () => endTrainingSession());
-
-      document.querySelectorAll('.academy-tab-btn').forEach(btn => {
-        btn.onclick = () => openAcademyTab(btn.dataset.tab);
-      });
+      document.body.removeChild(ta);
     }
 
     function openAlertQueueModal() {
-      // Show alerts in existing modal structure
-      AlertEngine.spawnTask3Alerts();
-      const modal = document.getElementById('rules-modal');
-      // Or show triage alert queue
-      TriageConsole.log("[+] Loading Active Incident Alerts Queue...", "color-cyan");
+      switchWorkbenchTab('alerts');
     }
 
     function openRulesModal() {
       populateActiveRulesTable();
+      switchNavSection('rules');
       document.getElementById('rules-modal').style.display = 'flex';
     }
 
     function openAcademyModal() {
       openAcademyTab('arch');
+      switchNavSection('academy');
       document.getElementById('academy-modal').style.display = 'flex';
     }
 
-    function setMobileTab(tabName) {
-      document.querySelectorAll('.mobile-nav-tab').forEach(t => t.classList.remove('active'));
-      const activeBtn = document.querySelector(`.mobile-nav-tab[data-tab="${tabName}"]`);
+    function openPlaybookModal() {
+      switchNavSection('playbook');
+      document.getElementById('playbook-modal').style.display = 'flex';
+    }
+
+    function openSettingsModal() {
+      switchNavSection('settings');
+      document.getElementById('settings-api-key').value = localStorage.getItem('gemini_api_key') || '';
+      document.getElementById('settings-ai-enabled').checked = localStorage.getItem('gemini_ai_enabled') === 'true';
+      document.getElementById('settings-crt-scanlines-enabled').checked = localStorage.getItem('crt_scanlines_enabled') !== 'false';
+      document.getElementById('settings-modal').style.display = 'flex';
+    }
+
+    function switchNavSection(section) {
+      document.querySelectorAll('.siem-nav-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('nav-btn-' + section);
+      if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    function switchWorkbenchTab(tab) {
+      document.querySelectorAll('.wb-tab-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('wb-tab-' + tab);
       if (activeBtn) activeBtn.classList.add('active');
 
-      const panes = {
-        explorer: document.getElementById('pane-explorer'),
-        fields: document.getElementById('pane-fields'),
-        mission: document.getElementById('pane-mission'),
-        alerts: document.getElementById('pane-explorer') // Can display alerts
-      };
+      document.getElementById('wb-content-dossier').style.display = tab === 'dossier' ? 'flex' : 'none';
+      document.getElementById('wb-content-terminal').style.display = tab === 'terminal' ? 'flex' : 'none';
+      document.getElementById('wb-content-alerts').style.display = tab === 'alerts' ? 'flex' : 'none';
 
-      Object.keys(panes).forEach(p => {
-        if (panes[p]) {
-          if (p === tabName) panes[p].classList.add('mobile-active-view');
-          else panes[p].classList.remove('mobile-active-view');
-        }
-      });
-    }
-
-    // Dynamic Histogram Generation
-    function initEventHistogram() {
-      const container = document.getElementById('histogram-bars');
-      if (!container) return;
-      container.innerHTML = '';
-      
-      for (let i = 0; i < 35; i++) {
-        const bar = document.createElement('div');
-        bar.className = 'hist-bar ' + (i === 28 || i === 29 ? 'crit' : i % 5 === 0 ? 'warn' : 'info');
-        const h = Math.floor(Math.random() * 20) + 5;
-        bar.style.height = (i === 28 ? 26 : i === 29 ? 24 : h) + 'px';
-        bar.title = `Time Bucket -${35 - i}m: ${h * 8} events`;
-        bar.onclick = () => {
-          TriageConsole.log(`[*] Zoomed into Time Bucket -${35 - i}m (${h * 8} events captured).`, "color-cyan");
-        };
-        container.appendChild(bar);
+      if (tab === 'terminal') {
+        const inp = document.getElementById('console-input');
+        if (inp) inp.focus();
+      } else if (tab === 'alerts') {
+        AlertEngine.spawnTask3Alerts();
       }
     }
 
-    function updateHistogramPulse() {
-      const container = document.getElementById('histogram-bars');
-      if (!container || container.children.length === 0) return;
-      const lastBar = container.lastElementChild;
-      const h = Math.floor(Math.random() * 22) + 6;
-      lastBar.style.height = h + 'px';
-    }
+    function switchMobileTab(tab) {
+      document.querySelectorAll('.mobile-tab-btn').forEach(b => b.classList.remove('active'));
+      if (window.event && window.event.currentTarget) window.event.currentTarget.classList.add('active');
 
-    // Splunk Query Presets
-    function initQueryPresets() {
-      document.querySelectorAll('.query-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-          document.querySelectorAll('.query-chip').forEach(c => c.classList.remove('active'));
-          chip.classList.add('active');
+      const telemetry = document.getElementById('pane-telemetry');
+      const fields = document.getElementById('fields-sidebar');
+      const mission = document.getElementById('pane-mission');
 
-          const preset = chip.dataset.preset;
-          const input = document.getElementById('siem-spl-input');
+      if (telemetry) telemetry.classList.remove('mobile-active-view');
+      if (fields) fields.classList.remove('mobile-active-view');
+      if (mission) mission.classList.remove('mobile-active-view');
 
-          if (preset === 'all') {
-            input.value = 'index=* sourcetype=* | stats count by sourcetype';
-            LogEngine.filterQuery = '';
-            LogEngine.activeSensor = 'ALL';
-          } else if (preset === 'intrusions') {
-            input.value = 'index=security_logs (action="ALERT" OR action="DROP") | table _time, sensor, src_ip, rule_id';
-            LogEngine.filterQuery = 'alert';
-            LogEngine.activeSensor = 'ALL';
-          } else if (preset === 'ssh') {
-            input.value = 'index=suricata dest_port=22 event_type=ssh_auth_fail | stats count by src_ip';
-            LogEngine.filterQuery = 'ssh';
-            LogEngine.activeSensor = 'NIDPS';
-          } else if (preset === 'sqli') {
-            input.value = 'index=waf (payload="*UNION*" OR payload="*SELECT*") | table _time, src_ip, uri, status';
-            LogEngine.filterQuery = 'union';
-            LogEngine.activeSensor = 'WAF';
-          } else if (preset === 'beacon') {
-            input.value = 'index=zeek_conn duration>1200 resp_p=80 | stats count by id.orig_h, id.resp_h';
-            LogEngine.filterQuery = 'beacon';
-            LogEngine.activeSensor = 'NIDPS';
-          } else if (preset === 'powershell') {
-            input.value = 'index=sysmon EventCode=1 Image="*powershell.exe*" CommandLine="*-enc*"';
-            LogEngine.filterQuery = 'powershell';
-            LogEngine.activeSensor = 'HIDPS';
-          } else if (preset === 'lateral') {
-            input.value = 'index=security EventID=4624 LogonType=3 AuthenticationPackageName=NTLM';
-            LogEngine.filterQuery = 'smb';
-            LogEngine.activeSensor = 'ALL';
-          }
-
-          LogEngine.renderFilteredLogs();
-        });
-      });
-
-      const runBtn = document.getElementById('btn-run-query');
-      if (runBtn) {
-        runBtn.addEventListener('click', () => {
-          const val = document.getElementById('siem-spl-input').value;
-          TriageConsole.log(`[SPL SEARCH RUN]: ${val}`, "color-cyan");
-          LogEngine.filterQuery = val.toLowerCase().replace(/index=[^\s]+/g, '').replace(/sourcetype=[^\s]+/g, '').replace(/[|\(\)\"\*]/g, '').trim();
-          LogEngine.renderFilteredLogs();
-        });
+      if (tab === 'telemetry' && telemetry) telemetry.classList.add('mobile-active-view');
+      if (tab === 'fields' && fields) fields.classList.add('mobile-active-view');
+      if (tab === 'mission' && mission) {
+        mission.classList.add('mobile-active-view');
+        switchWorkbenchTab('dossier');
       }
-    }
-
-    function toggleRowDrawer(index, e) {
-      if (e) e.stopPropagation();
-      const drawer = document.getElementById('drawer-row-' + index);
-      const arrow = document.getElementById('arrow-row-' + index);
-      if (!drawer) return;
-      if (drawer.classList.contains('open')) {
-        drawer.classList.remove('open');
-        if (arrow) arrow.classList.remove('open');
-      } else {
-        drawer.classList.add('open');
-        if (arrow) arrow.classList.add('open');
+      if (tab === 'terminal' && mission) {
+        mission.classList.add('mobile-active-view');
+        switchWorkbenchTab('terminal');
       }
-    }
-
-    function quickFilterField(fieldName) {
-      TriageConsole.log(`[*] Filtered by Field: ${fieldName}`, "color-blue");
-    }
-
-    function filterByExactIP(ip) {
-      const input = document.getElementById('siem-spl-input');
-      input.value = `index=* src_ip="${ip}" | table _time, sensor, dest_ip, rule_id`;
-      LogEngine.filterQuery = ip.toLowerCase();
-      LogEngine.renderFilteredLogs();
-      TriageConsole.log(`[+] Telemetry Filter applied: source.ip = ${ip}`, "color-cyan");
-    }
-
-    function applyPresetFilter(val) {
-      LogEngine.filterQuery = val.toLowerCase();
-      LogEngine.renderFilteredLogs();
-    }
-
-    function openLogInspector(index) {
-      const log = LogEngine.logs[index];
-      if (!log) return;
-
-      document.getElementById('insp-sensor').innerText = log.sensor;
-      document.getElementById('insp-sensor').className = 'sensor-tag sensor-' + log.sensor.toLowerCase();
-      document.getElementById('insp-action').innerText = log.action;
-      document.getElementById('insp-action').className = 'action-tag action-' + log.action.toLowerCase();
-      document.getElementById('insp-sig').innerText = (log.rule_id ? log.rule_id + ' // ' : '') + log.type;
-
-      const fieldsTbody = document.getElementById('insp-fields-tbody');
-      fieldsTbody.innerHTML = `
-        <tr><th>@timestamp</th><td>${log.time}</td></tr>
-        <tr><th>observer.sensor</th><td>${log.sensor} (In-Line Inspection Engine)</td></tr>
-        <tr><th>source.ip</th><td style="color: var(--blue); font-weight: bold;">${log.ip}</td></tr>
-        <tr><th>destination.ip</th><td>${log.dst_ip || '10.142.12.15'}</td></tr>
-        <tr><th>destination.port</th><td>${log.port || '80'} / ${log.proto || 'TCP'}</td></tr>
-        <tr><th>rule.id / signature</th><td style="color: #c084fc;">${log.rule_id || 'ET-GENERIC'}</td></tr>
-        <tr><th>rule.action</th><td>${log.action}</td></tr>
-        <tr><th>event.severity</th><td>${log.sev}</td></tr>
-        <tr><th>event.category</th><td>${log.type}</td></tr>
-        <tr><th>message</th><td>${log.desc}</td></tr>
-      `;
-
-      const rawSyslog = `<134>${new Date().toDateString()} ${log.time} sensor-core-01 ${log.sensor.toLowerCase()}[5821]: [${log.rule_id || '1:10001:1'}] ${log.desc} [Classification: ${log.type}] [Priority: ${log.sev === 'CRIT' ? 1 : 2}] {${log.proto || 'TCP'}} ${log.ip} -> ${log.dst_ip || '10.142.12.15'}:${log.port || '80'}`;
-      document.getElementById('insp-raw-syslog').innerText = rawSyslog;
-
-      document.getElementById('insp-hex-dump').innerText = log.payload_hex || 'No raw payload available for this event.';
-
-      // Wire quick actions in inspector
-      document.getElementById('btn-insp-filter-ip').onclick = () => {
-        const input = document.getElementById('filter-search-input');
-        if (input) {
-          input.value = log.ip;
-          LogEngine.filterQuery = log.ip.toLowerCase();
-          LogEngine.renderFilteredLogs();
-        }
-        document.getElementById('log-inspector-modal').style.display = 'none';
-      };
-
-      document.getElementById('btn-insp-copy-ip').onclick = () => {
-        navigator.clipboard.writeText(log.ip);
-        TriageConsole.log(`[+] Copied IOC to clipboard: ${log.ip}`, "color-green");
-      };
-
-      document.getElementById('btn-insp-shun-ip').onclick = () => {
-        document.getElementById('log-inspector-modal').style.display = 'none';
-        TriageConsole.executeCommand('block', [log.ip], `block ${log.ip}`);
-      };
-
-      document.getElementById('log-inspector-modal').style.display = 'flex';
     }
 
     function openAcademyTab(tabId) {
-      const moduleData = IDPS_ACADEMY_MODULES[tabId];
+      const tabAliases = {
+        'host': 'hidps',
+        'response': 'ips',
+        'evasion': 'tuning'
+      };
+      const resolvedTab = tabAliases[tabId] || tabId;
+      const moduleData = IDPS_ACADEMY_MODULES[resolvedTab] || IDPS_ACADEMY_MODULES['arch'];
       if (!moduleData) return;
 
       document.querySelectorAll('.academy-tab-btn').forEach(btn => {
-        if (btn.dataset.tab === tabId) btn.classList.add('active');
+        const bTab = btn.dataset.tab;
+        if (bTab === resolvedTab || bTab === tabId) btn.classList.add('active');
         else btn.classList.remove('active');
       });
 
-      document.getElementById('academy-content-pane').innerHTML = moduleData.content;
+      const pane = document.getElementById('academy-content-pane');
+      if (pane) pane.innerHTML = moduleData.content;
     }
 
     function populateActiveRulesTable() {
@@ -7090,18 +6877,20 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       tbody.innerHTML = '';
       IDPS_RULES_DB.forEach(rule => {
         const tr = document.createElement('tr');
+        const actionClass = 'action-' + (rule.action ? rule.action.toLowerCase() : 'alert');
+        const sevClass = rule.sev === 'CRIT' ? 'threat-critical' : 'threat-medium';
         tr.innerHTML = `
-          <td style="color: #c084fc; font-weight: bold;">${rule.sid}</td>
+          <td style="color: #c084fc; font-weight: bold; font-family: var(--font-mono);">${rule.sid}</td>
           <td>${rule.engine}</td>
           <td><code>${rule.proto}</code></td>
           <td style="color: #f1f5f9;">${rule.msg}</td>
-          <td><span class="action-tag action-${rule.action.toLowerCase()}">${rule.action}</span></td>
+          <td><span class="action-tag ${actionClass}">${rule.action}</span></td>
+          <td><span class="threat-badge ${sevClass}">${rule.sev || 'WARN'}</span></td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    
     function getIDPSTaskMeta(taskId) {
       if (taskId === 1) {
         return {
@@ -7192,450 +6981,382 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
     // ====================================================
     // MOBILE & TABLET RESPONSIVE WORKSPACE CONTROLLER
     // ====================================================
-    function initMobileWorkspaceNav() {
-      const tabs = document.querySelectorAll('.mobile-nav-tab');
-      const panels = {
-        logs: document.getElementById('panel-logs'),
-        tasks: document.getElementById('panel-tasks'),
-        alerts: document.getElementById('panel-alerts'),
-        console: document.getElementById('panel-bottom-console')
+
+    function toggleRowDrawer(index) {
+      const drawer = document.getElementById('drawer-row-' + index);
+      const arrow = document.getElementById('arrow-row-' + index);
+      if (!drawer) return;
+      const isOpen = drawer.classList.contains('open');
+      if (isOpen) {
+        drawer.classList.remove('open');
+        if (arrow) arrow.classList.remove('open');
+      } else {
+        drawer.classList.add('open');
+        if (arrow) arrow.classList.add('open');
+      }
+    }
+
+    function toggleFieldFacet(facetId) {
+      const list = document.getElementById('facet-' + facetId);
+      if (list) {
+        list.style.display = list.style.display === 'none' ? 'flex' : 'none';
+      }
+    }
+
+    function filterBySensor(sensor) {
+      document.getElementById('siem-spl-input').value = `index=security_logs observer.sensor="${sensor}"`;
+      LogEngine.applyFilter(log => log.sensor === sensor);
+      TriageConsole.log(`[+] Filter applied: observer.sensor="${sensor}"`, 'color-cyan');
+    }
+
+    function filterByAction(action) {
+      document.getElementById('siem-spl-input').value = `index=security_logs rule.action="${action}"`;
+      LogEngine.applyFilter(log => log.action === action);
+      TriageConsole.log(`[+] Filter applied: rule.action="${action}"`, 'color-cyan');
+    }
+
+    function filterByExactIP(ip) {
+      document.getElementById('siem-spl-input').value = `index=security_logs source.ip="${ip}"`;
+      LogEngine.applyFilter(log => log.ip === ip || log.dst_ip === ip);
+      TriageConsole.log(`[+] Filter applied: source.ip="${ip}"`, 'color-cyan');
+    }
+
+    function filterByPort(port) {
+      document.getElementById('siem-spl-input').value = `index=security_logs dest_port=${port}`;
+      LogEngine.applyFilter(log => log.port == port || (log.desc && log.desc.includes(':' + port)));
+      TriageConsole.log(`[+] Filter applied: destination.port=${port}`, 'color-cyan');
+    }
+
+    function applySPLPreset(type) {
+      const chips = document.querySelectorAll('.query-chip');
+      chips.forEach(c => c.classList.remove('active'));
+      const activeChip = Array.from(chips).find(c => c.getAttribute('onclick') && c.getAttribute('onclick').includes(type));
+      if (activeChip) activeChip.classList.add('active');
+
+      const input = document.getElementById('siem-spl-input');
+      
+      if (type === 'all') {
+        input.value = "index=security_logs sourcetype=* | head 50";
+        LogEngine.resetFilters();
+      } else if (type === 'intrusions') {
+        input.value = 'index=security_logs (rule.action="ALERT" OR rule.action="DROP")';
+        LogEngine.applyFilter(log => log.action === 'ALERT' || log.action === 'DROP');
+      } else if (type === 'ssh_brute') {
+        input.value = 'index=security_logs observer.sensor="NIDPS" dest_port=22 | stats count by source.ip';
+        LogEngine.applyFilter(log => log.port === 22 || (log.desc && log.desc.toLowerCase().includes('ssh')));
+      } else if (type === 'web_exploits') {
+        input.value = 'index=security_logs observer.sensor="WAF" (rule_id="RULE-SQLI" OR rule_id="RULE-XSS")';
+        LogEngine.applyFilter(log => log.sensor === 'WAF' || (log.desc && (log.desc.includes('SQL') || log.desc.includes('XSS'))));
+      } else if (type === 'c2_beacon') {
+        input.value = 'index=security_logs (rule_id="RULE-C2" OR desc="*beacon*")';
+        LogEngine.applyFilter(log => (log.desc && log.desc.toLowerCase().includes('c2')) || log.rule_id === 'RULE-C2');
+      } else if (type === 'sysmon_lolbins') {
+        input.value = 'index=security_logs observer.sensor="HIDPS" (EventID=1 OR LOLBin=*)';
+        LogEngine.applyFilter(log => log.sensor === 'HIDPS');
+      } else if (type === 'lateral_smb') {
+        input.value = 'index=security_logs dest_port=445 | stats count by dest_ip';
+        LogEngine.applyFilter(log => log.port === 445 || (log.desc && log.desc.includes('445')));
+      }
+      TriageConsole.log(`[SPL] Executed search query: ${input.value}`, 'color-cyan');
+    }
+
+    function toggleStreamPause() {
+      const btn = document.getElementById('btn-toggle-stream');
+      const status = document.getElementById('log-stream-status');
+      GameState.logFeedPaused = !GameState.logFeedPaused;
+      LogEngine.isPaused = GameState.logFeedPaused;
+      if (GameState.logFeedPaused) {
+        if (btn) btn.innerText = '▶ Resume';
+        if (status) { status.innerText = '⏸ PAUSED'; status.className = 'color-amber'; }
+      } else {
+        if (btn) btn.innerText = '⏸ Pause';
+        if (status) { status.innerText = '• STREAMING'; status.className = 'color-green'; }
+        if (LogEngine.releaseBuffer) LogEngine.releaseBuffer();
+      }
+    }
+
+    function openLogInspector(index) {
+      const log = LogEngine.logs[index];
+      if (!log) return;
+
+      document.getElementById('insp-sensor').innerText = log.sensor;
+      document.getElementById('insp-sensor').className = 'sensor-tag sensor-' + (log.sensor ? log.sensor.toLowerCase() : 'nidps');
+      document.getElementById('insp-action').innerText = log.action;
+      document.getElementById('insp-action').className = 'action-tag action-' + (log.action ? log.action.toLowerCase() : 'alert');
+      document.getElementById('insp-sig').innerText = (log.rule_id ? log.rule_id + ' // ' : '') + (log.type || 'EVENT');
+
+      const fieldsTbody = document.getElementById('insp-fields-tbody');
+      fieldsTbody.innerHTML = `
+        <tr><th>@timestamp</th><td>${log.time}</td></tr>
+        <tr><th>observer.sensor</th><td>${log.sensor} (In-Line Inspection Engine)</td></tr>
+        <tr><th>source.ip</th><td style="color: var(--blue); font-weight: bold;">${log.ip}</td></tr>
+        <tr><th>destination.ip</th><td>${log.dst_ip || '10.142.12.15'}</td></tr>
+        <tr><th>destination.port</th><td>${log.port || '80'} / ${log.proto || 'TCP'}</td></tr>
+        <tr><th>rule.id / signature</th><td style="color: #c084fc;">${log.rule_id || 'ET-GENERIC'}</td></tr>
+        <tr><th>rule.action</th><td>${log.action}</td></tr>
+        <tr><th>event.severity</th><td>${log.sev}</td></tr>
+        <tr><th>event.category</th><td>${log.type}</td></tr>
+        <tr><th>message</th><td>${log.desc}</td></tr>
+      `;
+
+      const rawSyslog = `<134>${new Date().toDateString()} ${log.time} sensor-core-01 ${(log.sensor || 'core').toLowerCase()}[5821]: [${log.rule_id || '1:10001:1'}] ${log.desc} [Classification: ${log.type}] [Priority: ${log.sev === 'CRIT' ? 1 : 2}] {${log.proto || 'TCP'}} ${log.ip} -> ${log.dst_ip || '10.142.12.15'}:${log.port || '80'}`;
+      document.getElementById('insp-raw-syslog').innerText = rawSyslog;
+      document.getElementById('insp-hex-dump').innerText = log.payload_hex || 'No raw payload available for this event.';
+
+      document.getElementById('btn-insp-filter-ip').onclick = () => {
+        filterByExactIP(log.ip);
+        document.getElementById('log-inspector-modal').style.display = 'none';
       };
 
-      tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-          tabs.forEach(t => t.classList.remove('active'));
-          tab.classList.add('active');
+      document.getElementById('btn-insp-copy-ip').onclick = () => {
+        copyToClipboard(log.ip);
+      };
 
-          const view = tab.dataset.view;
-          Object.keys(panels).forEach(key => {
-            if (panels[key]) {
-              if (key === view) {
-                panels[key].classList.add('mobile-active-view');
-              } else {
-                panels[key].classList.remove('mobile-active-view');
-              }
-            }
-          });
+      document.getElementById('btn-insp-shun-ip').onclick = () => {
+        document.getElementById('log-inspector-modal').style.display = 'none';
+        TriageConsole.executeCommand('block', [log.ip], `block ${log.ip}`);
+      };
 
-          // If switching to console, auto focus input
-          if (view === 'console') {
-            const inp = document.getElementById('console-input');
-            if (inp) inp.focus();
+      document.getElementById('log-inspector-modal').style.display = 'flex';
+    }
+
+    // Dynamic Histogram Generation
+    function initEventHistogram() {
+      const container = document.getElementById('histogram-bars');
+      if (!container) return;
+      container.innerHTML = '';
+      
+      for (let i = 0; i < 40; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'histo-bar';
+        const heightPct = Math.floor(Math.random() * 75) + 15;
+        bar.style.height = heightPct + '%';
+        
+        if (i % 7 === 0) {
+          bar.className += ' histo-alert';
+        } else if (i % 4 === 0) {
+          bar.className += ' histo-warn';
+        } else {
+          bar.className += ' histo-normal';
+        }
+        container.appendChild(bar);
+      }
+    }
+
+    function updateHistogramPulse() {
+      const bars = document.querySelectorAll('.histo-bar');
+      if (!bars || bars.length === 0) return;
+      const lastBar = bars[bars.length - 1];
+      const newHeight = Math.floor(Math.random() * 85) + 15;
+      lastBar.style.height = newHeight + '%';
+      if (Math.random() > 0.8) {
+        lastBar.className = 'histo-bar histo-alert';
+      } else if (Math.random() > 0.5) {
+        lastBar.className = 'histo-bar histo-warn';
+      } else {
+        lastBar.className = 'histo-bar histo-normal';
+      }
+    }
+
+    function setupGUIActions() {
+      const bind = (id, event, fn) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener(event, fn);
+      };
+
+      const logFeedScroll = document.getElementById('log-table-wrapper');
+      if (logFeedScroll) {
+        logFeedScroll.addEventListener('mouseenter', () => {
+          GameState.logFeedPaused = true;
+          LogEngine.isPaused = true;
+        });
+        logFeedScroll.addEventListener('mouseleave', () => {
+          GameState.logFeedPaused = false;
+          LogEngine.isPaused = false;
+          if (LogEngine.releaseBuffer) LogEngine.releaseBuffer();
+        });
+      }
+
+      bind('btn-next-task', 'click', () => {
+        VerificationEngine.jumpToTask('next_uncompleted');
+      });
+
+      bind('btn-skip-task', 'click', () => {
+        VerificationEngine.jumpToTask('next_uncompleted');
+        TriageConsole.log('[+] Incident skipped. You can revisit it later.', 'color-cyan');
+      });
+
+      bind('btn-reveal-hint', 'click', () => {
+        HintEngine.revealNextHint();
+      });
+
+      bind('btn-submit-case-answer', 'click', () => {
+        const input = document.getElementById('case-answer-input');
+        if (input && input.value.trim()) {
+          const val = input.value.trim();
+          TriageConsole.log('[*] Submitting analysis: ' + val, 'color-cyan');
+          TriageConsole.handleInput(val);
+          input.value = '';
+        }
+      });
+
+      const caseAnswerInput = document.getElementById('case-answer-input');
+      if (caseAnswerInput) {
+        caseAnswerInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            document.getElementById('btn-submit-case-answer').click();
           }
         });
+      }
+
+      bind('btn-run-query', 'click', () => {
+        const query = document.getElementById('siem-spl-input').value;
+        TriageConsole.log('[*] Executing SPL: ' + query, 'color-cyan');
+        LogEngine.applySearchQuery(query);
       });
-    }
 
-    
-    // Workbench Navigation Controls
-    function switchWorkbenchTab(tab) {
-      document.querySelectorAll('.wb-tab-btn').forEach(b => b.classList.remove('active'));
-      const activeBtn = document.getElementById('wb-tab-' + tab);
-      if (activeBtn) activeBtn.classList.add('active');
-
-      document.getElementById('wb-content-dossier').style.display = tab === 'dossier' ? 'flex' : 'none';
-      document.getElementById('wb-content-terminal').style.display = tab === 'terminal' ? 'flex' : 'none';
-      document.getElementById('wb-content-alerts').style.display = tab === 'alerts' ? 'flex' : 'none';
-
-      if (tab === 'terminal') {
-        const inp = document.getElementById('console-input');
-        if (inp) inp.focus();
-      } else if (tab === 'alerts') {
-        AlertEngine.spawnTask3Alerts();
-      }
-    }
-
-    function switchNavSection(section) {
-      document.querySelectorAll('.siem-nav-btn').forEach(b => b.classList.remove('active'));
-      const activeBtn = document.getElementById('nav-btn-' + section);
-      if (activeBtn) activeBtn.classList.add('active');
-
-      if (section === 'hunting') {
-        // Return to main view
-      } else if (section === 'rules') {
-        openRulesModal();
-      } else if (section === 'academy') {
-        openAcademyModal();
-      }
-    }
-
-    function openRulesModal() {
-      populateActiveRulesTable();
-      document.getElementById('rules-modal').style.display = 'flex';
-    }
-
-    function openAcademyModal() {
-      openAcademyTab('arch');
-      document.getElementById('academy-modal').style.display = 'flex';
-    }
-
-    function openPlaybookModal() {
-      document.getElementById('playbook-modal').style.display = 'flex';
-    }
-
-    function openSettingsModal() {
-      document.getElementById('settings-api-key').value = localStorage.getItem('gemini_api_key') || '';
-      document.getElementById('settings-ai-enabled').checked = localStorage.getItem('gemini_ai_enabled') === 'true';
-      document.getElementById('settings-crt-scanlines-enabled').checked = localStorage.getItem('crt_scanlines_enabled') !== 'false';
-      document.getElementById('settings-modal').style.display = 'flex';
-    }
-
-    // Toggle row drawer in Log Table
-    function toggleRowDrawer(index) {
-      const drawer = document.getElementById('drawer-row-' + index);
-      const arrow = document.getElementById('arrow-row-' + index);
-      if (!drawer) return;
-      const isOpen = drawer.classList.contains('open');
-      if (isOpen) {
-        drawer.classList.remove('open');
-        if (arrow) arrow.classList.remove('open');
-      } else {
-        drawer.classList.add('open');
-        if (arrow) arrow.classList.add('open');
-      }
-    }
-
-    // Toggle Field facets in left sidebar
-    function toggleFieldFacet(facetId) {
-      const list = document.getElementById('facet-' + facetId);
-      if (list) {
-        list.style.display = list.style.display === 'none' ? 'flex' : 'none';
-      }
-    }
-
-    function filterBySensor(sensor) {
-      document.getElementById('siem-spl-input').value = `index=security_logs observer.sensor="${sensor}"`;
-      LogEngine.applyFilter(log => log.sensor === sensor);
-      TriageConsole.log(`[+] Filter applied: observer.sensor="${sensor}"`, 'color-cyan');
-    }
-
-    function filterByAction(action) {
-      document.getElementById('siem-spl-input').value = `index=security_logs rule.action="${action}"`;
-      LogEngine.applyFilter(log => log.action === action);
-      TriageConsole.log(`[+] Filter applied: rule.action="${action}"`, 'color-cyan');
-    }
-
-    function filterByExactIP(ip) {
-      document.getElementById('siem-spl-input').value = `index=security_logs source.ip="${ip}"`;
-      LogEngine.applyFilter(log => log.ip === ip || log.dst_ip === ip);
-      TriageConsole.log(`[+] Filter applied: source.ip="${ip}"`, 'color-cyan');
-    }
-
-    function filterByPort(port) {
-      document.getElementById('siem-spl-input').value = `index=security_logs dest_port=${port}`;
-      LogEngine.applyFilter(log => log.port == port || (log.desc && log.desc.includes(':' + port)));
-      TriageConsole.log(`[+] Filter applied: destination.port=${port}`, 'color-cyan');
-    }
-
-    function applySPLPreset(type) {
-      document.querySelectorAll('.query-chip').forEach(c => c.classList.remove('active'));
-      const input = document.getElementById('siem-spl-input');
-      
-      if (type === 'all') {
-        input.value = "index=security_logs sourcetype=* | head 50";
-        LogEngine.resetFilters();
-      } else if (type === 'intrusions') {
-        input.value = 'index=security_logs (rule.action="ALERT" OR rule.action="DROP")';
-        LogEngine.applyFilter(log => log.action === 'ALERT' || log.action === 'DROP');
-      } else if (type === 'ssh_brute') {
-        input.value = 'index=security_logs observer.sensor="NIDPS" dest_port=22 | stats count by source.ip';
-        LogEngine.applyFilter(log => log.port === 22 || (log.desc && log.desc.toLowerCase().includes('ssh')));
-      } else if (type === 'web_exploits') {
-        input.value = 'index=security_logs observer.sensor="WAF" (rule_id="RULE-SQLI" OR rule_id="RULE-XSS")';
-        LogEngine.applyFilter(log => log.sensor === 'WAF' || (log.desc && (log.desc.includes('SQL') || log.desc.includes('XSS'))));
-      } else if (type === 'c2_beacon') {
-        input.value = 'index=security_logs (rule_id="RULE-C2" OR desc="*beacon*")';
-        LogEngine.applyFilter(log => (log.desc && log.desc.toLowerCase().includes('c2')) || log.rule_id === 'RULE-C2');
-      } else if (type === 'sysmon_lolbins') {
-        input.value = 'index=security_logs observer.sensor="HIDPS" (EventID=1 OR LOLBin=*)';
-        LogEngine.applyFilter(log => log.sensor === 'HIDPS');
-      } else if (type === 'lateral_smb') {
-        input.value = 'index=security_logs dest_port=445 | stats count by dest_ip';
-        LogEngine.applyFilter(log => log.port === 445 || (log.desc && log.desc.includes('445')));
-      }
-      TriageConsole.log(`[SPL] Executed search query: ${input.value}`, 'color-cyan');
-    }
-
-    function toggleStreamPause() {
-      const btn = document.getElementById('btn-toggle-stream');
-      const status = document.getElementById('log-stream-status');
-      GameState.logFeedPaused = !GameState.logFeedPaused;
-      if (GameState.logFeedPaused) {
-        if (btn) btn.innerText = '▶ Resume';
-        if (status) { status.innerText = '⏸ PAUSED'; status.className = 'color-amber'; }
-      } else {
-        if (btn) btn.innerText = '⏸ Pause';
-        if (status) { status.innerText = '• STREAMING'; status.className = 'color-green'; }
-        if (LogEngine.releaseBuffer) LogEngine.releaseBuffer();
-      }
-    }
-
-    // Dynamic Histogram Generation
-    function initEventHistogram() {
-      const container = document.getElementById('histogram-bars');
-      if (!container) return;
-      container.innerHTML = '';
-      
-      for (let i = 0; i < 40; i++) {
-        const bar = document.createElement('div');
-        bar.className = 'histo-bar';
-        const heightPct = Math.floor(Math.random() * 75) + 15;
-        bar.style.height = heightPct + '%';
-        
-        if (i % 7 === 0) {
-          bar.className += ' histo-alert';
-        } else if (i % 4 === 0) {
-          bar.className += ' histo-warn';
-        } else {
-          bar.className += ' histo-normal';
+      bind('siem-spl-input', 'keydown', (e) => {
+        if (e.key === 'Enter') {
+          document.getElementById('btn-run-query').click();
         }
-        container.appendChild(bar);
-      }
-    }
+      });
 
-    function updateHistogramPulse() {
-      const bars = document.querySelectorAll('.histo-bar');
-      if (!bars || bars.length === 0) return;
-      const lastBar = bars[bars.length - 1];
-      const newHeight = Math.floor(Math.random() * 85) + 15;
-      lastBar.style.height = newHeight + '%';
-      if (Math.random() > 0.8) {
-        lastBar.className = 'histo-bar histo-alert';
-      } else if (Math.random() > 0.5) {
-        lastBar.className = 'histo-bar histo-warn';
-      } else {
-        lastBar.className = 'histo-bar histo-normal';
-      }
-    }
+      bind('nav-btn-hunting', 'click', () => switchNavSection('hunting'));
+      bind('nav-btn-rules', 'click', () => openRulesModal());
+      bind('nav-btn-academy', 'click', () => openAcademyModal());
+      bind('nav-btn-playbook', 'click', () => openPlaybookModal());
+      bind('nav-btn-settings', 'click', () => openSettingsModal());
 
-    function switchMobileTab(tab) {
-      document.querySelectorAll('.mobile-tab-btn').forEach(b => b.classList.remove('active'));
-      if (event && event.currentTarget) event.currentTarget.classList.add('active');
+      bind('btn-close-playbook', 'click', () => {
+        document.getElementById('playbook-modal').style.display = 'none';
+        switchNavSection('hunting');
+      });
 
-      const telemetry = document.getElementById('pane-telemetry');
-      const fields = document.getElementById('fields-sidebar');
-      const mission = document.getElementById('pane-mission');
+      bind('btn-close-settings', 'click', () => {
+        document.getElementById('settings-modal').style.display = 'none';
+        switchNavSection('hunting');
+      });
+      bind('btn-close-settings-footer', 'click', () => {
+        document.getElementById('settings-modal').style.display = 'none';
+        switchNavSection('hunting');
+      });
 
-      if (telemetry) telemetry.classList.remove('mobile-active-view');
-      if (fields) fields.classList.remove('mobile-active-view');
-      if (mission) mission.classList.remove('mobile-active-view');
-
-      if (tab === 'telemetry' && telemetry) telemetry.classList.add('mobile-active-view');
-      if (tab === 'fields' && fields) fields.classList.add('mobile-active-view');
-      if (tab === 'mission' && mission) {
-        mission.classList.add('mobile-active-view');
-        switchWorkbenchTab('dossier');
-      }
-      if (tab === 'terminal' && mission) {
-        mission.classList.add('mobile-active-view');
-        switchWorkbenchTab('terminal');
-      }
-    }
-
-    
-    // Workbench Navigation Controls
-    function switchWorkbenchTab(tab) {
-      document.querySelectorAll('.wb-tab-btn').forEach(b => b.classList.remove('active'));
-      const activeBtn = document.getElementById('wb-tab-' + tab);
-      if (activeBtn) activeBtn.classList.add('active');
-
-      document.getElementById('wb-content-dossier').style.display = tab === 'dossier' ? 'flex' : 'none';
-      document.getElementById('wb-content-terminal').style.display = tab === 'terminal' ? 'flex' : 'none';
-      document.getElementById('wb-content-alerts').style.display = tab === 'alerts' ? 'flex' : 'none';
-
-      if (tab === 'terminal') {
-        const inp = document.getElementById('console-input');
-        if (inp) inp.focus();
-      } else if (tab === 'alerts') {
-        AlertEngine.spawnTask3Alerts();
-      }
-    }
-
-    function switchNavSection(section) {
-      document.querySelectorAll('.siem-nav-btn').forEach(b => b.classList.remove('active'));
-      const activeBtn = document.getElementById('nav-btn-' + section);
-      if (activeBtn) activeBtn.classList.add('active');
-
-      if (section === 'hunting') {
-        // Return to main view
-      } else if (section === 'rules') {
-        openRulesModal();
-      } else if (section === 'academy') {
-        openAcademyModal();
-      }
-    }
-
-    function openRulesModal() {
-      populateActiveRulesTable();
-      document.getElementById('rules-modal').style.display = 'flex';
-    }
-
-    function openAcademyModal() {
-      openAcademyTab('arch');
-      document.getElementById('academy-modal').style.display = 'flex';
-    }
-
-    function openPlaybookModal() {
-      document.getElementById('playbook-modal').style.display = 'flex';
-    }
-
-    function openSettingsModal() {
-      document.getElementById('settings-api-key').value = localStorage.getItem('gemini_api_key') || '';
-      document.getElementById('settings-ai-enabled').checked = localStorage.getItem('gemini_ai_enabled') === 'true';
-      document.getElementById('settings-crt-scanlines-enabled').checked = localStorage.getItem('crt_scanlines_enabled') !== 'false';
-      document.getElementById('settings-modal').style.display = 'flex';
-    }
-
-    // Toggle row drawer in Log Table
-    function toggleRowDrawer(index) {
-      const drawer = document.getElementById('drawer-row-' + index);
-      const arrow = document.getElementById('arrow-row-' + index);
-      if (!drawer) return;
-      const isOpen = drawer.classList.contains('open');
-      if (isOpen) {
-        drawer.classList.remove('open');
-        if (arrow) arrow.classList.remove('open');
-      } else {
-        drawer.classList.add('open');
-        if (arrow) arrow.classList.add('open');
-      }
-    }
-
-    // Toggle Field facets in left sidebar
-    function toggleFieldFacet(facetId) {
-      const list = document.getElementById('facet-' + facetId);
-      if (list) {
-        list.style.display = list.style.display === 'none' ? 'flex' : 'none';
-      }
-    }
-
-    function filterBySensor(sensor) {
-      document.getElementById('siem-spl-input').value = `index=security_logs observer.sensor="${sensor}"`;
-      LogEngine.applyFilter(log => log.sensor === sensor);
-      TriageConsole.log(`[+] Filter applied: observer.sensor="${sensor}"`, 'color-cyan');
-    }
-
-    function filterByAction(action) {
-      document.getElementById('siem-spl-input').value = `index=security_logs rule.action="${action}"`;
-      LogEngine.applyFilter(log => log.action === action);
-      TriageConsole.log(`[+] Filter applied: rule.action="${action}"`, 'color-cyan');
-    }
-
-    function filterByExactIP(ip) {
-      document.getElementById('siem-spl-input').value = `index=security_logs source.ip="${ip}"`;
-      LogEngine.applyFilter(log => log.ip === ip || log.dst_ip === ip);
-      TriageConsole.log(`[+] Filter applied: source.ip="${ip}"`, 'color-cyan');
-    }
-
-    function filterByPort(port) {
-      document.getElementById('siem-spl-input').value = `index=security_logs dest_port=${port}`;
-      LogEngine.applyFilter(log => log.port == port || (log.desc && log.desc.includes(':' + port)));
-      TriageConsole.log(`[+] Filter applied: destination.port=${port}`, 'color-cyan');
-    }
-
-    function applySPLPreset(type) {
-      document.querySelectorAll('.query-chip').forEach(c => c.classList.remove('active'));
-      const input = document.getElementById('siem-spl-input');
-      
-      if (type === 'all') {
-        input.value = "index=security_logs sourcetype=* | head 50";
-        LogEngine.resetFilters();
-      } else if (type === 'intrusions') {
-        input.value = 'index=security_logs (rule.action="ALERT" OR rule.action="DROP")';
-        LogEngine.applyFilter(log => log.action === 'ALERT' || log.action === 'DROP');
-      } else if (type === 'ssh_brute') {
-        input.value = 'index=security_logs observer.sensor="NIDPS" dest_port=22 | stats count by source.ip';
-        LogEngine.applyFilter(log => log.port === 22 || (log.desc && log.desc.toLowerCase().includes('ssh')));
-      } else if (type === 'web_exploits') {
-        input.value = 'index=security_logs observer.sensor="WAF" (rule_id="RULE-SQLI" OR rule_id="RULE-XSS")';
-        LogEngine.applyFilter(log => log.sensor === 'WAF' || (log.desc && (log.desc.includes('SQL') || log.desc.includes('XSS'))));
-      } else if (type === 'c2_beacon') {
-        input.value = 'index=security_logs (rule_id="RULE-C2" OR desc="*beacon*")';
-        LogEngine.applyFilter(log => (log.desc && log.desc.toLowerCase().includes('c2')) || log.rule_id === 'RULE-C2');
-      } else if (type === 'sysmon_lolbins') {
-        input.value = 'index=security_logs observer.sensor="HIDPS" (EventID=1 OR LOLBin=*)';
-        LogEngine.applyFilter(log => log.sensor === 'HIDPS');
-      } else if (type === 'lateral_smb') {
-        input.value = 'index=security_logs dest_port=445 | stats count by dest_ip';
-        LogEngine.applyFilter(log => log.port === 445 || (log.desc && log.desc.includes('445')));
-      }
-      TriageConsole.log(`[SPL] Executed search query: ${input.value}`, 'color-cyan');
-    }
-
-    function toggleStreamPause() {
-      const btn = document.getElementById('btn-toggle-stream');
-      const status = document.getElementById('log-stream-status');
-      GameState.logFeedPaused = !GameState.logFeedPaused;
-      if (GameState.logFeedPaused) {
-        if (btn) btn.innerText = '▶ Resume';
-        if (status) { status.innerText = '⏸ PAUSED'; status.className = 'color-amber'; }
-      } else {
-        if (btn) btn.innerText = '⏸ Pause';
-        if (status) { status.innerText = '• STREAMING'; status.className = 'color-green'; }
-        if (LogEngine.releaseBuffer) LogEngine.releaseBuffer();
-      }
-    }
-
-    // Dynamic Histogram Generation
-    function initEventHistogram() {
-      const container = document.getElementById('histogram-bars');
-      if (!container) return;
-      container.innerHTML = '';
-      
-      for (let i = 0; i < 40; i++) {
-        const bar = document.createElement('div');
-        bar.className = 'histo-bar';
-        const heightPct = Math.floor(Math.random() * 75) + 15;
-        bar.style.height = heightPct + '%';
+      bind('btn-save-settings', 'click', () => {
+        const apiKey = document.getElementById('settings-api-key').value.trim();
+        const aiEnabled = document.getElementById('settings-ai-enabled').checked;
+        const crtEnabled = document.getElementById('settings-crt-scanlines-enabled').checked;
         
-        if (i % 7 === 0) {
-          bar.className += ' histo-alert';
-        } else if (i % 4 === 0) {
-          bar.className += ' histo-warn';
-        } else {
-          bar.className += ' histo-normal';
+        localStorage.setItem('gemini_api_key', apiKey);
+        localStorage.setItem('gemini_ai_enabled', aiEnabled ? 'true' : 'false');
+        localStorage.setItem('crt_scanlines_enabled', crtEnabled ? 'true' : 'false');
+        
+        document.getElementById('settings-modal').style.display = 'none';
+        switchNavSection('hunting');
+        TriageConsole.log(`[+] Settings saved. AI verification: ${aiEnabled ? 'ON' : 'OFF'}.`, 'color-green');
+        UIUpdater.applySettings();
+      });
+
+      bind('btn-view-explanation', 'click', () => {
+        const taskId = GameState.currentTask;
+        const task = GameState.tasks[taskId];
+        if (task && task.completed) {
+          showExplanationModal(taskId);
+        } else if (GameState.tasks[taskId - 1] && GameState.tasks[taskId - 1].completed) {
+          showExplanationModal(taskId - 1);
         }
-        container.appendChild(bar);
-      }
-    }
+      });
 
-    function updateHistogramPulse() {
-      const bars = document.querySelectorAll('.histo-bar');
-      if (!bars || bars.length === 0) return;
-      const lastBar = bars[bars.length - 1];
-      const newHeight = Math.floor(Math.random() * 85) + 15;
-      lastBar.style.height = newHeight + '%';
-      if (Math.random() > 0.8) {
-        lastBar.className = 'histo-bar histo-alert';
-      } else if (Math.random() > 0.5) {
-        lastBar.className = 'histo-bar histo-warn';
-      } else {
-        lastBar.className = 'histo-bar histo-normal';
-      }
-    }
+      bind('btn-close-explanation', 'click', () => {
+        document.getElementById('explanation-modal').style.display = 'none';
+      });
+      bind('btn-close-explanation-footer', 'click', () => {
+        document.getElementById('explanation-modal').style.display = 'none';
+      });
 
-    function switchMobileTab(tab) {
-      document.querySelectorAll('.mobile-tab-btn').forEach(b => b.classList.remove('active'));
-      if (event && event.currentTarget) event.currentTarget.classList.add('active');
+      // Triage Buttons in Alert Queue
+      bind('btn-triage-investigate', 'click', () => {
+        if (!GameState.selectedAlertId) {
+          TriageConsole.log("[!] Please select an alert from the queue first.", "color-amber");
+          return;
+        }
+        const alert = AlertEngine.alerts[GameState.selectedAlertId];
+        if (!alert) return;
+        TriageConsole.log(`Running host investigations for alert IP: ${alert.ip}...`, 'color-cyan');
+        TriageConsole.executeCommand('scan', [alert.ip], `scan ${alert.ip}`);
+      });
 
-      const telemetry = document.getElementById('pane-telemetry');
-      const fields = document.getElementById('fields-sidebar');
-      const mission = document.getElementById('pane-mission');
+      bind('btn-triage-fp', 'click', () => {
+        if (!GameState.selectedAlertId) {
+          TriageConsole.log("[!] Please select an alert from the queue first.", "color-amber");
+          return;
+        }
+        const alert = AlertEngine.alerts[GameState.selectedAlertId];
+        if (!alert) return;
+        const activeTaskId = GameState.tasks[GameState.currentTask] ? (GameState.tasks[GameState.currentTask].originalId || GameState.currentTask) : GameState.currentTask;
+        if (activeTaskId === 27) {
+          TriageConsole.executeCommand('classify', [alert.id, 'FALSE_POSITIVE'], `classify ${alert.id} FALSE_POSITIVE`);
+        } else if (activeTaskId === 26) {
+          TriageConsole.log("[-] Classify alerts using severity levels (CRITICAL, HIGH, etc.). False Positive is invalid severity.", "color-red");
+        } else {
+          AlertEngine.updateAlertStatus(alert.id, "FALSE_POSITIVE");
+          TriageConsole.log(`[+] Classified alert ${alert.id} as False Positive.`, 'color-green');
+        }
+      });
 
-      if (telemetry) telemetry.classList.remove('mobile-active-view');
-      if (fields) fields.classList.remove('mobile-active-view');
-      if (mission) mission.classList.remove('mobile-active-view');
+      bind('btn-triage-resolve', 'click', () => {
+        if (!GameState.selectedAlertId) {
+          TriageConsole.log("[!] Please select an alert from the queue first.", "color-amber");
+          return;
+        }
+        const id = GameState.selectedAlertId;
+        AlertEngine.updateAlertStatus(id, "RESOLVED");
+        TriageConsole.log(`[+] Alert ${id} marked RESOLVED.`, "color-green");
+      });
 
-      if (tab === 'telemetry' && telemetry) telemetry.classList.add('mobile-active-view');
-      if (tab === 'fields' && fields) fields.classList.add('mobile-active-view');
-      if (tab === 'mission' && mission) {
-        mission.classList.add('mobile-active-view');
-        switchWorkbenchTab('dossier');
-      }
-      if (tab === 'terminal' && mission) {
-        mission.classList.add('mobile-active-view');
-        switchWorkbenchTab('terminal');
-      }
+      bind('btn-triage-escalate', 'click', () => {
+        if (!GameState.selectedAlertId) {
+          TriageConsole.log("[!] Please select an alert from the queue first.", "color-amber");
+          return;
+        }
+        const id = GameState.selectedAlertId;
+        AlertEngine.updateAlertStatus(id, "ESCALATED");
+        TriageConsole.log(`[+] Alert ${id} escalated to Tier 2.`, "color-amber");
+        const activeTaskId = GameState.tasks[GameState.currentTask] ? (GameState.tasks[GameState.currentTask].originalId || GameState.currentTask) : GameState.currentTask;
+        if (activeTaskId === 82) {
+          TriageConsole.executeCommand('escalate', [id], `escalate ${id}`);
+        }
+      });
+
+      bind('btn-triage-block', 'click', () => {
+        if (!GameState.selectedAlertId) {
+          TriageConsole.log("[!] Please select an alert from the queue first.", "color-amber");
+          return;
+        }
+        const alert = AlertEngine.alerts[GameState.selectedAlertId];
+        if (alert) TriageConsole.executeCommand('block', [alert.ip], `block ${alert.ip}`);
+      });
+
+      // Academy & Rules close buttons
+      bind('btn-close-academy', 'click', () => {
+        document.getElementById('academy-modal').style.display = 'none';
+        switchNavSection('hunting');
+      });
+      bind('btn-close-academy-footer', 'click', () => {
+        document.getElementById('academy-modal').style.display = 'none';
+        switchNavSection('hunting');
+      });
+      bind('btn-close-rules', 'click', () => {
+        document.getElementById('rules-modal').style.display = 'none';
+        switchNavSection('hunting');
+      });
+      bind('btn-close-inspector', 'click', () => {
+        document.getElementById('log-inspector-modal').style.display = 'none';
+      });
+      bind('btn-end-session', 'click', () => endTrainingSession());
+
+      document.querySelectorAll('.academy-tab-btn').forEach(btn => {
+        btn.onclick = () => openAcademyTab(btn.dataset.tab);
+      });
     }
 
     window.onload = () => {
@@ -7646,8 +7367,6 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       const loaded = loadProgress();
       TriageConsole.init();
       LogEngine.init();
-      UIUpdater.init(loaded);
-      setupGUIActions();
       UIUpdater.init(loaded);
       setupGUIActions();
 
