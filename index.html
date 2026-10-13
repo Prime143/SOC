@@ -890,6 +890,50 @@
       background: #0369a1;
     }
 
+    .btn-auto-solve {
+      flex: 1;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(56, 189, 248, 0.15));
+      border: 1px solid #f59e0b;
+      color: #fcd34d;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .btn-auto-solve:hover {
+      background: #f59e0b;
+      color: #0b0f19;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
+    }
+
+    .btn-quick-solve {
+      flex: 1;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(56, 189, 248, 0.15));
+      border: 1px solid #10b981;
+      color: #6ee7b7;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .btn-quick-solve:hover {
+      background: #10b981;
+      color: #0b0f19;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.35);
+    }
+
     /* CLI Terminal Tab */
     .terminal-view-container {
       flex: 1;
@@ -1471,6 +1515,10 @@
               <div class="answer-input-row">
                 <input type="text" class="answer-text-input" id="case-answer-input" placeholder="e.g. 198.51.100.12 or scan 10.142.12.15..." />
                 <button class="btn-submit-answer" id="btn-submit-case-answer">Submit Analysis</button>
+              </div>
+              <div style="display: flex; gap: 6px; margin-top: 4px;">
+                <button type="button" class="btn-auto-solve" id="btn-auto-solve" title="Auto-fill verified answer into input box">⚡ Auto-Fill Solution</button>
+                <button type="button" class="btn-quick-solve" id="btn-quick-solve" title="Instantly solve current case and advance">🚀 Auto-Solve &amp; Advance</button>
               </div>
             </div>
           </div>
@@ -5641,7 +5689,8 @@ TCP SYN Packet captured from external source host.`, "color-blue");
   hint              - Force reveal the next level objective hint for current task
   
 Task Commands Reference:
-  explanation [id]  - View detailed walkthrough and context of a completed task
+  solve / solution  - Auto-solve current case with verified command
+  explanation [id]  - View detailed pedagogical walkthrough and concept guide
   next              - Proceed to the next objective after completing the current task
   skip              - Bypass the current task and jump to the next uncompleted task
   identify <type>   | srcip <IP>        | classify <id> <sev> | order <ids...>
@@ -5671,7 +5720,14 @@ Task Commands Reference:
           return;
         }
 
-        if (cmd === 'explanation' || cmd === 'solution') {
+        if (cmd === 'solve' || cmd === 'solution') {
+          if (typeof autoSolveCurrentTask === 'function') {
+            autoSolveCurrentTask();
+          }
+          return;
+        }
+
+        if (cmd === 'explanation') {
           let id = GameState.currentTask - 1;
           if (args.length > 0) {
             const parsed = parseInt(args[0]);
@@ -5683,7 +5739,7 @@ Task Commands Reference:
           if (task && task.completed) {
             showExplanationModal(id);
           } else {
-            this.log(`[!] Task ${id} is not completed yet. Explanations can only be viewed for completed tasks.`, "color-amber");
+            showExplanationModal(GameState.currentTask);
           }
           return;
         }
@@ -6958,6 +7014,105 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       }
     }
 
+    function getTaskSolution(taskId) {
+      const brief = taskBriefings[taskId];
+      if (!brief) return null;
+
+      if (taskId === 19) {
+        const hash = Math.abs(hashCode("82.102.23.4"));
+        const correctCity = ["St Petersburg", "Shanghai", "Sao Paulo", "Pyongyang", "Amsterdam"][hash % 5];
+        return `recommend ${correctCity}`;
+      }
+
+      if (taskId === 26) {
+        if (GameState.config.alertListTask3 && GameState.config.alertListTask3.length > 0) {
+          return GameState.config.alertListTask3.map(a => `classify ${a.id} ${a.severity}`);
+        }
+        return ['classify ALRT-1001 CRITICAL', 'classify ALRT-1002 HIGH', 'classify ALRT-1003 WARNING'];
+      }
+
+      if (taskId === 51 || taskId === 75) {
+        const seq = getTask4CorrectSequence();
+        return `order ${seq.join(' ')}`;
+      }
+
+      if (taskId === 53) {
+        const targets = GameState.config.lateralTask12 ? GameState.config.lateralTask12.targets : [];
+        return `lateral ${targets.join(' ')}`;
+      }
+
+      if (taskId === 76) {
+        const targetIp = (GameState.config.containmentTask41 && GameState.config.containmentTask41.attacker) ? GameState.config.containmentTask41.attacker : '198.51.100.77';
+        return `block ${targetIp}`;
+      }
+
+      if (taskId === 82) {
+        return 'escalate';
+      }
+
+      if (taskId === 110) {
+        const cfg = GameState.config.apt34BeaconTask25;
+        if (cfg) return `beacon ${cfg.host} ${cfg.c2}`;
+      }
+
+      const wt = (brief.explanation && brief.explanation.walkthrough) || '';
+      const codeMatch = wt.match(/<code>(.*?)<\/code>/i);
+      let sol = codeMatch ? codeMatch[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&') : '';
+
+      if (!sol && brief.prompt) {
+        const exMatch = brief.prompt.match(/Example:\s*([^\n]+)/i);
+        if (exMatch) sol = exMatch[1].trim();
+      }
+
+      if (sol) {
+        sol = HintEngine.formatHintVariables(sol, taskId);
+      }
+
+      return sol;
+    }
+
+    function autoFillCurrentTask() {
+      const stepId = GameState.currentTask;
+      const taskId = GameState.tasks[stepId] ? (GameState.tasks[stepId].originalId || stepId) : stepId;
+      const brief = taskBriefings[taskId];
+      if (!brief) return;
+
+      const sol = getTaskSolution(taskId);
+      const input = document.getElementById('case-answer-input');
+
+      if (Array.isArray(sol)) {
+        if (input) input.value = sol[0];
+        TriageConsole.log(`[⚡ AUTO-FILL] Task ${taskId}: Multi-step triage required.`, 'color-cyan');
+        sol.forEach(cmd => TriageConsole.log(`   👉 ${cmd}`, 'color-amber'));
+        TriageConsole.log(`[*] Loaded first command into input. Click "Submit Analysis" or "Auto-Solve & Advance".`, 'color-green');
+      } else if (sol) {
+        if (input) input.value = sol;
+        TriageConsole.log(`[⚡ AUTO-FILL] Task ${taskId} (${brief.title}): Loaded command '${sol}'`, 'color-cyan');
+        if (brief.explanation && brief.explanation.context) {
+          TriageConsole.log(`[💡 CONCEPT] ${brief.explanation.context}`, 'color-gray');
+        }
+        TriageConsole.log(`[*] Click "Submit Analysis" or hit Enter to complete this case!`, 'color-green');
+      }
+    }
+
+    function autoSolveCurrentTask() {
+      const stepId = GameState.currentTask;
+      const taskId = GameState.tasks[stepId] ? (GameState.tasks[stepId].originalId || stepId) : stepId;
+      const brief = taskBriefings[taskId];
+      if (!brief) return;
+
+      const sol = getTaskSolution(taskId);
+      TriageConsole.log(`[🚀 AUTO-SOLVE] Executing verified solution for Task ${taskId}: ${brief.title}...`, 'color-amber');
+
+      if (Array.isArray(sol)) {
+        sol.forEach(cmd => TriageConsole.handleInput(cmd));
+      } else if (sol) {
+        const input = document.getElementById('case-answer-input');
+        if (input) input.value = sol;
+        TriageConsole.handleInput(sol);
+      }
+    }
+
     function showExplanationModal(taskId) {
       const brief = taskBriefings[taskId];
       if (!brief) return;
@@ -7208,6 +7363,14 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
           }
         });
       }
+
+      bind('btn-auto-solve', 'click', () => {
+        autoFillCurrentTask();
+      });
+
+      bind('btn-quick-solve', 'click', () => {
+        autoSolveCurrentTask();
+      });
 
       bind('btn-run-query', 'click', () => {
         const query = document.getElementById('siem-spl-input').value;
