@@ -7,1194 +7,2010 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <style>
+          <style>
     :root {
-      --bg: #030509;
-      --panel: #0b0f19;
-      --panel2: #06090f;
-      --border: #1a2333;
-      --green: #00e676;
-      --cyan: #00e5ff;
+      --bg-base: #06090f;
+      --bg-header: #0a0e17;
+      --bg-panel: #0d121d;
+      --bg-card: #111726;
+      --bg-hover: #172033;
+      --bg-input: #05080e;
+      
+      --border-subtle: #141b2b;
+      --border: #1a2336;
+      --border-accent: #38bdf8;
+      --border-focus: #0284c7;
+      
+      --text-main: #f8fafc;
+      --text-sub: #cbd5e1;
+      --text-dim: #718096;
+      --text-muted: #4a5568;
+      
+      --blue: #38bdf8;
+      --splunk-green: #10b981;
+      --green-glow: rgba(16, 185, 129, 0.2);
       --amber: #f59e0b;
-      --red: #ff3366;
-      --dim: #64748b;
-      --text: #e2e8f0;
-      --gg: 0 0 10px rgba(0, 230, 118, 0.35);
-      --gr: 0 0 10px rgba(255, 51, 102, 0.35);
-      --ga: 0 0 10px rgba(245, 158, 11, 0.35);
-      --gc: 0 0 10px rgba(0, 229, 255, 0.35);
+      --red: #ef4444;
+      --purple: #c084fc;
+      --indigo: #818cf8;
+
+      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
     }
 
-    /* Global Reset & Styling */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    }
-
-    .mono-text, .log-feed, .console-output, .console-input, .console-prompt, .objective-box, .task-checklist, .hint-box {
-      font-family: 'Fira Code', 'Consolas', monospace;
-    }
-
-    .tech-text, .header-logo, .panel-header, .stat-badge, .header-middle, .summary-title, .metric-value, .action-btn {
-      font-family: 'Share Tech Mono', 'Consolas', monospace;
+      font-family: var(--font-ui);
     }
 
     body {
-      background-color: var(--bg);
-      color: var(--green);
+      background-color: var(--bg-base);
+      color: var(--text-main);
       height: 100vh;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      position: relative;
-    }
-
-    /* Subtle CRT Scanline overlay */
-    body.scanlines-enabled::before {
-      content: " ";
-      display: block;
-      position: fixed;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      right: 0;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                  linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.04));
-      background-size: 100% 4px, 6px 100%;
-      z-index: 9999;
-      pointer-events: none;
-      opacity: 0.5;
-    }
-
-    /* Glowing Borders and Text */
-    .glow-green {
-      text-shadow: var(--gg);
-    }
-    .glow-border {
-      border: 1px solid var(--border);
-      box-shadow: 0 0 10px rgba(0, 255, 136, 0.05);
-    }
-    .glow-border-alert {
-      border: 1px solid var(--red);
-      box-shadow: var(--gr);
+      font-size: 13px;
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
     }
 
     /* Colors and Accents */
-    .color-green { color: var(--green); }
-    .color-amber { color: var(--amber); }
-    .color-red { color: var(--red); }
-    .color-cyan { color: var(--cyan); }
-    .color-gray { color: var(--dim); }
-
-    .bg-dark-panel { background-color: var(--panel); }
-    .bg-darker { background-color: var(--panel2); }
+    .color-green { color: var(--splunk-green) !important; }
+    .color-amber { color: var(--amber) !important; }
+    .color-red { color: var(--red) !important; }
+    .color-cyan { color: var(--blue) !important; }
+    .color-purple { color: var(--purple) !important; }
+    .color-gray { color: var(--text-dim) !important; }
 
     /* Custom Scrollbars */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #0f131a;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #1f2937;
-      border-radius: 3px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #00ff88;
-    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #070a12; }
+    ::-webkit-scrollbar-thumb { background: #1c263b; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #2d3e5f; }
 
-    /* Header Styling */
-    header {
-      height: 55px;
-      border-bottom: 1px solid rgba(0, 230, 118, 0.3);
+    /* ====================================================
+       TOP ENTERPRISE APPLICATION BAR (Splunk ES / Sentinel)
+       ==================================================== */
+    .siem-top-header {
+      height: 46px;
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border);
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: center;
-      padding: 0 20px;
-      background-color: rgba(6, 9, 15, 0.85);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-      z-index: 10;
+      padding: 0 14px;
+      flex-shrink: 0;
+      z-index: 100;
     }
 
-    .header-logo {
-      font-size: 1.2rem;
-      font-weight: bold;
-      letter-spacing: 2px;
+    .siem-brand-cluster {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 16px;
     }
 
-    .header-logo span {
-      background: #00ff88;
-      color: #0a0d12;
-      padding: 2px 6px;
-      font-size: 0.8rem;
-      border-radius: 2px;
-    }
-
-    .header-middle {
+    .siem-app-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
       font-size: 0.95rem;
+      letter-spacing: 0.5px;
+      color: #fff;
+    }
+
+    .siem-logo-caret {
+      color: #ea580c;
+      font-weight: 900;
+      font-size: 1.1rem;
+    }
+
+    .siem-app-badge {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
       text-transform: uppercase;
     }
 
-    .header-stats {
-      display: flex;
-      gap: 20px;
-      font-size: 0.9rem;
-    }
-
-    .stat-badge {
-      border: 1px solid #1f2937;
-      padding: 2px 8px;
-      border-radius: 3px;
-      background: #07090d;
-    }
-
-    .threat-badge {
-      font-weight: bold;
-      padding: 2px 8px;
-      border-radius: 3px;
-    }
-
-    .threat-low { background: rgba(0, 255, 136, 0.15); color: #00ff88; border: 1px solid #00ff88; }
-    .threat-medium { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #f59e0b; }
-    .threat-high { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; }
-    .threat-critical { background: #ef4444; color: #0a0d12; border: 1px solid #ef4444; animation: pulse-red 1s infinite alternate; }
-
-    @keyframes pulse-red {
-      0% { box-shadow: 0 0 5px #ef4444; }
-      100% { box-shadow: 0 0 20px #ef4444; }
-    }
-
-    /* Main Container Split Grid */
-    .main-grid {
-      display: grid;
-      grid-template-columns: 22% 53% 25%;
-      height: calc(100vh - 320px);
-      background-color: transparent;
-      gap: 1px;
-    }
-
-    .panel {
-      display: flex;
-      flex-direction: column;
-      background: var(--panel2);
-      border-right: 1px solid var(--border);
-      overflow: hidden;
-    }
-
-    .panel:last-child {
-      border-right: none;
-    }
-
-    .panel-header {
-      height: 35px;
-      background: #0c1017;
-      border-bottom: 1px solid #1f2937;
+    .siem-nav-tabs {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 0 12px;
-      font-size: 0.8rem;
-      font-weight: bold;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: #6b7280;
+      gap: 4px;
     }
 
-    .panel-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 15px;
-      position: relative;
-    }
-
-    /* Left Sidebar: Task Panel */
-    .task-section-title {
-      font-size: 0.85rem;
-      font-weight: bold;
-      color: #22d3ee;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      border-bottom: 1px solid #1f2937;
-      padding-bottom: 4px;
-      margin-top: 10px;
-    }
-
-    .task-section-title:first-of-type {
-      margin-top: 0;
-    }
-
-    .objective-box {
-      font-size: 0.85rem;
-      line-height: 1.4;
-      background: #07090d;
-      padding: 10px;
-      border: 1px dashed #22d3ee;
-      margin-bottom: 10px;
-      color: #e5e7eb;
-      white-space: pre-wrap;
-    }
-
-    .task-checklist {
-      list-style: none;
-      margin-bottom: 10px;
-      max-height: 250px;
-      overflow-y: auto;
-      border: 1px solid #1f2937;
-      background: #07090d;
-      padding: 5px;
-    }
-
-    .task-item {
-      font-size: 0.75rem;
-      padding: 4px 2px;
+    .siem-nav-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-sub);
+      font-size: 0.76rem;
+      font-weight: 600;
+      padding: 5px 11px;
+      border-radius: 4px;
+      cursor: pointer;
       display: flex;
       align-items: center;
       gap: 6px;
-      border-bottom: 1px solid #111827;
+      transition: all 0.15s ease;
     }
 
-    .task-item:last-child {
-      border-bottom: none;
+    .siem-nav-btn:hover {
+      background: var(--bg-hover);
+      color: #fff;
     }
 
-    .task-item.active {
-      color: #00ff88;
-      font-weight: bold;
-      background: rgba(0, 255, 136, 0.05);
+    .siem-nav-btn.active {
+      background: #131d2e;
+      border-color: rgba(56, 189, 248, 0.4);
+      color: var(--blue);
     }
 
-    .task-item.locked {
-      color: #4b5563;
+    .siem-top-telemetry {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
     }
 
-    .task-item.verified {
-      color: #10b981;
+    .telemetry-chip {
+      background: #090e18;
+      border: 1px solid var(--border-subtle);
+      padding: 3px 8px;
+      border-radius: 4px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
     }
 
-    .hint-box {
-      font-size: 0.8rem;
-      line-height: 1.4;
-      background: #111827;
-      border-left: 3px solid #f59e0b;
-      padding: 8px;
-      margin-top: 8px;
-      color: #f3f4f6;
+    .telemetry-chip strong {
+      color: var(--text-main);
     }
 
-    .hint-reveal-btn {
-      width: 100%;
-      background: transparent;
-      border: 1px solid #f59e0b;
-      color: #f59e0b;
-      padding: 6px;
-      font-size: 0.75rem;
+    .btn-end-session-chip {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--red);
+      padding: 4px 9px;
+      border-radius: 4px;
       cursor: pointer;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .btn-end-session-chip:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+
+    /* ====================================================
+       NOTABLE INCIDENT CASE BANNER / JIRA-STYLE STRIP
+       ==================================================== */
+    .siem-mission-strip {
+      background: #090e18;
+      border-bottom: 1px solid var(--border);
+      padding: 6px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      min-height: 38px;
+    }
+
+    .mission-case-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.76rem;
+    }
+
+    .case-id-tag {
+      background: rgba(192, 132, 252, 0.15);
+      border: 1px solid rgba(192, 132, 252, 0.4);
+      color: var(--purple);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 3px;
+      font-size: 0.72rem;
+    }
+
+    .case-title-text {
+      color: #f8fafc;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .case-status-badge {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: 700;
       text-transform: uppercase;
-      margin-top: 8px;
-      transition: all 0.2s;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--blue);
+      border: 1px solid rgba(56, 189, 248, 0.3);
     }
 
-    .hint-reveal-btn:hover {
-      background: rgba(245, 158, 11, 0.1);
-      box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
+    .threat-badge {
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.65rem;
+    }
+    .threat-low { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .threat-medium { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .threat-high { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .threat-critical { background: #ef4444; color: #fff; }
+
+    .mission-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    /* Center Panel: Live Log Feed */
-    .log-feed-container {
+    .terminal-button {
+      background: #111827;
+      border: 1px solid var(--border);
+      color: var(--text-sub);
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.74rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .terminal-button:hover {
+      background: var(--bg-hover);
+      color: #fff;
+      border-color: #374151;
+    }
+    .terminal-button.btn-primary {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: var(--blue);
+    }
+    .terminal-button.btn-primary:hover {
+      background: rgba(56, 189, 248, 0.25);
+    }
+    .terminal-button.btn-amber {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.35);
+      color: var(--amber);
+    }
+    .terminal-button.btn-amber:hover {
+      background: rgba(245, 158, 11, 0.22);
+    }
+
+    /* ====================================================
+       SPLUNK SEARCH QUERY BAR
+       ==================================================== */
+    .siem-search-section {
+      background: #080c15;
+      border-bottom: 1px solid var(--border);
+      padding: 7px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .search-input-wrapper {
+      display: flex;
+      align-items: center;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+    .search-input-wrapper:focus-within {
+      border-color: var(--border-accent);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.2);
+    }
+
+    .search-prompt-icon {
+      padding: 0 10px;
+      color: var(--blue);
+      font-size: 0.85rem;
+    }
+
+    .siem-spl-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #f1f5f9;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 7px 4px;
+    }
+
+    .btn-search-exec {
+      background: #059669;
+      color: #fff;
+      border: none;
+      padding: 7px 16px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease;
+    }
+    .btn-search-exec:hover {
+      background: #10b981;
+    }
+
+    .search-presets-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 1px;
+    }
+
+    .preset-label {
+      font-size: 0.68rem;
+      color: var(--text-dim);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .query-chip {
+      background: #0d1422;
+      border: 1px solid #1c263b;
+      color: var(--text-sub);
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .query-chip:hover {
+      background: #182338;
+      border-color: #2d3e5f;
+      color: #fff;
+    }
+    .query-chip.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: var(--blue);
+    }
+
+    /* ====================================================
+       TEMPORAL EVENT VOLUME HISTOGRAM (Splunk Timeline Bar)
+       ==================================================== */
+    .siem-histogram-container {
+      background: #060910;
+      border-bottom: 1px solid var(--border);
+      padding: 4px 14px 6px 14px;
+      flex-shrink: 0;
+    }
+
+    .histogram-meta-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.68rem;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+      font-family: var(--font-mono);
+    }
+
+    .histogram-bars-wrapper {
+      height: 24px;
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      background: #080d16;
+      border: 1px solid #131a28;
+      border-radius: 3px;
+      padding: 2px 6px;
+      overflow: hidden;
+    }
+
+    .histo-bar {
+      flex: 1;
+      min-width: 3px;
+      border-radius: 1px 1px 0 0;
+      transition: height 0.3s ease, background-color 0.2s ease;
+    }
+    .histo-normal { background: #0284c7; }
+    .histo-warn { background: #f59e0b; }
+    .histo-alert { background: #ef4444; }
+
+    /* ====================================================
+       MAIN 3-COLUMN WORKSPACE (FIELDS, TELEMETRY, MISSION)
+       ==================================================== */
+    .siem-main-workspace {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      overflow: hidden;
       position: relative;
+    }
+
+    /* Pane 1: Splunk "Interesting Fields" Sidebar */
+    .fields-sidebar {
+      width: 230px;
+      background: #080c14;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+
+    .fields-header {
+      padding: 8px 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-sub);
+      border-bottom: 1px solid var(--border-subtle);
+      background: #0b101c;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .fields-group-title {
+      padding: 8px 12px 4px 12px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .field-item {
+      padding: 5px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.74rem;
+      color: var(--text-sub);
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      transition: all 0.12s ease;
+    }
+    .field-item:hover {
+      background: #0f1726;
+      color: #fff;
+    }
+    .field-item.active {
+      background: #141f33;
+      border-left-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .field-name {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+    }
+
+    .field-count {
+      color: var(--text-dim);
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+    }
+
+    .field-sublist {
+      padding: 2px 12px 6px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .field-sub-val {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      display: flex;
+      justify-content: space-between;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 2px;
+    }
+    .field-sub-val:hover {
+      background: #131c2d;
+      color: var(--blue);
+    }
+    .field-sub-val span.val-pct {
+      color: var(--blue);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+    }
+
+    /* Pane 2: Live Telemetry Grid & In-line Drawer */
+    .telemetry-pane {
+      flex: 1;
+      min-width: 0;
+      background: var(--bg-base);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-right: 1px solid var(--border);
+    }
+
+    .pane-header-title {
+      padding: 8px 12px;
+      background: #090e18;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .log-table-wrapper {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: auto;
+      background: #050811;
+    }
+
+    .log-feed-header-row {
+      display: grid;
+      grid-template-columns: 24px 84px 68px 58px 190px 125px minmax(280px, 1fr);
+      min-width: 840px;
+      gap: 6px;
+      padding: 6px 10px;
+      background: #080d17;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     .log-feed {
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      font-size: 0.75rem;
+      min-width: 840px;
+    }
+
+    .log-row-container {
+      border-bottom: 1px solid #101624;
     }
 
     .log-line {
-      display: flex;
-      white-space: normal;
-      word-break: break-all;
-      line-height: 1.3;
-      padding: 3px 6px;
-      border-radius: 2px;
-      transition: background 0.15s;
+      display: grid;
+      grid-template-columns: 24px 84px 68px 58px 190px 125px minmax(280px, 1fr);
+      gap: 6px;
+      padding: 5px 10px;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.12s ease;
+      color: #e2e8f0;
     }
-
     .log-line:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background: #0f1726;
     }
 
-    .log-line.log-info { color: #00ff88; }
-    .log-line.log-warn { color: #f59e0b; }
-    .log-line.log-crit { color: #ef4444; }
+    .expand-arrow {
+      color: var(--text-dim);
+      font-size: 0.65rem;
+      transition: transform 0.15s ease;
+      user-select: none;
+    }
+    .expand-arrow.open {
+      transform: rotate(90deg);
+      color: var(--blue);
+    }
+
+    .log-time { color: #94a3b8; font-size: 0.72rem; }
     
-    .log-line.log-highlight {
-      border: 1px solid #22d3ee;
-      background: rgba(34, 211, 238, 0.1);
-      color: #22d3ee;
-      animation: highlight-glow 1.5s infinite alternate;
+    .sensor-tag {
+      font-size: 0.64rem;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      text-align: center;
+    }
+    .sensor-nidps { background: rgba(192, 132, 252, 0.15); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.3); }
+    .sensor-hidps { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .sensor-waf { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .sensor-firewall { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .sensor-auth { background: rgba(129, 140, 248, 0.15); color: #818cf8; border: 1px solid rgba(129, 140, 248, 0.3); }
+
+    .action-tag {
+      font-size: 0.64rem;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      text-align: center;
+    }
+    .action-alert { background: rgba(239, 68, 68, 0.18); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.35); }
+    .action-drop { background: rgba(239, 68, 68, 0.28); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.5); }
+    .action-pass { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .action-reset { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
+
+    .log-endpoint {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.72rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .endpoint-src { color: #38bdf8; font-weight: 600; }
+    .endpoint-arrow { color: var(--text-dim); font-size: 0.65rem; }
+    .endpoint-dst { color: #94a3b8; }
+
+    .log-rule-sig {
+      color: #cbd5e1;
+      font-size: 0.7rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    @keyframes highlight-glow {
-      0% { box-shadow: inset 0 0 5px rgba(34, 211, 238, 0.3); }
-      100% { box-shadow: inset 0 0 15px rgba(34, 211, 238, 0.6); }
+    .log-desc {
+      color: #f8fafc;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    .log-time { color: #6b7280; margin-right: 8px; flex-shrink: 0; }
-    .log-sev { font-weight: bold; margin-right: 8px; flex-shrink: 0; }
-    .log-ip { color: #22d3ee; margin-right: 8px; flex-shrink: 0; }
-    .log-type { font-weight: bold; margin-right: 8px; flex-shrink: 0; }
-    .log-desc { flex-grow: 1; }
-
-    .stream-status-overlay {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      background: rgba(34, 211, 238, 0.85);
-      color: #0a0d12;
-      padding: 4px 8px;
-      font-size: 0.75rem;
-      font-weight: bold;
-      border-radius: 2px;
-      pointer-events: none;
+    /* Splunk In-Line Accordion Row Drawer */
+    .log-drawer-details {
       display: none;
-      box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+      background: #090e18;
+      border-top: 1px solid #141c2c;
+      padding: 10px 14px;
     }
-
-    .panel-content:hover .stream-status-overlay {
+    .log-drawer-details.open {
       display: block;
     }
 
-    /* Right Panel: Alert Queue */
-    .alert-queue {
+    .drawer-actions-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .drawer-btn {
+      background: #111a2a;
+      border: 1px solid #1e2c44;
+      color: var(--text-sub);
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .drawer-btn:hover {
+      background: #1a273e;
+      color: #fff;
+    }
+    .drawer-btn.shun {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #ef4444;
+    }
+
+    /* Pane 3: Incident Case Dossier & Forensic CLI */
+    .mission-pane {
+      width: 440px;
+      background: #090d16;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .workbench-tabs-header {
+      display: flex;
+      background: #070a12;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .wb-tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-dim);
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 8px 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .wb-tab-btn:hover {
+      background: #0d121f;
+      color: #fff;
+    }
+    .wb-tab-btn.active {
+      color: var(--blue);
+      border-bottom-color: var(--blue);
+      background: #0c1220;
+    }
+
+    .workbench-tab-content {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Dossier View */
+    .dossier-view-container {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
 
-    .alert-card {
-      background: #0d121b;
-      border: 1px solid #1f2937;
-      border-left: 4px solid #f59e0b;
+    .dossier-card {
+      background: #0c1220;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+    }
+
+    .dossier-card-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--blue);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .objective-box {
+      background: #060910;
+      border: 1px solid #1a263c;
+      border-left: 3px solid var(--blue);
       padding: 10px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      line-height: 1.5;
+      color: #f1f5f9;
+    }
+
+    .dossier-asset-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+    }
+    .asset-meta-item {
+      background: #080d16;
+      border: 1px solid #151d2e;
+      padding: 4px 8px;
       border-radius: 3px;
-      cursor: pointer;
+      color: var(--text-dim);
+    }
+    .asset-meta-item strong {
+      color: var(--text-main);
+    }
+
+    .idps-concept-box {
+      background: rgba(192, 132, 252, 0.08);
+      border: 1px solid rgba(192, 132, 252, 0.25);
+      border-radius: 4px;
+      padding: 10px;
       font-size: 0.75rem;
-      transition: all 0.2s;
-      position: relative;
+      line-height: 1.45;
+      color: #e2e8f0;
     }
 
+    .interactive-answer-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .answer-input-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .answer-text-input {
+      flex: 1;
+      background: #050810;
+      border: 1px solid #23314a;
+      border-radius: 4px;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      padding: 7px 10px;
+      outline: none;
+    }
+    .answer-text-input:focus {
+      border-color: var(--blue);
+    }
+
+    .btn-submit-answer {
+      background: #0284c7;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 7px 14px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.15s ease;
+    }
+    .btn-submit-answer:hover {
+      background: #0369a1;
+    }
+
+    /* CLI Terminal Tab */
+    .terminal-view-container {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      background: #04060b;
+    }
+
+    .console-output {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 10px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      line-height: 1.45;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .console-input-row {
+      background: #080d16;
+      border-top: 1px solid var(--border);
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .console-prompt {
+      color: var(--splunk-green);
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .console-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #f8fafc;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+    }
+
+    /* Incident Queue Tab */
+    .alerts-view-container {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .alert-card {
+      background: #0b101c;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
     .alert-card:hover {
-      border-color: #9ca3af;
-      transform: translateY(-2px);
+      background: #111828;
+      border-color: #2a3b5a;
     }
-
     .alert-card.selected {
-      border-color: #22d3ee;
-      box-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
-    }
-
-    .alert-card.crit {
-      border-left-color: #ef4444;
-    }
-
-    .alert-card.warn {
-      border-left-color: #f59e0b;
-    }
-
-    .alert-card.info {
-      border-left-color: #22d3ee;
+      border-color: var(--blue);
+      background: #101a2d;
     }
 
     .alert-card-header {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 6px;
-      font-weight: bold;
-    }
-
-    .alert-card-body {
-      color: #9ca3af;
-      margin-bottom: 6px;
-      line-height: 1.3;
-    }
-
-    .alert-card-footer {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.7rem;
-      color: #6b7280;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      margin-bottom: 4px;
     }
 
     .alert-badge {
       font-size: 0.65rem;
-      padding: 1px 4px;
-      border-radius: 2px;
-      font-weight: bold;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 3px;
+    }
+    .badge-critical { background: #ef4444; color: #fff; }
+    .badge-high { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .badge-warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); }
+
+    .alert-triage-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .alert-triage-btn {
+      background: #111a28;
+      border: 1px solid #1e2c44;
+      color: var(--text-sub);
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .alert-triage-btn:hover {
+      background: #1a273e;
+      color: #fff;
+    }
+    .alert-triage-btn.investigate { border-color: var(--blue); color: var(--blue); }
+    .alert-triage-btn.block { border-color: var(--red); color: var(--red); }
+
+    /* Modals & Popups */
+    .siem-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(4, 7, 13, 0.82);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
 
-    .badge-crit { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; }
-    .badge-warn { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #f59e0b; }
-    .badge-info { background: rgba(34, 211, 238, 0.15); color: #22d3ee; border: 1px solid #22d3ee; }
-
-    /* Bottom: Triage Console Section */
-    .bottom-section {
-      height: 240px;
-      background-color: #07090d;
-      border-top: 2px solid #1f2937;
-      display: grid;
-      grid-template-columns: 75% 25%;
-    }
-
-    .console-panel {
+    .siem-modal-window {
+      background: #0d121d;
+      border: 1px solid #25334c;
+      border-radius: 8px;
+      width: 900px;
+      max-width: 95vw;
+      max-height: 88vh;
       display: flex;
       flex-direction: column;
-      padding: 10px 15px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
       overflow: hidden;
     }
 
-    .console-output {
+    .siem-modal-header {
+      padding: 12px 18px;
+      background: #090e18;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .siem-modal-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .siem-modal-body {
       flex: 1;
+      min-height: 0;
       overflow-y: auto;
-      font-size: 0.8rem;
+      padding: 16px 20px;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+
+    .siem-modal-footer {
+      padding: 10px 18px;
+      background: #090e18;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .modal-close-icon {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .modal-close-icon:hover { color: #fff; }
+
+    /* Inspector & Rules Tables */
+    .inspector-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      margin-bottom: 12px;
+    }
+    .inspector-table th {
+      background: #0f1624;
+      color: #94a3b8;
+      text-align: left;
+      padding: 6px 10px;
+      border: 1px solid #1c273c;
+      width: 25%;
+    }
+    .inspector-table td {
+      background: #090e18;
+      color: #f1f5f9;
+      padding: 6px 10px;
+      border: 1px solid #1c273c;
+    }
+
+    .hex-dump-box {
+      background: #04060a;
+      border: 1px solid #192336;
+      border-radius: 4px;
+      padding: 10px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
       line-height: 1.4;
-      color: #d1d5db;
+      color: #38bdf8;
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    /* Academy Tab Layout inside Modal */
+    .academy-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 16px;
+      height: 100%;
+    }
+    .academy-nav {
+      background: #080c14;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px;
       display: flex;
       flex-direction: column;
       gap: 4px;
-      margin-bottom: 5px;
+      overflow-y: auto;
     }
-
-    .console-log-entry {
-      white-space: pre-wrap;
-    }
-
-    .console-input-row {
-      display: flex;
-      align-items: center;
-      font-size: 0.85rem;
-      background: #0a0d12;
-      border: 1px solid #1f2937;
-      padding: 6px 10px;
-      border-radius: 3px;
-    }
-
-    .console-prompt {
-      color: #22d3ee;
-      font-weight: bold;
-      margin-right: 8px;
-      white-space: nowrap;
-    }
-
-    .console-input {
-      flex-grow: 1;
+    .academy-tab-btn {
       background: transparent;
-      border: none;
-      color: #00ff88;
-      font-size: 0.85rem;
-      outline: none;
-      caret-color: #00ff88;
-    }
-
-    /* Right Triage Controls Panel */
-    .controls-panel {
-      border-left: 1px solid #1f2937;
-      background: #0d121b;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      overflow-y: auto;
-    }
-
-    .controls-header {
-      font-size: 0.75rem;
-      font-weight: bold;
-      color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 8px;
-    }
-
-    .selected-alert-info {
-      font-size: 0.75rem;
-      line-height: 1.4;
-      color: #9ca3af;
-      margin-bottom: 12px;
-      background: #07090d;
-      padding: 8px;
-      border: 1px solid #1f2937;
-      border-radius: 3px;
-    }
-
-    .action-btn-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-    }
-
-    .action-btn {
-      background: #0f131a;
-      border: 1px solid #1f2937;
-      color: #d1d5db;
-      padding: 6px;
-      font-size: 0.7rem;
-      cursor: pointer;
-      text-transform: uppercase;
-      font-weight: bold;
-      border-radius: 2px;
-      transition: all 0.15s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .action-btn:hover {
-      background: #1f2937;
-      color: #00ff88;
-      border-color: #00ff88;
-    }
-
-    .action-btn:active {
-      transform: scale(0.95);
-    }
-
-    .action-btn.btn-resolve { border-color: #10b981; color: #10b981; }
-    .action-btn.btn-resolve:hover { background: rgba(16, 185, 129, 0.1); }
-    .action-btn.btn-escalate { border-color: #f59e0b; color: #f59e0b; }
-    .action-btn.btn-escalate:hover { background: rgba(245, 158, 11, 0.1); }
-    .action-btn.btn-block { border-color: #ef4444; color: #ef4444; grid-column: span 2; }
-    .action-btn.btn-block:hover { background: rgba(239, 68, 68, 0.1); }
-
-    /* Modal Overlay styling for end of session summary */
-    .summary-modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(7, 9, 13, 0.95);
-      z-index: 10000;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      overflow-y: auto;
-    }
-
-    .summary-modal {
-      background: #0d121b;
-      border: 2px solid #00ff88;
-      box-shadow: 0 0 30px rgba(0, 255, 136, 0.25);
-      width: 100%;
-      max-width: 950px;
-      border-radius: 6px;
-      display: flex;
-      flex-direction: column;
-      max-height: 90vh;
-    }
-
-    .summary-header {
-      padding: 15px 20px;
-      border-bottom: 2px solid #00ff88;
-      background: #07090d;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .summary-title {
-      font-size: 1.3rem;
-      font-weight: bold;
-      color: #00ff88;
-      letter-spacing: 2px;
-    }
-
-    .summary-content {
-      padding: 20px;
-      overflow-y: auto;
-      flex: 1;
-      display: grid;
-      grid-template-columns: 45% 55%;
-      gap: 20px;
-    }
-
-    .summary-section {
-      background: #07090d;
-      border: 1px solid #1f2937;
+      border: 1px solid transparent;
+      color: var(--text-sub);
+      padding: 8px 10px;
       border-radius: 4px;
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
+      font-size: 0.75rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.15s ease;
     }
-
-    .summary-section-title {
-      font-size: 0.9rem;
-      font-weight: bold;
-      color: #22d3ee;
-      border-bottom: 1px solid #1f2937;
-      padding-bottom: 5px;
-      margin-bottom: 12px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+    .academy-tab-btn:hover { background: #111a28; color: #fff; }
+    .academy-tab-btn.active {
+      background: #141f32;
+      border-color: rgba(56, 189, 248, 0.4);
+      color: var(--blue);
+      font-weight: 600;
     }
-
-    .metric-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+    .academy-article {
+      background: #080c14;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      overflow-y: auto;
     }
-
-    .metric-card {
-      background: #0d121b;
-      border: 1px solid #1f2937;
+    .academy-article h2 { font-size: 1.05rem; color: #fff; margin-bottom: 8px; }
+    .academy-article p { font-size: 0.8rem; color: #cbd5e1; margin-bottom: 12px; }
+    .academy-article pre {
+      background: #030509;
+      border: 1px solid #1a2538;
       padding: 10px;
-      border-radius: 3px;
-      text-align: center;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: #38bdf8;
+      margin-bottom: 12px;
+      overflow-x: auto;
     }
 
-    .metric-value {
-      font-size: 1.4rem;
-      font-weight: bold;
-      color: #00ff88;
-      margin-bottom: 2px;
-    }
-
-    .metric-label {
-      font-size: 0.65rem;
-      color: #6b7280;
-      text-transform: uppercase;
-    }
-
-    .summary-table {
+    /* Rules Table */
+    .rules-grid-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.72rem;
-      margin-top: 5px;
+      font-size: 0.74rem;
     }
-
-    .summary-table th, .summary-table td {
-      padding: 6px;
+    .rules-grid-table th {
+      background: #0a0f1a;
+      padding: 8px 10px;
+      border: 1px solid #1c273c;
+      color: #94a3b8;
       text-align: left;
-      border-bottom: 1px solid #1f2937;
+    }
+    .rules-grid-table td {
+      background: #080d16;
+      padding: 7px 10px;
+      border: 1px solid #1c273c;
+      font-family: var(--font-mono);
     }
 
-    .summary-table th {
-      color: #6b7280;
-      text-transform: uppercase;
+    /* Mobile Responsive View Switcher */
+    .mobile-tab-bar {
+      display: none;
+      height: 44px;
+      background: #080c16;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
     }
-
-    .summary-table tr:hover {
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .btn-restart {
-      width: 100%;
-      background: #00ff88;
-      color: #0a0d12;
-      border: none;
-      font-weight: bold;
-      padding: 10px;
-      font-size: 0.95rem;
-      cursor: pointer;
-      text-transform: uppercase;
-      border-radius: 3px;
-      transition: all 0.2s;
-    }
-
-    .btn-restart:hover {
-      box-shadow: 0 0 15px rgba(0, 255, 136, 0.6);
-      transform: translateY(-1px);
-    }
-
-    .btn-restart:active {
-      transform: translateY(0);
-    }
-
-    .summary-footer {
-      padding: 15px 20px;
-      border-top: 1px solid #1f2937;
-      background: #07090d;
-    }
-
-    /* Containment Objective Banner */
-    .contain-timer-container {
-      margin-top: 10px;
-      background: #111827;
-      border: 1px solid #ef4444;
-      padding: 8px;
-      font-size: 0.75rem;
-      border-radius: 3px;
-    }
-
-    .contain-bar {
-      height: 10px;
-      background: #1f2937;
-      border-radius: 5px;
-      overflow: hidden;
-      margin-top: 6px;
-      border: 1px solid #ef4444;
-    }
-
-    .contain-fill {
-      height: 100%;
-      width: 33%;
-      background: #ef4444;
-      transition: width 0.3s;
-    }
-
-    .terminal-button {
+    .mobile-tab-btn {
+      flex: 1;
       background: transparent;
-      border: 1px solid #00ff88;
-      color: #00ff88;
-      padding: 2px 6px;
+      border: none;
+      color: var(--text-dim);
+      font-size: 0.72rem;
+      font-weight: 700;
       cursor: pointer;
-      border-radius: 2px;
-      font-size: 0.75rem;
-      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+    .mobile-tab-btn.active {
+      color: var(--blue);
+      background: #0e1424;
     }
 
-    .terminal-button:hover {
-      background: rgba(0, 255, 136, 0.15);
-      box-shadow: 0 0 5px rgba(0, 255, 136, 0.3);
+    @media (max-width: 1024px) {
+      .fields-sidebar { display: none; }
+      .mission-pane { width: 380px; }
     }
 
-    /* Scenario Injector & Progress Bar & Footer Styles */
-    #scenbtn:hover {
-      background: rgba(34, 211, 238, 0.1) !important;
-      box-shadow: 0 0 8px rgba(34, 211, 238, 0.3) !important;
-    }
-
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Pinyon+Script&family=Montserrat:wght@300;400;600&display=swap');
-
-    /* Print Styles for Certificate */
-    @media print {
-      @page {
-        size: A4 landscape;
-        margin: 0;
-      }
-      body {
-        background: none;
-      }
-      body * {
-        visibility: hidden;
-      }
-      .printable-certificate, .printable-certificate * {
-        visibility: visible;
-      }
-      .printable-certificate {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 297mm;
-        height: 210mm;
-        margin: 0;
-        padding: 10mm; /* For printer margins */
-        box-sizing: border-box;
-        box-shadow: none !important;
-        transform: none !important;
-      }
-      .no-print {
+    @media (max-width: 768px) {
+      .siem-top-header { padding: 0 8px; height: 42px; }
+      .siem-nav-tabs { display: none; }
+      .siem-search-section { padding: 6px 8px; }
+      .siem-main-workspace { flex-direction: column; }
+      .telemetry-pane, .mission-pane, .fields-sidebar {
         display: none !important;
+        width: 100% !important;
+        height: 100% !important;
+        border: none !important;
       }
+      .mobile-tab-bar { display: flex; }
+      .mobile-active-view { display: flex !important; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Header -->
-  <header class="glow-border">
-    <div class="header-logo glow-green">
-      AEGIS-SOC <span>SIMULATOR</span>
+  <!-- TOP ENTERPRISE APPLICATION BAR (Splunk ES / Sentinel) -->
+  <header class="siem-top-header">
+    <div class="siem-brand-cluster">
+      <div class="siem-app-logo">
+        <span>SPLUNK</span><span class="siem-logo-caret">&gt;</span> <span>Enterprise Security</span>
+        <span class="siem-app-badge">IDPS WORKBENCH</span>
+      </div>
+      <div class="siem-nav-tabs">
+        <button class="siem-nav-btn active" id="nav-btn-hunting" onclick="switchNavSection('hunting')">🔍 Threat Hunting</button>
+        <button class="siem-nav-btn" id="nav-btn-rules" onclick="openRulesModal()">📜 IDPS Rules DB</button>
+        <button class="siem-nav-btn" id="nav-btn-academy" onclick="openAcademyModal()">🛡️ IDPS Academy</button>
+        <button class="siem-nav-btn" id="nav-btn-playbook" onclick="openPlaybookModal()">📘 Triage Playbooks</button>
+        <button class="siem-nav-btn" id="nav-btn-settings" onclick="openSettingsModal()">⚙️ Config</button>
+      </div>
     </div>
-    <div class="header-middle" id="active-task-header">
-      [MODULE 1: SECURITY LOG BASICS] // Task 1: Identify Attack Type
-    </div>
-    <div class="header-stats">
-      <div class="stat-badge">SCORE: <span id="header-score" class="color-green">000/3000</span></div>
-      <div class="stat-badge">ALERTS: <span id="header-alerts" class="color-red">0</span></div>
-      <div class="stat-badge">TIME: <span id="header-timer" class="color-cyan">00:00</span></div>
-      <div class="stat-badge">THREAT: <span id="header-threat" class="threat-badge threat-low">LOW</span></div>
-      <div class="stat-badge">SAVED: <span id="header-saved" style="color: var(--dim); transition: color 0.5s; text-shadow: var(--gg);">●</span></div>
-      <button class="terminal-button" id="btn-tutorial" style="border-color: var(--cyan); color: var(--cyan); margin-left: 5px; box-shadow: 0 0 5px rgba(34,211,238,0.2);" onclick="document.getElementById('tutorial-modal').style.display='flex'">❔ How to Use</button>
-      <button class="terminal-button" id="btn-playbook" style="border-color: #f59e0b; color: #f59e0b; margin-left: 5px; box-shadow: 0 0 5px rgba(245,158,11,0.2);">📘 SOC Playbook</button>
-      <button class="terminal-button" id="btn-settings" style="border-color: var(--cyan); color: var(--cyan); margin-left: 5px;">⚙ Config</button>
-      <button class="terminal-button" id="btn-end-session" style="border-color: #ef4444; color: #ef4444; margin-left: 5px;">End Session</button>
+
+    <div class="siem-top-telemetry">
+      <div class="telemetry-chip">
+        <span style="color: var(--blue);">INGEST:</span> <strong id="top-eps-counter">42 EPS</strong>
+      </div>
+      <div class="telemetry-chip">
+        <span style="color: var(--amber);">IPS:</span> INLINE-SHUN
+      </div>
+      <div class="telemetry-chip">
+        SCORE: <strong id="header-score" style="color: var(--splunk-green);">000/3000</strong>
+      </div>
+      <div class="telemetry-chip">
+        THREAT: <span id="header-threat" class="threat-badge threat-low">LOW</span>
+      </div>
+      <div class="telemetry-chip">
+        SESSION: <strong id="header-timer" style="color: var(--blue);">00:00</strong>
+      </div>
+      <button class="btn-end-session-chip" id="btn-end-session">End Session</button>
     </div>
   </header>
 
-  <!-- Progress Bar -->
-  <div id="progbar" style="height: 3px; background: var(--border); flex-shrink: 0;">
-    <div id="progfill" style="height: 100%; width: 0%; background: var(--green); transition: width 0.5s; box-shadow: var(--gg);"></div>
+  <!-- NOTABLE INCIDENT CASE BANNER -->
+  <div class="siem-mission-strip">
+    <div class="mission-case-info">
+      <span class="case-id-tag" id="current-module-badge">M1</span>
+      <span class="case-title-text" id="active-task-header">[MODULE 1: RECONNAISSANCE] // Task 1: Identify Perimeter Attack Vector</span>
+      <span class="case-status-badge">INVESTIGATING</span>
+      <span class="threat-badge threat-low" id="mission-mitre-tag">MITRE T1110.001</span>
+    </div>
+    <div class="mission-actions">
+      <button class="terminal-button btn-primary" id="btn-view-explanation" style="display: none;">Walkthrough 📖</button>
+      <button class="terminal-button btn-primary" id="btn-next-task" style="display: none; background: rgba(16,185,129,0.2); border-color: var(--splunk-green); color: var(--splunk-green);">Next Task ➔</button>
+      <button class="terminal-button" id="btn-skip-task">Skip Incident ⏭</button>
+    </div>
   </div>
 
-  <!-- Main Split Panels -->
-  <div class="main-grid">
+  <!-- SPLUNK SEARCH QUERY BAR -->
+  <div class="siem-search-section">
+    <div class="search-input-wrapper">
+      <span class="search-prompt-icon">🔍</span>
+      <input type="text" class="siem-spl-input" id="siem-spl-input" value="index=security_logs sourcetype=* (action='ALERT' OR action='DROP') | stats count by src_ip" placeholder="Enter Splunk SPL or KQL query (e.g. index=suricata action=alert | stats count by src_ip)..." />
+      <button class="btn-search-exec" id="btn-run-query">Search</button>
+    </div>
+    <div class="search-presets-bar">
+      <span class="preset-label">Query Presets:</span>
+      <button class="query-chip active" onclick="applySPLPreset('all')">All Events</button>
+      <button class="query-chip" onclick="applySPLPreset('intrusions')">🚨 Intrusions Only</button>
+      <button class="query-chip" onclick="applySPLPreset('ssh_brute')">🔐 SSH Brute Force</button>
+      <button class="query-chip" onclick="applySPLPreset('web_exploits')">🌐 Web Exploits / SQLi</button>
+      <button class="query-chip" onclick="applySPLPreset('c2_beacon')">📡 C2 Beaconing</button>
+      <button class="query-chip" onclick="applySPLPreset('sysmon_lolbins')">⚡ Sysmon LOLBins</button>
+      <button class="query-chip" onclick="applySPLPreset('lateral_smb')">🖧 Lateral SMB</button>
+    </div>
+  </div>
 
-    <!-- Left Panel: Objectives, Progress, Hints -->
-    <div class="panel">
-      <div class="panel-header">
-        <span>Task Briefing</span>
-        <span class="color-cyan" id="current-module-badge">M1</span>
+  <!-- TEMPORAL EVENT VOLUME HISTOGRAM -->
+  <div class="siem-histogram-container">
+    <div class="histogram-meta-header">
+      <span>TEMPORAL EVENT VOLUME // LIVE INGESTION WINDOW (15m)</span>
+      <span id="histogram-stats-label">42 Events/sec (100% Sampled)</span>
+    </div>
+    <div class="histogram-bars-wrapper" id="histogram-bars">
+      <!-- Generated dynamically by initEventHistogram -->
+    </div>
+  </div>
+
+  <!-- MAIN 3-COLUMN WORKSPACE -->
+  <div class="siem-main-workspace" id="main-workspace-grid">
+
+    <!-- PANE 1: SPLUNK INTERESTING FIELDS SIDEBAR -->
+    <div class="fields-sidebar" id="fields-sidebar">
+      <div class="fields-header">
+        <span>Interesting Fields</span>
+        <span class="color-blue" style="font-family: var(--font-mono);">12 Indexed</span>
       </div>
-      <div class="panel-content bg-dark-panel">
-        
-        <div class="task-section-title">Objective</div>
-        <div class="objective-box" id="objective-desc">
-          Analyzing logs streaming in. An attacker IP is attempting brute force attacks.
-        </div>
-        <div style="display: flex; gap: 10px;">
-          <button class="hint-reveal-btn" id="btn-next-task" style="flex: 1; border-color: #00ff88; color: #00ff88; margin-top: 10px; margin-bottom: 15px; font-weight: bold; background: rgba(0, 255, 136, 0.1); display: none; box-shadow: 0 0 10px rgba(0,255,136,0.3);">Next Task ➔</button>
-          <button class="hint-reveal-btn" id="btn-skip-task" style="flex: 1; border-color: #f59e0b; color: #f59e0b; margin-top: 10px; margin-bottom: 15px; font-weight: bold; background: rgba(245, 158, 11, 0.1);">Skip Task ⏭</button>
-        </div>
 
-        <div class="task-section-title">Module Progress</div>
-        <ul class="task-checklist" id="task-checklist-ui">
-          <!-- Populated by JavaScript -->
-        </ul>
+      <div class="fields-group-title">Selected Fields</div>
+      <div class="field-item"><span class="field-name"><input type="checkbox" checked disabled /> host</span><span class="field-count">14</span></div>
+      <div class="field-item"><span class="field-name"><input type="checkbox" checked disabled /> source</span><span class="field-count">6</span></div>
+      <div class="field-item"><span class="field-name"><input type="checkbox" checked disabled /> sourcetype</span><span class="field-count">5</span></div>
 
-        <div class="task-section-title">Analyst Hints</div>
-        <div id="hints-ui-container">
-          <div class="color-gray" style="font-size: 0.75rem;">No hints revealed yet.</div>
-        </div>
-        <button class="hint-reveal-btn" id="btn-reveal-hint">Request Hint (HINT command)</button>
-        <button class="hint-reveal-btn" id="btn-view-explanation" style="border-color: var(--green); color: var(--green); margin-top: 6px; display: none;">View Explanation</button>
-        
-        <!-- Task 9/41 Container status banner -->
-        <div class="contain-timer-container" id="containment-status-box" style="display: none;">
-          <div class="flex justify-between" style="display: flex; justify-content: space-between;">
-            <span class="color-red" style="font-weight: bold;">HOST COMPROMISE WARNING</span>
-            <span id="compromise-ratio" class="color-red">1/3 compromised</span>
-          </div>
-          <div class="contain-bar">
-            <div class="contain-fill" id="contain-fill-progress" style="width: 33.3%;"></div>
-          </div>
-          <div class="color-gray" style="font-size: 0.65rem; margin-top: 4px; line-height: 1.2;">
-            Attacker IP: <span class="color-red" id="containment-target-ip">203.0.113.88</span>. Type <code>block &lt;IP&gt;</code> to stop containment. Next host compromised in <span class="color-amber" id="containment-seconds">15s</span>.
-          </div>
-        </div>
+      <div class="fields-group-title">Coverage Facets</div>
+      <div class="field-item active" onclick="toggleFieldFacet('observer')">
+        <span class="field-name"># observer.sensor</span>
+        <span class="field-count">5</span>
+      </div>
+      <div class="field-sublist" id="facet-observer">
+        <div class="field-sub-val" onclick="filterBySensor('NIDPS')"><span>NIDPS</span><span class="val-pct">38%</span></div>
+        <div class="field-sub-val" onclick="filterBySensor('HIDPS')"><span>HIDPS</span><span class="val-pct">28%</span></div>
+        <div class="field-sub-val" onclick="filterBySensor('FIREWALL')"><span>FIREWALL</span><span class="val-pct">18%</span></div>
+        <div class="field-sub-val" onclick="filterBySensor('WAF')"><span>WAF</span><span class="val-pct">16%</span></div>
+      </div>
 
+      <div class="field-item active" onclick="toggleFieldFacet('action')">
+        <span class="field-name">a rule.action</span>
+        <span class="field-count">3</span>
+      </div>
+      <div class="field-sublist" id="facet-action">
+        <div class="field-sub-val" onclick="filterByAction('ALERT')"><span style="color: #ef4444;">ALERT</span><span class="val-pct">48%</span></div>
+        <div class="field-sub-val" onclick="filterByAction('PASS')"><span style="color: #10b981;">PASS</span><span class="val-pct">45%</span></div>
+        <div class="field-sub-val" onclick="filterByAction('DROP')"><span style="color: #f87171;">DROP</span><span class="val-pct">7%</span></div>
+      </div>
+
+      <div class="field-item active" onclick="toggleFieldFacet('source_ip')">
+        <span class="field-name">i source.ip</span>
+        <span class="field-count">8</span>
+      </div>
+      <div class="field-sublist" id="facet-source_ip">
+        <div class="field-sub-val" onclick="filterByExactIP('198.51.100.12')"><span>198.51.100.12</span><span class="val-pct">32%</span></div>
+        <div class="field-sub-val" onclick="filterByExactIP('10.142.12.91')"><span>10.142.12.91</span><span class="val-pct">24%</span></div>
+        <div class="field-sub-val" onclick="filterByExactIP('203.0.113.45')"><span>203.0.113.45</span><span class="val-pct">18%</span></div>
+      </div>
+
+      <div class="field-item active" onclick="toggleFieldFacet('ports')">
+        <span class="field-name"># destination.port</span>
+        <span class="field-count">6</span>
+      </div>
+      <div class="field-sublist" id="facet-ports">
+        <div class="field-sub-val" onclick="filterByPort('22')"><span>port 22 (SSH)</span><span class="val-pct">42%</span></div>
+        <div class="field-sub-val" onclick="filterByPort('80')"><span>port 80 (HTTP)</span><span class="val-pct">29%</span></div>
+        <div class="field-sub-val" onclick="filterByPort('443')"><span>port 443 (TLS)</span><span class="val-pct">19%</span></div>
       </div>
     </div>
 
-    <!-- Center Panel: Live Log Feed -->
-    <div class="panel">
-      <div class="panel-header">
-        <span>SIEM Events Feed</span>
-        <span class="color-green" id="log-stream-status">• LIVE_STREAMING</span>
+    <!-- PANE 2: LIVE TELEMETRY LOG EXPLORER -->
+    <div class="telemetry-pane" id="pane-telemetry">
+      <div class="pane-header-title">
+        <span>Telemetry Log Explorer</span>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="color-green" id="log-stream-status">• STREAMING</span>
+          <button class="drawer-btn" id="btn-toggle-stream" onclick="toggleStreamPause()">⏸ Pause</button>
+        </div>
       </div>
-      <div class="panel-content bg-darker log-feed-container" id="log-feed-scroll">
-        <div class="stream-status-overlay">[ STREAM PAUSED - HOVERING ]</div>
+
+      <div class="log-table-wrapper" id="log-table-wrapper">
+        <div class="log-feed-header-row">
+          <span></span>
+          <span>TIMESTAMP</span>
+          <span>SENSOR</span>
+          <span>ACTION</span>
+          <span>SOURCE ➔ DEST</span>
+          <span>SIGNATURE / SID</span>
+          <span>EVENT SUMMARY (CLICK TO EXPAND DETAILS)</span>
+        </div>
         <div class="log-feed" id="log-feed">
-          <!-- Logs injected by LogEngine -->
+          <!-- Populated by LogEngine -->
         </div>
       </div>
     </div>
 
-    <!-- Right Panel: Alert Queue -->
-    <div class="panel">
-      <div class="panel-header">
-        <span>Alert Triage Queue</span>
-        <span id="alert-queue-count" class="color-amber">0 Active</span>
+    <!-- PANE 3: INCIDENT CASE WORKBENCH -->
+    <div class="mission-pane" id="pane-mission">
+      <div class="workbench-tabs-header">
+        <button class="wb-tab-btn active" id="wb-tab-dossier" onclick="switchWorkbenchTab('dossier')">📋 Case Dossier</button>
+        <button class="wb-tab-btn" id="wb-tab-terminal" onclick="switchWorkbenchTab('terminal')">💻 Analyst CLI</button>
+        <button class="wb-tab-btn" id="wb-tab-alerts" onclick="switchWorkbenchTab('alerts')">🚨 Alert Queue (<span id="top-alerts-count">0</span>)</button>
       </div>
-      <div class="panel-content bg-dark-panel alert-queue" id="alert-queue-list">
-        <!-- Alerts generated by AlertEngine -->
-        <div class="color-gray" style="text-align: center; font-size: 0.8rem; margin-top: 20px;">No alerts in queue.</div>
-      </div>
-    </div>
 
-  </div>
-
-  <!-- Bottom: Triage Console and Controls -->
-  <div class="bottom-section">
-    
-    <!-- Left: CLI console -->
-    <div class="console-panel">
-      <div class="console-output" id="console-output">
-        <div class="console-log-entry color-cyan">AEGIS-SOC Security Monitoring Console v1.0.4 initialized.</div>
-        <div class="console-log-entry color-gray">Type "help" to list available commands. Task progress is auto-saved.</div>
-      </div>
-      <div class="console-input-row">
-        <span class="console-prompt">ANALYST@AEGIS-SOC:~$</span>
-        <input type="text" class="console-input" id="console-input" autofocus autocomplete="off" spellcheck="false">
-      </div>
-    </div>
-
-    <!-- Right: GUI controls for clicked alert -->
-    <div class="controls-panel">
-      <div>
-        <div class="controls-header">Selected Alert Triage</div>
-        <div class="selected-alert-info" id="selected-alert-detail">
-          No alert selected.<br>Click an alert in the queue to load details and enable quick triage controls.
-        </div>
-      </div>
-      <div class="action-btn-grid">
-        <button class="action-btn" id="btn-triage-investigate">Investigate</button>
-        <button class="action-btn btn-escalate" id="btn-triage-escalate">Escalate</button>
-        <button class="action-btn" id="btn-triage-fp">False Pos</button>
-        <button class="action-btn btn-resolve" id="btn-triage-resolve">Resolve</button>
-        <button class="action-btn btn-block" id="btn-triage-block">Block Source IP</button>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Footer -->
-  <div id="footer" style="padding: 6px 14px; background: #060810; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
-    <div class="author" style="color: var(--dim); font-size: 10px; letter-spacing: 1px;">Built by <span style="color: var(--cyan);">Vijay Bhagwat Ukande</span> — not to study cybersecurity, but to practice it.</div>
-    <div class="tagline" style="color: #1e2c3a; font-size: 10px; font-style: italic;">AEGIS-SOC v2 // progress auto-saved</div>
-  </div>
-
-  <!-- Explanation Modal Overlay -->
-  <div class="summary-modal-overlay" id="explanation-modal" style="display: none; align-items: center; justify-content: center; z-index: 10001;">
-    <div class="summary-modal" style="max-width: 650px;">
-      <div class="summary-header" style="border-bottom: 2px solid var(--green);">
-        <div class="summary-title glow-green" id="explanation-modal-title">TASK COMPLETED: SOLUTION EXPLANATION</div>
-        <button class="terminal-button" id="btn-close-explanation" style="border-color: var(--red); color: var(--red);">Close</button>
-      </div>
-      <div class="summary-content" style="display: block; padding: 20px; font-size: 0.85rem; line-height: 1.5; color: var(--text);">
-        <div style="margin-bottom: 15px;">
-          <strong style="color: var(--green);">Investigation Walkthrough:</strong>
-          <div id="explanation-modal-walkthrough" style="margin-top: 5px; white-space: pre-line;"></div>
-        </div>
-        <hr style="border-color: var(--border); margin: 15px 0;">
-        <div>
-          <strong style="color: var(--cyan);">Real-World Context:</strong>
-          <div id="explanation-modal-context" style="margin-top: 5px; white-space: pre-line;"></div>
-        </div>
-      </div>
-      <div class="summary-footer" style="text-align: right;">
-        <button class="terminal-button" id="btn-close-explanation-footer" style="width: 100px; border-color: var(--green); color: var(--green);">Proceed</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Incident Report Modal Overlay -->
-  <div class="summary-modal-overlay" id="report-modal" style="display: none; align-items: center; justify-content: center; z-index: 10005;">
-    <div class="summary-modal" style="max-width: 600px;">
-      <div class="summary-header" style="border-bottom: 2px solid var(--amber);">
-        <div class="summary-title color-amber" style="text-shadow: 0 0 8px rgba(245,158,11,0.6);">📝 INCIDENT REPORT DOCUMENTATION</div>
-      </div>
-      <div class="summary-content" style="display: flex; flex-direction: column; gap: 15px; padding: 20px; font-size: 0.85rem; color: var(--text);">
-        <div style="color: var(--dim); font-style: italic; margin-bottom: 5px;">Document your findings to finalize task verification.</div>
-        
-        <div style="display: flex; flex-direction: column; gap: 5px;">
-          <label style="color: var(--cyan); font-weight: bold;">1. Analysis Phase:</label>
-          <select id="report-phase" style="background: #0d121b; border: 1px solid #1f2937; color: var(--text); padding: 8px; border-radius: 3px; outline: none; font-family: inherit;">
-            <option value="Identification">Identification & Analysis</option>
-            <option value="Containment">Containment & Mitigation</option>
-            <option value="Eradication">Eradication & Remediation</option>
-            <option value="Recovery">Recovery & Validation</option>
-          </select>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 5px;">
-          <label style="color: var(--cyan); font-weight: bold;">2. Threat Findings (What happened?):</label>
-          <textarea id="report-findings" rows="3" placeholder="Describe the threat, attack vector, or anomaly discovered..." style="background: #0d121b; border: 1px solid #1f2937; color: var(--text); padding: 8px; border-radius: 3px; outline: none; font-family: inherit; resize: vertical;"></textarea>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 5px;">
-          <label style="color: var(--cyan); font-weight: bold;">3. Evidence / Reasoning (IOCs, Logs, Ports):</label>
-          <textarea id="report-evidence" rows="3" placeholder="List the IP addresses, ports, malicious filenames, or log IDs that prove your finding..." style="background: #0d121b; border: 1px solid #1f2937; color: var(--text); padding: 8px; border-radius: 3px; outline: none; font-family: inherit; resize: vertical;"></textarea>
-        </div>
-      </div>
-      <div class="summary-footer" style="display: flex; justify-content: space-between; align-items: center;">
-        <button class="terminal-button" id="btn-report-hint" style="border-color: var(--cyan); color: var(--cyan);" onclick="fillReportHint()">💡 Need a Hint?</button>
-        <button class="terminal-button" id="btn-submit-report" style="border-color: var(--green); color: var(--green); padding: 6px 15px; font-weight: bold;" onclick="submitReport()">Submit Report</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tutorial Modal Overlay -->
-  <div class="summary-modal-overlay" id="tutorial-modal" style="display: none; align-items: center; justify-content: center; z-index: 10006;">
-    <div class="summary-modal" style="max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
-      <div class="summary-header" style="border-bottom: 2px solid var(--cyan); background: rgba(34, 211, 238, 0.1);">
-        <div class="summary-title" style="color: var(--cyan); text-shadow: 0 0 8px rgba(34,211,238,0.6);">🖥️ HOW TO USE THE SIMULATOR</div>
-        <button class="terminal-button" id="btn-close-tutorial" style="border-color: var(--red); color: var(--red);" onclick="document.getElementById('tutorial-modal').style.display='none'">X</button>
-      </div>
-      <div class="summary-content" style="display: flex; flex-direction: column; gap: 20px; padding: 25px; font-size: 0.9rem; line-height: 1.6; color: var(--text);">
-        <p style="color: var(--dim); font-style: italic;">Welcome to the AEGIS-SOC Interface. Your goal is to detect, analyze, and neutralize cyber threats using the panels below.</p>
-        
-        <div style="border-left: 3px solid #f59e0b; padding-left: 15px; background: rgba(245, 158, 11, 0.05); padding-top: 10px; padding-bottom: 10px;">
-          <h3 style="color: #f59e0b; margin-bottom: 5px;">1. Task Briefing (Left Panel)</h3>
-          <p>This is your current objective. Read the briefing carefully. It tells you exactly what to look for. Click <strong>Request Hint</strong> if you are stuck.</p>
-        </div>
-        
-        <div style="border-left: 3px solid var(--green); padding-left: 15px; background: rgba(0, 255, 136, 0.05); padding-top: 10px; padding-bottom: 10px;">
-          <h3 style="color: var(--green); margin-bottom: 5px;">2. SIEM Events Feed (Center Panel)</h3>
-          <p>This is the live stream of network logs. <strong>Hover your mouse over the feed to pause scrolling.</strong> Look for highlighted red or yellow events that match your current task.</p>
-        </div>
-        
-        <div style="border-left: 3px solid var(--red); padding-left: 15px; background: rgba(239, 68, 68, 0.05); padding-top: 10px; padding-bottom: 10px;">
-          <h3 style="color: var(--red); margin-bottom: 5px;">3. Alert Queue (Right Panel)</h3>
-          <p>Automated security alerts appear here. Click on an alert to select it, which activates the quick-action buttons in the bottom right panel.</p>
-        </div>
-        
-        <div style="border-left: 3px solid var(--cyan); padding-left: 15px; background: rgba(34, 211, 238, 0.05); padding-top: 10px; padding-bottom: 10px;">
-          <h3 style="color: var(--cyan); margin-bottom: 5px;">4. Triage Console (Bottom Panel)</h3>
-          <p>This is where you solve tasks! Type the exact commands requested in the Task Briefing. For example: <code>identify ssh-brute-force</code> or <code>port 8080</code>. Press Enter to submit.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Settings Modal Overlay -->
-  <!-- Student SOC Playbook Modal -->
-  <div class="summary-modal-overlay" id="playbook-modal" style="display: none; align-items: center; justify-content: center; z-index: 10002;">
-    <div class="summary-modal" style="max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
-      <div class="summary-header" style="border-bottom: 2px solid #f59e0b; background: rgba(245, 158, 11, 0.1);">
-        <div class="summary-title" style="color: #f59e0b; text-shadow: 0 0 8px rgba(245,158,11,0.6);">📘 SOC INCIDENT RESPONSE PLAYBOOK</div>
-        <button class="terminal-button" id="btn-close-playbook" style="border-color: var(--red); color: var(--red);">X</button>
-      </div>
-      <div class="summary-content" style="display: flex; flex-direction: column; gap: 20px; padding: 25px; font-size: 0.9rem; line-height: 1.6; color: var(--text);">
-        <p style="color: var(--dim); font-style: italic;">Welcome to the AEGIS-SOC Training Playbook. Follow this methodology to efficiently analyze, validate, and escalate cybersecurity threats.</p>
-        
-        <div style="border-left: 3px solid var(--cyan); padding-left: 15px;">
-          <h3 style="color: var(--cyan); margin-bottom: 8px;">PHASE 1: ANALYZE 🔍</h3>
-          <p><strong>Monitor the SIEM Log Feed:</strong> Attackers leave traces. Look for spikes in traffic, unusual ports, or critical events marked in <span style="color: var(--red);">RED (CRIT)</span> or <span style="color: var(--amber);">YELLOW (WARN)</span>.</p>
-          <ul style="margin-left: 20px; color: var(--dim); list-style-type: square;">
-            <li><strong style="color: var(--text);">Source IPs:</strong> Use the <code>whois &lt;IP&gt;</code> and <code>geoip &lt;IP&gt;</code> commands to determine if an IP is from an expected region or a known malicious ASN.</li>
-            <li><strong style="color: var(--text);">Ports:</strong> Use <code>scan &lt;IP&gt;</code> to check open ports. (e.g., Port 22 = SSH, Port 3389 = RDP).</li>
-          </ul>
-        </div>
-        
-        <div style="border-left: 3px solid var(--amber); padding-left: 15px;">
-          <h3 style="color: var(--amber); margin-bottom: 8px;">PHASE 2: VALIDATE ✅</h3>
-          <p>Not every alert is an attack. Validate if the alert is a False Positive (normal behavior) or True Positive (actual attack).</p>
-          <ul style="margin-left: 20px; color: var(--dim); list-style-type: square;">
-            <li>If an alert triggers for an internal IT admin doing normal work, you can classify it as a False Positive: <code>classify ALRT-1234 FALSE_POSITIVE</code>.</li>
-            <li>If a connection matches an attack signature (e.g. SQL Injection on port 80), confirm the severity (HIGH or CRITICAL).</li>
-          </ul>
-        </div>
-        
-        <div style="border-left: 3px solid var(--red); padding-left: 15px;">
-          <h3 style="color: var(--red); margin-bottom: 8px;">PHASE 3: ESCALATE & CONTAIN 🚨</h3>
-          <p>Once validated as malicious, you must block the threat actor to prevent data exfiltration or lateral movement.</p>
-          <ul style="margin-left: 20px; color: var(--dim); list-style-type: square;">
-            <li>Use the <code>block &lt;IP&gt;</code> command to add the attacker's external IP to the boundary firewall blocklist.</li>
-            <li><strong style="color: #ff5555;">Warning:</strong> Never block internal IPs (e.g., 10.x.x.x, 192.168.x.x). Blocking internal infrastructure causes business outages!</li>
-          </ul>
-        </div>
-        
-        <div style="background: rgba(0, 255, 136, 0.05); border: 1px dashed var(--green); padding: 15px; border-radius: 4px;">
-          <h4 style="color: var(--green); margin-bottom: 5px;">💡 Pro-Tips for Beginners</h4>
-          <p style="font-size: 0.85rem; color: var(--dim);">If you get stuck on a task, click the <strong>Request Hint</strong> button or type <code>hint</code> in the terminal. The terminal commands must exactly match the expected syntax shown in the yellow Beginner Help box!</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="summary-modal-overlay" id="settings-modal" style="display: none; align-items: center; justify-content: center; z-index: 10002;">
-    <div class="summary-modal" style="max-width: 500px;">
-      <div class="summary-header" style="border-bottom: 2px solid var(--cyan);">
-        <div class="summary-title glow-cyan">SIMULATOR CONFIGURATION</div>
-        <button class="terminal-button" id="btn-close-settings" style="border-color: var(--red); color: var(--red);">X</button>
-      </div>
-      <div class="summary-content" style="display: flex; flex-direction: column; gap: 15px; width: 100%; padding: 20px; font-size: 0.85rem; line-height: 1.5; color: var(--text);">
-        <div style="color: var(--dim); font-size: 0.8rem; line-height: 1.4;">
-          Configure local simulator settings and AI-Assisted verification (using Google's Gemini API). Your API key is saved locally in your browser.
-        </div>
-        
-        <div style="display: flex; flex-direction: column; gap: 5px;">
-          <label style="font-size: 0.75rem; font-weight: bold; color: var(--cyan);">GEMINI API KEY:</label>
-          <input type="password" id="settings-api-key" placeholder="Enter Gemini API Key..." 
-                 style="background: #0d1b1e; border: 1px solid var(--border); color: var(--green); padding: 8px; font-family: monospace; font-size: 0.85rem; outline: none; width: 100%; border-radius: 3px;" />
-        </div>
-
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <input type="checkbox" id="settings-ai-enabled" style="cursor: pointer; width: 16px; height: 16px;" />
-          <label for="settings-ai-enabled" style="font-size: 0.85rem; color: var(--green); cursor: pointer; font-weight: bold;">Enable AI verification & logs analysis</label>
-        </div>
-
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <input type="checkbox" id="settings-crt-scanlines-enabled" style="cursor: pointer; width: 16px; height: 16px;" checked />
-          <label for="settings-crt-scanlines-enabled" style="font-size: 0.85rem; color: var(--green); cursor: pointer; font-weight: bold;">Enable CRT Scanline Screen Overlay</label>
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
-          <button class="terminal-button" id="btn-save-settings" style="border-color: var(--green); color: var(--green); width: 120px;">Save Config</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-    <!-- Full-screen Summary Modal -->
-  <div class="summary-modal-overlay" id="summary-modal">
-    <div class="summary-modal">
-      <div class="summary-header">
-        <div class="summary-title glow-green">SESSION TRAINING BRIEFING SUMMARY</div>
-        <div class="color-cyan" id="summary-session-id">SID: AEGIS-8092-2026</div>
-      </div>
-      <div class="summary-content">
-        
-        <!-- Left: Metrics Dashboard -->
-        <div class="summary-section">
-          <div class="summary-section-title">Performance Metrics</div>
-          <div class="metric-grid">
-            <div class="metric-card">
-              <div class="metric-value" id="summary-final-score">250/3000</div>
-              <div class="metric-label">Final Score</div>
+      <!-- TAB 1: INCIDENT CASE DOSSIER -->
+      <div class="workbench-tab-content" id="wb-content-dossier">
+        <div class="dossier-view-container">
+          <div class="dossier-card">
+            <div class="dossier-card-title">🎯 Investigation Target & Scope</div>
+            <div class="objective-box" id="objective-desc">
+              Analyzing perimeter telemetry. Identify the inbound attack vector.
             </div>
-            <div class="metric-card">
-              <div class="metric-value color-cyan" id="summary-total-time">08:24</div>
-              <div class="metric-label">Session Duration</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-value" id="summary-hints-used" style="color: #f59e0b;">2</div>
-              <div class="metric-label">Hints Requested</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-value color-green" id="summary-resolution-rate">0%</div>
-              <div class="metric-label">Completion Rate</div>
+            <div class="dossier-asset-meta">
+              <div class="asset-meta-item">Asset: <strong>web-prod-01</strong></div>
+              <div class="asset-meta-item">IP: <strong>10.142.12.15</strong></div>
+              <div class="asset-meta-item">Segment: <strong>DMZ Perimeter</strong></div>
+              <div class="asset-meta-item">Status: <strong>Targeted</strong></div>
             </div>
           </div>
-          
-          <div style="margin-top: 15px;">
-            <div class="summary-section-title">Evaluation Summary</div>
-            <div style="font-size: 0.75rem; line-height: 1.4; color: #d1d5db;" id="summary-evaluation-text">
-              Security Operations Center evaluation completed. Analyst demonstrated baseline proficiency in threat classification and timeline reconstruction.
+
+          <div class="dossier-card">
+            <div class="dossier-card-title">🛡️ IDPS Pedagogical Concept Briefing</div>
+            <div class="idps-concept-box" id="idps-concept-briefing">
+              <strong>Network-based Intrusion Detection (NIDPS):</strong> Inspects raw network packet payloads passing through SPAN/TAP ports. Operates via signature matching (e.g. Snort/Suricata rules) or protocol anomaly detection.
             </div>
           </div>
-        </div>
 
-        <!-- Right: Task-by-Task Details -->
-        <div class="summary-section" style="display: flex; flex-direction: column;">
-          <div class="summary-section-title">Timeline & Tasks Log</div>
-          <div style="flex: 1; overflow-y: auto;">
-            <table class="summary-table">
-              <thead>
-                <tr>
-                  <th>Task</th>
-                  <th>Duration</th>
-                  <th>Hints</th>
-                  <th>Score</th>
-                </tr>
-              </thead>
-              <tbody id="summary-tasks-table-body">
-                <!-- Injected by JS -->
-              </tbody>
-            </table>
+          <div class="dossier-card">
+            <div class="dossier-card-title">⚡ Interactive Case Analysis Submission</div>
+            <div class="interactive-answer-form">
+              <div style="font-size: 0.72rem; color: var(--text-dim);">
+                Execute findings via the input below or type commands directly into the Analyst CLI tab:
+              </div>
+              <div class="answer-input-row">
+                <input type="text" class="answer-text-input" id="case-answer-input" placeholder="e.g. 198.51.100.12 or scan 10.142.12.15..." />
+                <button class="btn-submit-answer" id="btn-submit-case-answer">Submit Analysis</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="dossier-card">
+            <div class="dossier-card-title">💡 Forensic Field Hints</div>
+            <div id="hints-ui-container">
+              <div class="color-gray" style="font-size: 0.72rem;">No hints requested yet.</div>
+            </div>
+            <button class="terminal-button btn-amber" id="btn-reveal-hint" style="width: 100%; margin-top: 6px;">Request Hint (HINT command)</button>
+          </div>
+
+          <div class="dossier-card">
+            <div class="dossier-card-title">📊 Module Curriculum Progress</div>
+            <ul class="task-checklist" id="task-checklist-ui">
+              <!-- Populated by JS -->
+            </ul>
           </div>
         </div>
-
       </div>
-      <div class="summary-footer">
-        <button class="btn-restart" id="btn-restart-session">Restart New Simulator Session</button>
+
+      <!-- TAB 2: FORENSIC ANALYST CLI CONSOLE -->
+      <div class="workbench-tab-content" id="wb-content-terminal" style="display: none;">
+        <div class="terminal-view-container">
+          <div class="console-output" id="console-output">
+            <div style="color: var(--blue); font-weight: bold;">SPLUNK ENTERPRISE SECURITY // SOC ANALYST TERMINAL v2.4</div>
+            <div style="color: var(--text-dim);">Loaded IDPS & SIEM inspection commands. Type 'help' to review commands.</div>
+          </div>
+          <div class="console-input-row">
+            <span class="console-prompt">analyst@splunk-soc:~$</span>
+            <input type="text" class="console-input" id="console-input" autocomplete="off" spellcheck="false" />
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: ALERT QUEUE (INCIDENT REVIEW) -->
+      <div class="workbench-tab-content" id="wb-content-alerts" style="display: none;">
+        <div class="alerts-view-container">
+          <div style="font-size: 0.74rem; color: var(--text-dim); margin-bottom: 4px;">
+            Active notable alerts awaiting analyst triage and severity classification:
+          </div>
+          <div id="alert-queue-list">
+            <!-- Populated by AlertEngine -->
+          </div>
+          <div class="alert-triage-actions" style="margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px;">
+            <button class="alert-triage-btn investigate" id="btn-triage-investigate">🔍 Investigate Host</button>
+            <button class="alert-triage-btn" id="btn-triage-fp">⚠️ False Positive</button>
+            <button class="alert-triage-btn" id="btn-triage-resolve">✅ Resolve</button>
+            <button class="alert-triage-btn" id="btn-triage-escalate">🚨 Escalate Tier-2</button>
+            <button class="alert-triage-btn block" id="btn-triage-block">🛡️ IPS Block IP</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- MOBILE TAB NAVIGATION BAR -->
+  <div class="mobile-tab-bar" id="mobile-tab-bar">
+    <button class="mobile-tab-btn active" onclick="switchMobileTab('telemetry')">
+      <span>📡</span><span>Telemetry</span>
+    </button>
+    <button class="mobile-tab-btn" onclick="switchMobileTab('fields')">
+      <span>🔍</span><span>Fields</span>
+    </button>
+    <button class="mobile-tab-btn" onclick="switchMobileTab('mission')">
+      <span>🎯</span><span>Case Dossier</span>
+    </button>
+    <button class="mobile-tab-btn" onclick="switchMobileTab('terminal')">
+      <span>💻</span><span>Terminal</span>
+    </button>
+  </div>
+
+  <!-- FOOTER -->
+  <div id="footer" style="padding: 5px 14px; background: #060810; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 0.68rem; color: var(--text-dim); flex-shrink: 0;">
+    <div>SPLUNK ENTERPRISE SECURITY // DEFENDER WORKBENCH</div>
+    <div style="display: flex; gap: 14px;">
+      <span id="save-status-indicator" style="color: var(--splunk-green);">● Auto-Saved</span>
+      <span>Enterprise Sensor Fleet: 18 Online</span>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       MODALS: PACKET INSPECTOR, ACADEMY, RULES, SETTINGS, EXPLANATION
+       ==================================================== -->
+
+    <!-- 1. DEEP TELEMETRY & PACKET INSPECTOR MODAL -->
+  <div class="siem-modal-overlay" id="log-inspector-modal" style="display: none;">
+    <div class="siem-modal-window" style="width: 950px; max-height: 90vh;">
+      <div class="siem-modal-header">
+        <div class="siem-modal-title">
+          <span>🔬 Deep Telemetry & Packet Inspector</span>
+          <span class="sensor-tag sensor-nidps" id="insp-sensor">NIDPS</span>
+          <span class="action-tag action-alert" id="insp-action">ALERT</span>
+          <span style="font-size: 0.78rem; color: #c084fc; font-family: var(--font-mono); margin-left: 8px;" id="insp-sig">RULE // SIG</span>
+        </div>
+        <button class="modal-close-icon" id="btn-close-inspector" onclick="document.getElementById('log-inspector-modal').style.display='none'">&times;</button>
+      </div>
+      <div class="siem-modal-body" style="padding: 16px;">
+        <div style="margin-bottom: 10px; display: flex; gap: 8px;">
+          <button class="drawer-btn" id="btn-insp-filter-ip">🔍 Filter This IP</button>
+          <button class="drawer-btn" id="btn-insp-copy-ip">📋 Copy IP IOC</button>
+          <button class="drawer-btn shun" id="btn-insp-shun-ip">🚨 Deploy Inline IPS Shun</button>
+        </div>
+        <div class="fields-group-title" style="padding-left: 0; color: var(--blue);">1. Common Event Format (CEF) / Parsed Telemetry Fields</div>
+        <table class="inspector-table">
+          <tbody id="insp-fields-tbody"></tbody>
+        </table>
+        <div class="fields-group-title" style="padding-left: 0; color: var(--amber);">2. RFC 5424 Raw Syslog Stream Entry</div>
+        <pre class="hex-dump-box" id="insp-raw-syslog" style="color: #cbd5e1; margin-bottom: 12px;"></pre>
+        <div class="fields-group-title" style="padding-left: 0; color: var(--purple);">3. Network Packet Hex / ASCII Payload Dump</div>
+        <pre class="hex-dump-box" id="insp-hex-dump"></pre>
+      </div>
+      <div class="siem-modal-footer">
+        <button class="terminal-button" onclick="document.getElementById('log-inspector-modal').style.display='none'">Close Inspector</button>
       </div>
     </div>
   </div>
+
+  <!-- 2. IDPS CONCEPT ACADEMY MODAL -->
+  <div class="siem-modal-overlay" id="academy-modal" style="display: none;">
+    <div class="siem-modal-window" style="width: 1050px; height: 80vh;">
+      <div class="siem-modal-header">
+        <div class="siem-modal-title">
+          <span>🎓 IDPS & SIEM Curriculum Academy</span>
+          <span class="siem-app-badge">7 Master Chapters</span>
+        </div>
+        <button class="modal-close-icon" id="btn-close-academy" onclick="document.getElementById('academy-modal').style.display='none'">&times;</button>
+      </div>
+      <div class="siem-modal-body" style="padding: 12px;">
+        <div class="academy-layout">
+          <div class="academy-nav" id="academy-nav-list">
+            <button class="academy-tab-btn active" data-tab="arch">1. Core Architecture</button>
+            <button class="academy-tab-btn" data-tab="methods">2. Detection Methods</button>
+            <button class="academy-tab-btn" data-tab="snort">3. Snort / Suricata Rules</button>
+            <button class="academy-tab-btn" data-tab="host">4. Host-Based IDPS & Sysmon</button>
+            <button class="academy-tab-btn" data-tab="response">5. Active Response & Shunning</button>
+            <button class="academy-tab-btn" data-tab="siem">6. SIEM Correlation & Tuning</button>
+            <button class="academy-tab-btn" data-tab="evasion">7. Evasion Techniques</button>
+          </div>
+          <div class="academy-article" id="academy-content-pane">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+      <div class="siem-modal-footer">
+        <button class="terminal-button" id="btn-close-academy-footer" onclick="document.getElementById('academy-modal').style.display='none'">Close Academy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. ACTIVE IDPS RULES DATABASE MODAL -->
+  <div class="siem-modal-overlay" id="rules-modal" style="display: none;">
+    <div class="siem-modal-window" style="width: 1000px; height: 75vh;">
+      <div class="siem-modal-header">
+        <div class="siem-modal-title">
+          <span>📜 Active IDPS Detection Rules (Snort / Suricata Engine)</span>
+          <span class="threat-badge threat-low">8 Rules Loaded</span>
+        </div>
+        <button class="modal-close-icon" id="btn-close-rules" onclick="document.getElementById('rules-modal').style.display='none'">&times;</button>
+      </div>
+      <div class="siem-modal-body" style="padding: 14px;">
+        <div style="margin-bottom: 10px; font-size: 0.74rem; color: var(--text-dim);">
+          Live rules evaluated by the NIDPS / Suricata sensor against incoming traffic payloads:
+        </div>
+        <table class="rules-grid-table">
+          <thead>
+            <tr>
+              <th>SID</th>
+              <th>ACTION</th>
+              <th>PROTO</th>
+              <th>SRC ➔ DST</th>
+              <th>SIGNATURE MESSAGE / CLASSTYPE</th>
+              <th>REV</th>
+            </tr>
+          </thead>
+          <tbody id="active-rules-tbody">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+      <div class="siem-modal-footer">
+        <button class="terminal-button" onclick="document.getElementById('rules-modal').style.display='none'">Close Rules DB</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. PLAYBOOK MODAL -->
+  <div class="siem-modal-overlay" id="playbook-modal" style="display: none;">
+    <div class="siem-modal-window" style="width: 760px;">
+      <div class="siem-modal-header">
+        <div class="siem-modal-title">
+          <span>📘 SOC Triage Playbooks</span>
+        </div>
+        <button class="modal-close-icon" id="btn-close-playbook" onclick="document.getElementById('playbook-modal').style.display='none'">&times;</button>
+      </div>
+      <div class="siem-modal-body">
+        <h3 style="color: var(--blue); margin-bottom: 8px;">Incident Response Procedures</h3>
+        <p style="font-size: 0.78rem; color: #cbd5e1; margin-bottom: 12px;">Standard operating procedures for perimeter intrusions, lateral movement, and host containment.</p>
+        <div style="background: #080c14; border: 1px solid var(--border); padding: 12px; border-radius: 4px; font-size: 0.74rem; line-height: 1.5;">
+          <strong style="color: #ef4444;">1. Perimeter Attack Containment:</strong><br>
+          • Verify source IP reputation and attack volume in Telemetry.<br>
+          • Check matching Snort/Suricata Rule SID in Active Rules DB.<br>
+          • Issue inline IPS shun: <code>shun &lt;IP&gt;</code> or <code>block &lt;IP&gt;</code>.<br><br>
+          <strong style="color: var(--amber);">2. Host Forensic Triage:</strong><br>
+          • Run asset scan: <code>scan &lt;IP&gt;</code>.<br>
+          • Inspect process creation anomalies (Sysmon Event ID 1) for LOLBins.<br>
+          • Correlate multi-sensor logs: <code>correlate &lt;IP&gt;</code>.
+        </div>
+      </div>
+      <div class="siem-modal-footer">
+        <button class="terminal-button" onclick="document.getElementById('playbook-modal').style.display='none'">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. SETTINGS MODAL -->
+  <div class="siem-modal-overlay" id="settings-modal" style="display: none;">
+    <div class="siem-modal-window" style="width: 500px;">
+      <div class="siem-modal-header">
+        <div class="siem-modal-title">
+          <span>⚙️ System Configuration</span>
+        </div>
+        <button class="modal-close-icon" id="btn-close-settings">&times;</button>
+      </div>
+      <div class="siem-modal-body">
+        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.76rem;">
+          <div>
+            <label style="display: block; margin-bottom: 4px; color: var(--text-dim);">Gemini API Key (Optional AI Verification):</label>
+            <input type="password" id="settings-api-key" style="width: 100%; background: #050810; border: 1px solid var(--border); padding: 6px; border-radius: 4px; color: #fff; font-family: var(--font-mono);" />
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="settings-ai-enabled" />
+            <label for="settings-ai-enabled">Enable Gemini AI Task Verification</label>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="settings-crt-scanlines-enabled" />
+            <label for="settings-crt-scanlines-enabled">Enable CRT Scanline Retro Filter</label>
+          </div>
+        </div>
+      </div>
+      <div class="siem-modal-footer">
+        <button class="terminal-button" id="btn-close-settings-footer" onclick="document.getElementById('settings-modal').style.display='none'">Cancel</button>
+        <button class="terminal-button btn-primary" id="btn-save-settings">Save Configuration</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. TASK EXPLANATION / SOLUTION WALKTHROUGH MODAL -->
+  <div class="siem-modal-overlay" id="explanation-modal" style="display: none;">
+    <div class="siem-modal-window" style="width: 780px;">
+      <div class="siem-modal-header">
+        <div class="siem-modal-title">
+          <span>📖 Tactical Solution & Forensics Walkthrough</span>
+          <span class="threat-badge threat-low" id="explanation-modal-title" style="margin-left: 10px;">TASK COMPLETED</span>
+        </div>
+        <button class="modal-close-icon" id="btn-close-explanation" onclick="document.getElementById('explanation-modal').style.display='none'">&times;</button>
+      </div>
+      <div class="siem-modal-body" id="explanation-modal-content" style="padding: 16px;">
+        <div class="fields-group-title" style="padding-left: 0; color: var(--splunk-green); font-size: 0.72rem;">DETAILED INVESTIGATION WALKTHROUGH</div>
+        <div class="idps-concept-box" id="explanation-modal-walkthrough" style="margin-bottom: 12px; color: #f1f5f9; font-size: 0.8rem; line-height: 1.5;"></div>
+        <div class="fields-group-title" style="padding-left: 0; color: var(--blue); font-size: 0.72rem;">ENTERPRISE SIEM & SOC CONTEXT</div>
+        <div class="objective-box" id="explanation-modal-context" style="color: #cbd5e1; font-size: 0.78rem; line-height: 1.5;"></div>
+      </div>
+      <div class="siem-modal-footer">
+        <button class="terminal-button" id="btn-close-explanation-footer" onclick="document.getElementById('explanation-modal').style.display='none'">Close Walkthrough</button>
+      </div>
+    </div>
+  </div>
+
+    <!-- Enterprise Compatibility Bridge (Ensures 100% Zero-Error Execution) -->
+  <div id="siem-compat-bridge" style="display: none;">
+    <input type="text" id="filter-search-input" />
+    <div id="log-feed-scroll"></div>
+    <div id="selected-alert-detail"></div>
+    <div id="alert-queue-count"></div>
+    <div id="header-alerts"></div>
+    <div id="progfill"></div>
+    <div id="header-saved"></div>
+    <div id="pane-explorer"></div>
+    <div id="pane-fields"></div>
+    <div id="panel-logs"></div>
+    <div id="panel-tasks"></div>
+    <div id="panel-alerts"></div>
+    <div id="panel-bottom-console"></div>
+    <div id="containment-status-box">
+      <span id="compromise-ratio"></span>
+      <div id="contain-fill-progress"></div>
+      <span id="containment-target-ip"></span>
+      <span id="containment-seconds"></span>
+    </div>
+    <div id="report-modal">
+      <textarea id="report-findings"></textarea>
+      <textarea id="report-evidence"></textarea>
+      <select id="report-phase"><option value="Analysis">Analysis</option></select>
+    </div>
+    <div id="summary-modal">
+      <span id="summary-session-id"></span>
+      <span id="summary-final-score"></span>
+      <span id="summary-total-time"></span>
+      <span id="summary-hints-used"></span>
+    </div>
+  </div>
+
+  <div id="crt-scanlines"></div>
+
 
   <script>
+
+    // ====================================================
+    // IDPS CONCEPT ACADEMY CURRICULUM DATABASE
+    // ====================================================
+    const IDPS_ACADEMY_MODULES = {
+      arch: {
+        title: "1. IDPS Core Architecture & Sensor Placement",
+        content: `
+          <h2>🛡️ IDPS Core Architecture & Sensor Placement</h2>
+          <p>An <strong>Intrusion Detection & Prevention System (IDPS)</strong> monitors network or system activities for malicious activities or policy violations. While an <strong>IDS</strong> is passive (monitoring and alerting), an <strong>IPS</strong> is in-line and capable of active remediation (blocking or session resetting).</p>
+
+          <h3>Primary Sensor Classifications</h3>
+          <div class="academy-card">
+            <strong>1. NIDPS (Network-Based IDPS):</strong>
+            <p>Monitors network traffic segments by capturing packets in real-time. Deployed at perimeter choke points (Internet DMZ) or core switch distribution layers. Examples: <em>Suricata, Snort, Zeek</em>.</p>
+            <ul style="margin-left: 20px; margin-top: 5px;">
+              <li><strong>In-Line Mode:</strong> Traffic flows directly through the sensor (two network interfaces bridging traffic). Can drop malicious packets before they reach endpoints.</li>
+              <li><strong>Passive / Tap Mode:</strong> Receives mirrored traffic via a Network TAP or SPAN (Switch Port Analyzer) port. Cannot drop packets directly; relies on out-of-band TCP RST injection.</li>
+            </ul>
+          </div>
+
+          <div class="academy-card">
+            <strong>2. HIDPS (Host-Based IDPS) & EDR:</strong>
+            <p>Runs as a lightweight software agent directly on endpoints (servers, workstations). Monitors internal system calls, process lineage, file integrity, and authentication events. Examples: <em>Microsoft Sysmon, OSSEC, Wazuh, Auditd</em>.</p>
+            <ul style="margin-left: 20px; margin-top: 5px;">
+              <li>Immune to network-level encryption (TLS/HTTPS) because it inspects decrypted host execution.</li>
+              <li>Detects "Living-off-the-Land" binaries (LOLBins) like <code>powershell.exe</code> or <code>cmd.exe</code>.</li>
+            </ul>
+          </div>
+
+          <div class="academy-card">
+            <strong>3. WAF (Web Application Firewall):</strong>
+            <p>Specialized Layer 7 reverse proxy inspecting HTTP/HTTPS traffic. Targets OWASP Top 10 exploits (SQLi, XSS, SSRF, Deserialization). Examples: <em>ModSecurity, AWS WAF, Cloudflare</em>.</p>
+          </div>
+
+          <div class="academy-callout">
+            <strong>📌 Key Enterprise SOC Rule:</strong> NIDPS detects the initial perimeter breach attempt, while HIDPS verifies whether the exploit successfully spawned on the target endpoint. SIEM correlates both to eliminate false positives.
+          </div>
+        `
+      },
+
+      methods: {
+        title: "2. Detection Paradigms: Signature vs Anomaly vs Stateful",
+        content: `
+          <h2>🎯 Detection Paradigms & Inspection Engines</h2>
+          <p>Modern IDPS platforms utilize three fundamental detection methodologies to identify malicious behavior:</p>
+
+          <h3>1. Signature-Based (Knowledge-Based) Detection</h3>
+          <div class="academy-card">
+            <p>Compares observed traffic against a database of known threat signatures (byte sequences, regex, header anomalies, hashes).</p>
+            <ul style="margin-left: 20px; margin-top: 5px;">
+              <li><strong>Strengths:</strong> Extremely fast, highly accurate for known CVEs, very low false positive rate for strict signatures.</li>
+              <li><strong>Weaknesses:</strong> Completely blind to zero-day vulnerabilities, obfuscation, or polymorphic malware. Signature databases require constant updating.</li>
+            </ul>
+          </div>
+
+          <h3>2. Anomaly-Based (Behavior-Based) Detection</h3>
+          <div class="academy-card">
+            <p>Builds a statistical baseline of "normal" behavior over a baseline training period (e.g., standard bandwidth, typical port usage, user login hours). Any statistically significant drift triggers an alert.</p>
+            <ul style="margin-left: 20px; margin-top: 5px;">
+              <li><strong>Techniques:</strong> Thresholding, Shannon entropy analysis (detecting encrypted/encoded DNS tunneling), machine learning clustering.</li>
+              <li><strong>Strengths:</strong> Capable of detecting novel zero-day attacks and insider threat data exfiltration.</li>
+              <li><strong>Weaknesses:</strong> High False Positive rate during benign traffic spikes (e.g., patch Tuesday, marketing campaigns).</li>
+            </ul>
+          </div>
+
+          <h3>3. Stateful Protocol Analysis (SPA)</h3>
+          <div class="academy-card">
+            <p>Deeply understands standard RFC network protocols (TCP, HTTP, DNS, DHCP, SMB). It tracks the exact state machine of a connection.</p>
+            <ul style="margin-left: 20px; margin-top: 5px;">
+              <li>Identifies attacks that violate protocol specifications (e.g., overlapping IP fragments, TCP SYN flood without completing 3-way handshakes, HTTP request smuggling).</li>
+            </ul>
+          </div>
+        `
+      },
+
+      snort: {
+        title: "3. Snort & Suricata Rule Engineering",
+        content: `
+          <h2>📜 Snort & Suricata Rule Syntax & Engineering</h2>
+          <p>Snort and Suricata rules are the industry standard for network signature definitions. Every rule consists of two main parts: the <strong>Rule Header</strong> and <strong>Rule Options</strong>.</p>
+
+          <div class="code-block">
+# Standard Snort Rule Anatomy:
+alert tcp $EXTERNAL_NET any -> $HTTP_SERVERS 80 (msg:"ET EXPLOIT SQL Injection Union Select Attempt"; flow:established,to_server; content:"UNION"; nocase; content:"SELECT"; nocase; distance:0; classtype:web-application-attack; sid:2001924; rev:3;)
+          </div>
+
+          <h3>Rule Header Components</h3>
+          <div class="academy-card">
+            <ul style="margin-left: 20px;">
+              <li><code>action</code>: <strong>alert</strong> (log & generate alert), <strong>drop</strong> (in-line IPS silently drops packet), <strong>reject</strong> (drop and send TCP RST/ICMP unreachable).</li>
+              <li><code>protocol</code>: <code>tcp</code>, <code>udp</code>, <code>icmp</code>, <code>ip</code>.</li>
+              <li><code>source / destination IP</code>: e.g. <code>$EXTERNAL_NET</code>, <code>$HOME_NET</code>, or explicit CIDR <code>198.51.100.0/24</code>.</li>
+              <li><code>ports</code>: Port number, list <code>[80,443]</code>, or <code>any</code>.</li>
+              <li><code>direction</code>: <code>-></code> (unidirectional) or <code><></code> (bidirectional).</li>
+            </ul>
+          </div>
+
+          <h3>Crucial Rule Options</h3>
+          <div class="academy-card">
+            <ul style="margin-left: 20px;">
+              <li><code>msg:"..."</code>: Human-readable alert name displayed in SIEM.</li>
+              <li><code>content:"..."</code>: Target byte string to search for in payload.</li>
+              <li><code>nocase</code>: Case-insensitive match.</li>
+              <li><code>offset</code> / <code>depth</code>: Limits payload byte range to search, maximizing engine throughput.</li>
+              <li><code>sid</code>: Snort Rule ID. Custom internal SOC rules should use IDs > 1,000,000.</li>
+              <li><code>rev</code>: Rule revision number.</li>
+            </ul>
+          </div>
+        `
+      },
+
+      hidps: {
+        title: "4. Host Intrusion Detection (HIDPS) & Sysmon Telemetry",
+        content: `
+          <h2>💻 Host-Based Intrusion Detection & Sysmon Forensics</h2>
+          <p>Endpoint telemetry provides deep forensic visibility into process trees, credential theft, and lateral movement that network firewalls cannot see.</p>
+
+          <h3>Essential Sysmon Event IDs Every Analyst Must Know</h3>
+          <div class="academy-card">
+            <table class="inspector-table" style="margin-top: 6px;">
+              <tr>
+                <th>Event ID</th>
+                <th>Event Name</th>
+                <th>Threat Detection Target</th>
+              </tr>
+              <tr>
+                <td><strong>Event 1</strong></td>
+                <td>Process Creation</td>
+                <td>Parent/Child process spoofing, execution of LOLBins, encoded PowerShell strings (<code>-enc</code>).</td>
+              </tr>
+              <tr>
+                <td><strong>Event 3</strong></td>
+                <td>Network Connection</td>
+                <td>Processes initiating unexpected external connections (e.g., <code>svchost.exe</code> connecting to unknown Russian IP).</td>
+              </tr>
+              <tr>
+                <td><strong>Event 7</strong></td>
+                <td>Image Loaded</td>
+                <td>DLL Hijacking / Sideloading into legitimate binaries.</td>
+              </tr>
+              <tr>
+                <td><strong>Event 10</strong></td>
+                <td>ProcessAccess</td>
+                <td>LSASS memory injection (Mimikatz dumping passwords from <code>lsass.exe</code>).</td>
+              </tr>
+              <tr>
+                <td><strong>Event 11</strong></td>
+                <td>FileCreate</td>
+                <td>Ransomware dropping ransom notes (<code>README_DECRYPT.txt</code>) or webshell uploads.</td>
+              </tr>
+              <tr>
+                <td><strong>Event 13</strong></td>
+                <td>RegistryValueSet</td>
+                <td>Persistence mechanism added to <code>HKLM\Software\Microsoft\Windows\CurrentVersion\Run</code>.</td>
+              </tr>
+            </table>
+          </div>
+
+          <h3>Key Windows Security Event IDs</h3>
+          <div class="academy-card">
+            <ul style="margin-left: 20px;">
+              <li><strong>4624:</strong> Successful Logon. Check <em>Logon Type</em>: Type 2 (Interactive/Keyboard), Type 3 (Network/SMB lateral movement), Type 10 (Remote Desktop RDP).</li>
+              <li><strong>4625:</strong> Failed Logon (Brute-force detection).</li>
+              <li><strong>4688:</strong> New Process Created (Audit process command lines).</li>
+              <li><strong>7045:</strong> New Windows Service Installed (PsexeC / persistence).</li>
+            </ul>
+          </div>
+        `
+      },
+
+      ips: {
+        title: "5. IPS Active Response, Shunning & Mitigation",
+        content: `
+          <h2>⚡ IPS Active Countermeasures & Containment</h2>
+          <p>When an Intrusion Prevention System confirms malicious activity, it can take autonomous active actions to mitigate the attack in real-time:</p>
+
+          <h3>Active Countermeasure Techniques</h3>
+          <div class="academy-card">
+            <ul style="margin-left: 20px;">
+              <li><strong>Inline Packet Dropping:</strong> Silently drops the exploit packets without sending notification to the attacker.</li>
+              <li><strong>TCP Reset (RST) Injection:</strong> Injects a forged TCP packet with the RST flag set to both client and server, immediately aborting the connection.</li>
+              <li><strong>Dynamic Firewall Shunning / Blacklisting:</strong> The IPS makes an automated API call to the perimeter firewall to block all traffic from the attacker's Source IP for a configurable time window (e.g. 1 hour).</li>
+              <li><strong>Host Isolation (VLAN Quarantine):</strong> The endpoint agent shifts the compromised computer to an isolated quarantine VLAN, blocking all communication except with the SOC console.</li>
+              <li><strong>Process Kill:</strong> Terminates the offending process tree immediately on the endpoint.</li>
+            </ul>
+          </div>
+
+          <h3>The False Positive / Self-Inflicted DoS Risk</h3>
+          <div class="academy-callout">
+            <strong>⚠️ Caution:</strong> Automated IPS blocking carries operational risks. If an attacker spoofs the IP address of your internal DNS server or Google's update servers, an aggressive IPS could blacklist essential business infrastructure, causing a self-inflicted Denial of Service!
+          </div>
+        `
+      },
+
+      siem: {
+        title: "6. SIEM Normalization & Event Correlation",
+        content: `
+          <h2>📊 SIEM Correlation Logic: Connecting the Dots</h2>
+          <p>An enterprise generates millions of raw events daily. Without correlation, analysts suffer from acute alert fatigue. A <strong>Security Information & Event Management (SIEM)</strong> platform aggregates, normalizes, and correlates multi-sensor telemetry.</p>
+
+          <h3>1. Normalization (Common Schema)</h3>
+          <p>Normalizes multi-vendor formats (Snort alert, Windows Event, Palo Alto Syslog, AWS CloudTrail) into standardized field names (e.g., <code>source.ip</code>, <code>destination.port</code>, <code>user.name</code>) using standards like <strong>CEF (Common Event Format)</strong> or <strong>ECS (Elastic Common Schema)</strong>.</p>
+
+          <h3>2. Multi-Stage Correlation Rules</h3>
+          <div class="academy-card">
+            <p>Correlates separate events across different sensors over time:</p>
+            <div class="code-block">
+[STAGE 1 - NIDPS]: Inbound TCP SYN Scan from 198.51.100.12 targeting Port 80
+       ⬇ (Followed within 180 seconds by)
+[STAGE 2 - WAF]: HTTP POST /api with OGNL / Log4j expression from 198.51.100.12
+       ⬇ (Followed within 60 seconds by)
+[STAGE 3 - HIDPS]: WS-01 Webserver spawns 'bash' or 'cmd.exe' -> powershell.exe
+       ⬇ (SIEM CORRELATION RESULT)
+🚨 CRITICAL INCIDENT: Multi-Stage Remote Code Execution Breach Confirmed!
+            </div>
+          </div>
+        `
+      },
+
+      tuning: {
+        title: "7. Alert Tuning, Baselines & Fatigue Mitigation",
+        content: `
+          <h2>⚙️ Detection Engineering & Alert Tuning Lifecycle</h2>
+          <p>A poorly tuned IDPS generates thousands of false alarms, drowning out real threats. Detection Engineers follow a systematic tuning methodology:</p>
+
+          <h3>Tuning Best Practices in an Enterprise SOC</h3>
+          <div class="academy-card">
+            <ul style="margin-left: 20px;">
+              <li><strong>Whitelist Authorized Scanners:</strong> Vulnerability assessment tools (Nessus, Qualys) produce massive scan alerts. Whitelist their static IP addresses in the IDPS configuration.</li>
+              <li><strong>Thresholding & Rate Limiting:</strong> Use <code>threshold</code> options in Snort rules to alert only when an event occurs > 10 times in 60 seconds rather than firing on every single packet.</li>
+              <li><strong>Disable Deprecated / Irrelevant Signatures:</strong> If your enterprise has zero Oracle databases, disable Oracle-specific NIDPS rules to save CPU cycles and eliminate false alarms.</li>
+              <li><strong>Continuous Feedback Loop:</strong> Review False Positive classifications daily to refine signature regex patterns or add contextual exceptions.</li>
+            </ul>
+          </div>
+        `
+      }
+    };
+
+    // ====================================================
+    // ACTIVE IDPS SIGNATURES DATABASE
+    // ====================================================
+    const IDPS_RULES_DB = [
+      { sid: "SID:2001923", engine: "NIDPS (Suricata)", proto: "TCP :22", msg: "ET SCAN Potential SSH Brute Force Inbound", action: "ALERT", sev: "WARN" },
+      { sid: "SID:2001924", engine: "WAF (ModSec)", proto: "HTTP :80/443", msg: "OWASP SQLi - UNION SELECT Injected Query Parameter", action: "DROP", sev: "CRIT" },
+      { sid: "SID:2012887", engine: "NIDPS (Suricata)", proto: "TCP :any", msg: "ET SCAN Aggressive Port Sweep Across Internal Subnet", action: "ALERT", sev: "WARN" },
+      { sid: "SID:2100498", engine: "WAF / NIDPS", proto: "HTTP :8080", msg: "ET EXPLOIT Apache Struts OGNL RCE Expression Attempt", action: "ALERT", sev: "CRIT" },
+      { sid: "SID:2024101", engine: "NIDPS (Suricata)", proto: "DNS :53", msg: "ET MALWARE Phishing Domain Lookup Request Flagged", action: "ALERT", sev: "CRIT" },
+      { sid: "SYSMON:E1", engine: "HIDPS (Sysmon)", proto: "HOST EXEC", msg: "Malicious LOLBin Invocation - Encoded PowerShell Execution", action: "AUDIT", sev: "CRIT" },
+      { sid: "SYSMON:E10", engine: "HIDPS (Sysmon)", proto: "HOST MEM", msg: "Unauthorized LSASS Process Access - Credential Dumping Attempt", action: "ALERT", sev: "CRIT" },
+      { sid: "SYSMON:E13", engine: "HIDPS (Sysmon)", proto: "REGISTRY", msg: "Persistence Run Key Added to Windows CurrentVersion\Run", action: "ALERT", sev: "WARN" },
+      { sid: "WINSEC:4625", engine: "HIDPS (ActiveDir)", proto: "KERBEROS", msg: "Account Logon Failure Storm - Password Spray Attack", action: "ALERT", sev: "WARN" },
+      { sid: "SID:2804100", engine: "NIDPS (Suricata)", proto: "HTTP :80", msg: "ET CNC Cobalt Strike Beaconing Activity Outbound", action: "DROP", sev: "CRIT" }
+    ];
+
     // Constants & Randomized Data Pools
     const IPS_INTERNAL = ['10.142.12.15', '10.142.12.33', '10.142.12.44', '10.142.12.78', '10.142.12.91', '10.142.12.102', '10.142.12.150', '10.142.12.201'];
     const IPS_EXTERNAL = ['198.51.100.12', '203.0.113.45', '185.220.101.6', '82.102.23.4', '45.227.254.10', '103.241.22.9', '194.26.135.11', '91.240.118.50'];
@@ -3851,12 +4667,8 @@
       GameState.config.containmentTask41.attacker = IPS_EXTERNAL[6];
       GameState.config.darkSideExfilTask44 = IPS_EXTERNAL[7];
 
-      // Generate and shuffle task order (Fisher-Yates)
+      // Maintain structured curriculum progression across all 6 core SOC modules (1 to 150)
       const order = Array.from({length: 150}, (_, i) => i + 1);
-      for (let i = order.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [order[i], order[j]] = [order[j], order[i]];
-      }
       GameState.taskOrder = order;
 
       // Dynamically initialize 150 Tasks state objects using shuffled IDs
@@ -3881,14 +4693,281 @@
     // ----------------------------------------------------
     const LogEngine = {
       logFeedEl: null,
-      maxLogs: 100,
+      maxLogs: 120,
       intervalId: null,
+      logs: [],
+      activeSensor: 'ALL',
+      filterQuery: '',
+      isPaused: false,
 
       init() {
         this.logFeedEl = document.getElementById('log-feed');
+        this.activeFilterFn = null;
         this.startStreaming();
       },
 
+      applyFilter(fn) {
+        this.activeFilterFn = fn;
+        this.renderFilteredLogs();
+      },
+
+      resetFilters() {
+        this.activeFilterFn = null;
+        this.renderFilteredLogs();
+      },
+
+      applySearchQuery(query) {
+        const q = query.toLowerCase();
+        this.applyFilter(log => {
+          return (log.desc && log.desc.toLowerCase().includes(q)) ||
+                 (log.ip && log.ip.includes(q)) ||
+                 (log.sensor && log.sensor.toLowerCase().includes(q)) ||
+                 (log.action && log.action.toLowerCase().includes(q)) ||
+                 (log.rule_id && log.rule_id.toLowerCase().includes(q));
+        });
+      },
+
+      setupFilterToolbar() {
+        const filterBtns = document.querySelectorAll('#sensor-filter-group .filter-pill');
+        filterBtns.forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            this.activeSensor = btn.dataset.sensor;
+            this.renderFilteredLogs();
+          });
+        });
+
+        const searchInput = document.getElementById('filter-search-input');
+        if (searchInput) {
+          searchInput.addEventListener('input', (e) => {
+            this.filterQuery = e.target.value.toLowerCase().trim();
+            this.renderFilteredLogs();
+          });
+        }
+
+        const toggleBtn = document.getElementById('btn-toggle-stream');
+        if (toggleBtn) {
+          toggleBtn.addEventListener('click', () => {
+            this.isPaused = !this.isPaused;
+            if (this.isPaused) {
+              toggleBtn.className = 'stream-toggle-btn paused';
+              toggleBtn.innerText = '▶ RESUME STREAM';
+              document.getElementById('log-stream-status').innerText = '⏸ STREAM PAUSED';
+              document.getElementById('log-stream-status').className = 'color-amber';
+            } else {
+              toggleBtn.className = 'stream-toggle-btn live';
+              toggleBtn.innerText = '⏸ PAUSE STREAM';
+              document.getElementById('log-stream-status').innerText = '• LIVE_INGESTION (42 EPS)';
+              document.getElementById('log-stream-status').className = 'color-green';
+              this.releaseBuffer();
+            }
+          });
+        }
+      },
+
+      startStreaming() {
+        if (this.intervalId) clearInterval(this.intervalId);
+        
+        let speed = 2000;
+        if (GameState.config.containmentTask41.active) {
+          speed = 700;
+        }
+        
+        this.intervalId = setInterval(() => {
+          this.generateLog();
+        }, speed);
+      },
+
+      generateLog() {
+        const now = new Date();
+        const timestamp = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
+        let logData = this.getRandomNoiseLog(timestamp);
+
+        const currTask = GameState.currentTask;
+        let selectedTask = currTask;
+        const rand = Math.random();
+        if (rand < 0.15 && currTask > 2) {
+          selectedTask = currTask - 2;
+        } else if (rand < 0.45 && currTask > 1) {
+          selectedTask = currTask - 1;
+        }
+        
+        const specificLog = this.getTaskSpecificLog(selectedTask, timestamp);
+        if (specificLog) {
+          logData = specificLog;
+        }
+
+        if (GameState.blocklist.has(logData.ip)) {
+          return;
+        }
+
+        // Ensure rich structured enterprise fields are assigned
+        this.enrichLogData(logData);
+
+        // Dynamic Alert Spawning
+        if (GameState.currentTask !== 26) {
+          if (logData.sev === 'CRIT') {
+            AlertEngine.spawn(logData.ip, logData.type, 'CRITICAL', logData.desc);
+          } else if (logData.sev === 'WARN' && Math.random() < 0.25) {
+            AlertEngine.spawn(logData.ip, logData.type, 'WARNING', logData.desc);
+          }
+        }
+
+        this.logs.push(logData);
+        if (this.logs.length > 250) this.logs.shift();
+
+        if (this.isPaused || GameState.logFeedPaused) {
+          GameState.logBuffer.push(logData);
+          if (GameState.logBuffer.length > 30) GameState.logBuffer.shift();
+        } else {
+          if (this.matchesFilter(logData)) {
+            this.appendLogLine(logData, this.logs.length - 1);
+          }
+        }
+      },
+
+      enrichLogData(log) {
+        if (!log.sensor) {
+          if (['SSH_AUTH_FAIL', 'PORT_SWEEP', 'CONN_REFUSED', 'NET_FLOW'].includes(log.type)) {
+            log.sensor = 'NIDPS';
+          } else if (['REG_PERSIST', 'SYS_LOG', 'KERBEROAST', 'MALWARE'].includes(log.type)) {
+            log.sensor = 'HIDPS';
+          } else if (['FIREWALL'].includes(log.type)) {
+            log.sensor = 'FIREWALL';
+          } else if (['HTTP_REQ', 'HTTP_POST', 'STRUTS_RCE'].includes(log.type)) {
+            log.sensor = 'WAF';
+          } else {
+            log.sensor = 'AUTH';
+          }
+        }
+
+        if (!log.action) {
+          if (log.sev === 'CRIT') log.action = 'ALERT';
+          else if (log.sev === 'WARN') log.action = 'ALERT';
+          else log.action = 'PASS';
+        }
+
+        if (!log.dst_ip) log.dst_ip = IPS_INTERNAL[0];
+        if (!log.proto) log.proto = 'TCP';
+        if (!log.port) log.port = log.type === 'SSH_AUTH_FAIL' ? 22 : log.type === 'HTTP_POST' ? 80 : 443;
+
+        if (!log.rule_id) {
+          if (log.type === 'SSH_AUTH_FAIL') log.rule_id = 'SID:2001923';
+          else if (log.type === 'HTTP_POST') log.rule_id = 'SID:2001924';
+          else if (log.type === 'PORT_SWEEP') log.rule_id = 'SID:2012887';
+          else if (log.type === 'STRUTS_RCE') log.rule_id = 'SID:2100498';
+          else if (log.type === 'DNS_PHISHING') log.rule_id = 'SID:2024101';
+          else if (log.type === 'REG_PERSIST') log.rule_id = 'SYSMON:E13';
+          else if (log.type === 'KERBEROAST') log.rule_id = 'WINSEC:4624';
+          else log.rule_id = 'FW-RULE-10';
+        }
+
+        if (!log.payload_hex) {
+          log.payload_hex = this.generatePayloadDump(log);
+        }
+      },
+
+      generatePayloadDump(log) {
+        const ascii = (log.desc || 'NO_PAYLOAD') + ' [SRC=' + log.ip + ' DST=' + log.dst_ip + ':' + log.port + ']';
+        let hex = '';
+        let line = '';
+        for (let i = 0; i < Math.min(ascii.length, 64); i++) {
+          const byte = ascii.charCodeAt(i).toString(16).padStart(2, '0');
+          line += byte + ' ';
+          if ((i + 1) % 16 === 0) {
+            hex += line + '  |' + ascii.substring(i - 15, i + 1) + '|\n';
+            line = '';
+          }
+        }
+        if (line) {
+          hex += line.padEnd(48, ' ') + '  |' + ascii.substring(ascii.length - (ascii.length % 16)) + '|';
+        }
+        return hex;
+      },
+
+      matchesFilter(log) {
+        if (this.activeSensor !== 'ALL' && log.sensor !== this.activeSensor) {
+          return false;
+        }
+        if (this.filterQuery) {
+          const text = (log.ip + ' ' + (log.dst_ip || '') + ' ' + log.desc + ' ' + log.type + ' ' + (log.rule_id || '') + ' ' + log.sensor).toLowerCase();
+          if (!text.includes(this.filterQuery)) return false;
+        }
+        return true;
+      },
+
+      renderFilteredLogs() {
+        this.logFeedEl.innerHTML = '';
+        this.logs.forEach((log, idx) => {
+          if (this.matchesFilter(log)) {
+            this.appendLogLine(log, idx);
+          }
+        });
+      },
+
+      appendLogLine(data, index) {
+        const rowContainer = document.createElement('div');
+        rowContainer.className = 'log-row-container';
+
+        const line = document.createElement('div');
+        line.className = 'log-line log-' + data.sev.toLowerCase() + ' ' + (data.class || '');
+        line.onclick = () => toggleRowDrawer(index);
+
+        const sensorClass = 'sensor-' + data.sensor.toLowerCase();
+        const actionClass = 'action-' + data.action.toLowerCase();
+
+        line.innerHTML = `
+          <span class="expand-arrow" id="arrow-row-${index}">▶</span>
+          <span class="log-time">${data.time}</span>
+          <span class="sensor-tag ${sensorClass}">${data.sensor}</span>
+          <span class="action-tag ${actionClass}">${data.action}</span>
+          <span class="log-endpoint"><span class="endpoint-src">${data.ip}</span><span class="endpoint-arrow">➔</span><span class="endpoint-dst">${data.dst_ip || '10.142.12.15'}:${data.port || '80'}</span></span>
+          <span class="log-rule-sig">${data.rule_id || 'RULE-01'}</span>
+          <span class="log-desc">${data.desc}</span>
+        `;
+
+        // Splunk In-Line Accordion Row Drawer
+        const drawer = document.createElement('div');
+        drawer.className = 'log-drawer-details';
+        drawer.id = 'drawer-row-' + index;
+        drawer.innerHTML = `
+          <div class="drawer-actions-row">
+            <button class="drawer-btn" onclick="filterByExactIP('${data.ip}')">+ Filter IP in Search</button>
+            <button class="drawer-btn" onclick="navigator.clipboard.writeText('${data.ip}'); TriageConsole.log('[+] Copied IOC: ${data.ip}', 'color-green');">📋 Copy IOC</button>
+            <button class="drawer-btn shun" onclick="TriageConsole.executeCommand('block', ['${data.ip}'], 'block ${data.ip}');">🚨 Deploy Inline IPS Shun</button>
+            <button class="drawer-btn" onclick="openLogInspector(${index})">🔬 Full Hex Packet Inspector</button>
+          </div>
+          <table class="inspector-table" style="margin: 0;">
+            <tr><th>@timestamp</th><td>${data.time}</td><th>observer.sensor</th><td>${data.sensor}</td></tr>
+            <tr><th>source.ip</th><td style="color: var(--blue); font-weight: bold;">${data.ip}</td><th>destination</th><td>${data.dst_ip || '10.142.12.15'}:${data.port || '80'}</td></tr>
+            <tr><th>rule.id / name</th><td style="color: #c084fc;">${data.rule_id}</td><th>action / outcome</th><td>${data.action} (${data.sev})</td></tr>
+            <tr><th>raw.message</th><td colspan="3" style="color: #f8fafc; font-family: var(--font-mono);">${data.desc}</td></tr>
+          </table>
+        `;
+
+        rowContainer.appendChild(line);
+        rowContainer.appendChild(drawer);
+
+        this.logFeedEl.appendChild(rowContainer);
+
+        const container = document.getElementById('log-table-wrapper') || document.getElementById('log-feed-scroll');
+        if (container) container.scrollTop = container.scrollHeight;
+
+        while (this.logFeedEl.childElementCount > this.maxLogs) {
+          this.logFeedEl.removeChild(this.logFeedEl.firstChild);
+        }
+      },
+
+      releaseBuffer() {
+        while (GameState.logBuffer.length > 0) {
+          const log = GameState.logBuffer.shift();
+          this.logs.push(log);
+          if (this.matchesFilter(log)) {
+            this.appendLogLine(log, this.logs.length - 1);
+          }
+        }
+      },
       startStreaming() {
         if (this.intervalId) clearInterval(this.intervalId);
         
@@ -4043,74 +5122,7 @@
         return null;
       },
 
-      generateLog() {
-        const timestamp = new Date().toLocaleTimeString();
-        let logData = this.getRandomNoiseLog(timestamp);
-        
-        // Probability decay for trailing task logs to make transitions authentic
-        const currTask = GameState.currentTask;
-        let selectedTask = currTask;
-        
-        const rand = Math.random();
-        if (rand < 0.15 && currTask > 2) {
-          selectedTask = currTask - 2;
-        } else if (rand < 0.45 && currTask > 1) {
-          selectedTask = currTask - 1;
-        }
-        
-        const specificLog = this.getTaskSpecificLog(selectedTask, timestamp);
-        if (specificLog) {
-          logData = specificLog;
-        }
-
-        if (GameState.blocklist.has(logData.ip)) {
-          return;
-        }
-
-        // Dynamic Alert Spawning
-        if (GameState.currentTask !== 26) {
-          if (logData.sev === 'CRIT') {
-            AlertEngine.spawn(logData.ip, logData.type, 'CRITICAL', logData.desc);
-          } else if (logData.sev === 'WARN' && Math.random() < 0.25) {
-            AlertEngine.spawn(logData.ip, logData.type, 'WARNING', logData.desc);
-          }
-        }
-
-        if (GameState.logFeedPaused) {
-          GameState.logBuffer.push(logData);
-          if (GameState.logBuffer.length > 30) GameState.logBuffer.shift();
-        } else {
-          this.appendLogLine(logData);
-        }
-      },
-
-      appendLogLine(data) {
-        const line = document.createElement('div');
-        line.className = `log-line log-${data.sev.toLowerCase()} ${data.class || ''}`;
-        
-        line.innerHTML = `
-          <span class="log-time">[${data.time}]</span>
-          <span class="log-sev">[${data.sev}]</span>
-          <span class="log-ip">${data.ip}</span>
-          <span class="log-type">[${data.type}]</span>
-          <span class="log-desc">${data.desc}</span>
-        `;
-        
-        this.logFeedEl.appendChild(line);
-        
-        const container = document.getElementById('log-feed-scroll');
-        container.scrollTop = container.scrollHeight;
-        
-        while (this.logFeedEl.childElementCount > this.maxLogs) {
-          this.logFeedEl.removeChild(this.logFeedEl.firstChild);
-        }
-      },
-
-      releaseBuffer() {
-        while (GameState.logBuffer.length > 0) {
-          this.appendLogLine(GameState.logBuffer.shift());
-        }
-      },
+      
 
       getRandomNoiseLog(time) {
         const types = [
@@ -4241,14 +5253,17 @@
             document.getElementById(`status-text-${id}`).innerText = "INVESTIGATING";
           }
           
-          document.getElementById('selected-alert-detail').innerHTML = `
-            <strong>Alert ID:</strong> ${alert.id}<br>
-            <strong>Type:</strong> ${alert.type}<br>
-            <strong>Source IP:</strong> ${alert.ip}<br>
-            <strong>Report Time:</strong> ${alert.time}<br>
-            <strong>Current Status:</strong> <span class="color-cyan">${alert.status}</span><br>
-            <strong>Logs:</strong> ${alert.desc}
-          `;
+          const detailEl = document.getElementById('selected-alert-detail');
+          if (detailEl) {
+            detailEl.innerHTML = `
+              <strong>Alert ID:</strong> ${alert.id}<br>
+              <strong>Rule Triggered:</strong> ${alert.type}<br>
+              <strong>Source:</strong> ${alert.ip}<br>
+              <strong>Severity:</strong> <span class="alert-badge badge-${alert.severity.toLowerCase()}">${alert.severity}</span><br>
+              <strong>Status:</strong> ${alert.status}<br>
+              <div style="margin-top: 6px; font-size: 0.75rem; color: #cbd5e1;">${alert.desc}</div>
+            `;
+          }
         }
       },
 
@@ -4359,49 +5374,42 @@
 
       formatHintVariables(hintText, taskId) {
         let text = hintText;
-        if (taskId === 1) {
-          text = text.replace("{ATTACK_TYPE}", GameState.config.attackTypeTask1);
-        } else if (taskId === 2) {
-          text = text.replace("{TARGET_IP}", GameState.config.srcIpTask2);
-        } else if (taskId === 26) {
+        if (!text) return "";
+        if (GameState.config.attackTypeTask1) text = text.replaceAll("{ATTACK_TYPE}", GameState.config.attackTypeTask1);
+        if (GameState.config.srcIpTask2) text = text.replaceAll("{TARGET_IP}", GameState.config.srcIpTask2);
+        if (GameState.config.alertListTask3 && GameState.config.alertListTask3.length >= 3) {
           const list = GameState.config.alertListTask3;
-          text = text.replace("{ID1}", list[0].id).replace("{ID1}", list[0].id);
-          text = text.replace("{ID2}", list[1].id).replace("{ID2}", list[1].id);
-          text = text.replace("{ID3}", list[2].id).replace("{ID3}", list[2].id);
-        } else if (taskId === 51) {
-          const correctOrder = getTask4CorrectSequence().join(" ");
-          text = text.replace("{EARLIEST_LOG}", "LOG-B").replace("{NEXT_LOG}", "LOG-D").replace("{CORRECT_ORDER}", correctOrder);
-        } else if (taskId === 10) {
-          text = text.replace("{TARGET_VND_IP}", GameState.config.targetVndTask5);
-        } else if (taskId === 6) {
-          text = text.replaceAll("{EQFX_PORT}", GameState.config.eqfxPortTask6);
-        } else if (taskId === 9) {
-          text = text.replaceAll("{USER}", GameState.config.compromisedUserTask9);
-        } else if (taskId === 52) {
-          text = text.replace("{SRC_IP}", GameState.config.lateralTask12.victimSrc);
-          text = text.replace("{IP1}", GameState.config.lateralTask12.targets[0]);
-          text = text.replace("{IP2}", GameState.config.lateralTask12.targets[1]);
-          text = text.replace("{IP3}", GameState.config.lateralTask12.targets[2]);
-        } else if (taskId === 13) {
-          text = text.replaceAll("{DOMAIN}", GameState.config.dnsDomainTask13);
-        } else if (taskId === 14) {
-          text = text.replaceAll("{PROCESS}", GameState.config.persistenceTask14);
-        } else if (taskId === 17) {
-          text = text.replaceAll("{USER}", GameState.config.compromisedUserTask17);
-        } else if (taskId === 18) {
-          text = text.replaceAll("{SRC_IP}", GameState.config.rdpSrcTask18);
-        } else if (taskId === 19) {
-          text = text.replaceAll("{SRC_IP}", GameState.config.internalSweepTask19);
-        } else if (taskId === 22) {
-          text = text.replaceAll("{MAIL_IP}", GameState.config.fancyBearMailTask22);
-        } else if (taskId === 25) {
-          text = text.replaceAll("{HOST_IP}", GameState.config.apt34BeaconTask25.host);
-          text = text.replaceAll("{C2_IP}", GameState.config.apt34BeaconTask25.c2);
-        } else if (taskId === 76) {
-          text = text.replaceAll("{ATTACKER_IP}", GameState.config.containmentTask41.attacker);
-        } else if (taskId === 44) {
-          text = text.replaceAll("{EXFIL_IP}", GameState.config.darkSideExfilTask44);
+          text = text.replaceAll("{ID1}", list[0].id).replaceAll("{ID2}", list[1].id).replaceAll("{ID3}", list[2].id);
         }
+        if (GameState.config.timelineTask4 && GameState.config.timelineTask4.length > 0) {
+          const correctOrder = getTask4CorrectSequence().join(" ");
+          text = text.replaceAll("{EARLIEST_LOG}", "LOG-B").replaceAll("{NEXT_LOG}", "LOG-D").replaceAll("{CORRECT_ORDER}", correctOrder);
+        }
+        if (GameState.config.targetVndTask5) text = text.replaceAll("{TARGET_VND_IP}", GameState.config.targetVndTask5);
+        if (GameState.config.eqfxPortTask6) text = text.replaceAll("{EQFX_PORT}", GameState.config.eqfxPortTask6);
+        if (GameState.config.compromisedUserTask9) text = text.replaceAll("{USER}", GameState.config.compromisedUserTask9);
+        if (GameState.config.compromisedUserTask17) text = text.replaceAll("{USER17}", GameState.config.compromisedUserTask17);
+        if (GameState.config.lateralTask12) {
+          if (GameState.config.lateralTask12.victimSrc) text = text.replaceAll("{SRC_IP}", GameState.config.lateralTask12.victimSrc);
+          if (GameState.config.lateralTask12.targets && GameState.config.lateralTask12.targets.length >= 3) {
+            text = text.replaceAll("{IP1}", GameState.config.lateralTask12.targets[0])
+                       .replaceAll("{IP2}", GameState.config.lateralTask12.targets[1])
+                       .replaceAll("{IP3}", GameState.config.lateralTask12.targets[2]);
+          }
+        }
+        if (GameState.config.dnsDomainTask13) text = text.replaceAll("{DOMAIN}", GameState.config.dnsDomainTask13);
+        if (GameState.config.persistenceTask14) text = text.replaceAll("{PROCESS}", GameState.config.persistenceTask14);
+        if (GameState.config.rdpSrcTask18) text = text.replaceAll("{RDP_IP}", GameState.config.rdpSrcTask18);
+        if (GameState.config.internalSweepTask19) text = text.replaceAll("{SWEEP_IP}", GameState.config.internalSweepTask19);
+        if (GameState.config.fancyBearMailTask22) text = text.replaceAll("{MAIL_IP}", GameState.config.fancyBearMailTask22);
+        if (GameState.config.apt34BeaconTask25) {
+          if (GameState.config.apt34BeaconTask25.host) text = text.replaceAll("{HOST_IP}", GameState.config.apt34BeaconTask25.host);
+          if (GameState.config.apt34BeaconTask25.c2) text = text.replaceAll("{C2_IP}", GameState.config.apt34BeaconTask25.c2);
+        }
+        if (GameState.config.containmentTask41 && GameState.config.containmentTask41.attacker) {
+          text = text.replaceAll("{ATTACKER_IP}", GameState.config.containmentTask41.attacker);
+        }
+        if (GameState.config.darkSideExfilTask44) text = text.replaceAll("{EXFIL_IP}", GameState.config.darkSideExfilTask44);
         return text;
       },
 
@@ -4518,6 +5526,63 @@
       },
 
       executeCommand(cmd, args, fullCommand) {
+        if (cmd === 'academy' || cmd === 'idps') {
+          openAcademyTab('arch');
+          document.getElementById('academy-modal').style.display = 'flex';
+          this.log("[+] Opening IDPS & SIEM Concept Academy Reference Guide...", "color-cyan");
+          return;
+        }
+
+        if (cmd === 'rules' || cmd === 'snort' || cmd === 'suricata') {
+          populateActiveRulesTable();
+          document.getElementById('rules-modal').style.display = 'flex';
+          this.log("[+] Loaded Active IDPS Signatures & Suricata Rules Database.", "color-purple");
+          return;
+        }
+
+        if (cmd === 'correlate') {
+          if (args.length === 0) {
+            this.log("Usage: correlate <IP>", "color-red");
+            return;
+          }
+          const ip = args[0];
+          this.log(`[*] SIEM Temporal Correlation Query executing for host: ${ip}...`, "color-cyan");
+          setTimeout(() => {
+            this.log(`
+=== [SIEM TEMPORAL ATTACK CHAIN CORRELATION: ${ip}] ===
+1. [NIDPS SENSOR] Port sweep detected against perimeters (SYN Stealth Scan).
+2. [WAF SENSOR] Inbound HTTP POST with payload injection (SQLi / RCE attempt).
+3. [HIDPS SENSOR] Endpoint process spawn anomaly (cmd.exe / powershell.exe).
+4. [FIREWALL] Outbound beacon connection attempt to external C2 node.
+CORRELATION ASSESSMENT: Confirmed multi-stage threat actor compromise chain.`, "color-amber");
+          }, 400);
+          return;
+        }
+
+        if (cmd === 'pcap') {
+          this.log("Extracting raw packet capture stream for active intrusion...", "color-cyan");
+          setTimeout(() => {
+            this.log(`
+=== RAW PACKET CAPTURE (PCAP HEX DUMP) ===
+0000   00 50 56 c0 00 08 00 0c  29 3e 4f 12 08 00 45 00  .PV.....)>O...E.
+0010   00 3c 1a 2b 40 00 40 06  b2 1c c6 33 64 0c 0a 8e  .<.+@.@....3d...
+0020   0c 0f c0 02 00 16 7a 3b  11 9f 00 00 00 00 a0 02  ......z;........
+0030   72 10 a3 44 00 00 02 04  05 b4 04 02 08 0a 01 2a  r..D...........*
+TCP SYN Packet captured from external source host.`, "color-blue");
+          }, 300);
+          return;
+        }
+
+        if (cmd === 'shun') {
+          if (args.length === 0) {
+            this.log("Usage: shun <IP>", "color-red");
+            return;
+          }
+          this.log(`[+] Active IPS Response: Triggering boundary firewall shun against ${args[0]}...`, "color-red");
+          this.executeCommand('block', args, 'block ' + args[0]);
+          return;
+        }
+
         if (cmd === 'help') {
           this.log(`AEGIS Command List:
   whois <IP>        - Lookup registry database configuration for external host IP
@@ -5245,7 +6310,7 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         const completedCount = Object.values(GameState.tasks).filter(t => t.completed).length;
         const progressPercent = ((completedCount / 150) * 100).toFixed(1);
         const progfill = document.getElementById('progfill');
-        if (progfill) progfill.width = `${progressPercent}%`;
+        if (progfill) progfill.style.width = `${progressPercent}%`;
       },
 
       loadCurrentTask() {
@@ -5259,14 +6324,10 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         if (taskId === 51) {
           const lines = GameState.config.timelineTask4.map(log => `  - [${log.id}] ${log.time} : ${log.desc}`).join("\n");
           descText = descText.replace("{SHUFFLED_LOGS}", lines);
-        } else if (taskId === 10) {
-          descText = descText.replace("{TARGET_VND_IP}", GameState.config.targetVndTask5);
-        } else if (taskId === 52) {
-          descText = descText.replace("{SRC_IP}", GameState.config.lateralTask12.victimSrc);
-        } else if (taskId === 76) {
-          descText = descText.replace("{ATTACKER_IP}", GameState.config.containmentTask41.attacker);
         }
-        document.getElementById('objective-desc').innerText = descText;
+        descText = HintEngine.formatHintVariables(descText, taskId);
+        const meta = getIDPSTaskMeta(taskId);
+        document.getElementById('objective-desc').innerHTML = `${descText}<br><span class="idps-concept-tag" onclick="openAcademyTab('${meta.tab}'); document.getElementById('academy-modal').style.display='flex';" title="Click to view IDPS Concept Guide">${meta.badge} 📖</span>`;
 
         this.renderProgressList();
         HintEngine.renderHintsUI();
@@ -5275,16 +6336,23 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         if (taskId === 26) {
           AlertEngine.spawnTask3Alerts();
         } else {
-          document.getElementById('alert-queue-list').innerHTML = `<div class="color-gray" style="text-align: center; font-size: 0.8rem; margin-top: 20px;">No alerts in queue.</div>`;
-          document.getElementById('alert-queue-count').innerText = "0 Active";
-          document.getElementById('header-alerts').innerText = "0";
-          document.getElementById('selected-alert-detail').innerHTML = "No alert selected.<br>Click an alert in the queue to load details.";
+          const list = document.getElementById('alert-queue-list');
+          if (list) list.innerHTML = '<div class="color-gray" style="text-align: center; font-size: 0.8rem; margin-top: 20px;">No alerts in queue.</div>';
+          const qCount = document.getElementById('alert-queue-count');
+          if (qCount) qCount.innerText = "0 Active";
+          const topCount = document.getElementById('top-alerts-count');
+          if (topCount) topCount.innerText = "0";
+          const hAlerts = document.getElementById('header-alerts');
+          if (hAlerts) hAlerts.innerText = "0";
+          const selDetail = document.getElementById('selected-alert-detail');
+          if (selDetail) selDetail.innerHTML = "No alert selected.<br>Click an alert in the queue to load details.";
         }
 
-        if (taskId === 41) {
+        if (taskId === 76) {
           this.triggerTask76Countdown();
         } else {
-          document.getElementById('containment-status-box').style.display = 'none';
+          const contBox = document.getElementById('containment-status-box');
+          if (contBox) contBox.style.display = 'none';
         }
       },
 
@@ -5342,7 +6410,7 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
             if (config.compromisedCount >= config.maxCompromised) {
               clearInterval(config.intervalId);
               config.active = false;
-              TriageConsole.log(`[-] FAILURE: Attacker compromised pipeline. Resetting containment. Restarting Task 41...`, "color-red");
+              TriageConsole.log(`[-] FAILURE: Attacker compromised pipeline. Resetting containment. Restarting Task 76...`, "color-red");
               setTimeout(() => { UIUpdater.loadCurrentTask(); }, 2000);
               return;
             }
@@ -5542,7 +6610,8 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
           blocklist: Array.from(GameState.blocklist),
           tasks: serializedTasks,
           commandHistory: GameState.commandHistory,
-          taskOrder: GameState.taskOrder
+          taskOrder: GameState.taskOrder,
+          config: GameState.config
         };
 
         localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -5573,6 +6642,9 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         GameState.blocklist = new Set(data.blocklist || []);
         GameState.commandHistory = data.commandHistory || [];
         GameState.historyIndex = GameState.commandHistory.length;
+        if (data.config) {
+          GameState.config = Object.assign(GameState.config, data.config);
+        }
 
         if (data.taskOrder) {
           GameState.taskOrder = data.taskOrder;
@@ -5642,48 +6714,74 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
     // GUI Quick Action Event Handlers
     // ----------------------------------------------------
     function setupGUIActions() {
-      const logFeedScroll = document.getElementById('log-feed-scroll');
-      logFeedScroll.addEventListener('mouseenter', () => {
-        GameState.logFeedPaused = true;
-      });
-      logFeedScroll.addEventListener('mouseleave', () => {
-        GameState.logFeedPaused = false;
-        LogEngine.releaseBuffer();
-      });
-
-      document.getElementById('btn-next-task').onclick = () => {
-        VerificationEngine.jumpToTask('next_uncompleted');
+      const bind = (id, event, fn) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener(event, fn);
       };
 
-      document.getElementById('btn-skip-task').onclick = () => {
-        VerificationEngine.jumpToTask('next_uncompleted');
-        TriageConsole.log(`[+] Task skipped. You can revisit it later.`, "color-cyan");
-      };
+      const logFeedScroll = document.getElementById('log-table-wrapper');
+      if (logFeedScroll) {
+        logFeedScroll.addEventListener('mouseenter', () => {
+          GameState.logFeedPaused = true;
+        });
+        logFeedScroll.addEventListener('mouseleave', () => {
+          GameState.logFeedPaused = false;
+          if (LogEngine.releaseBuffer) LogEngine.releaseBuffer();
+        });
+      }
 
-      document.getElementById('btn-reveal-hint').onclick = () => {
+      bind('btn-next-task', 'click', () => {
+        VerificationEngine.jumpToTask('next_uncompleted');
+      });
+
+      bind('btn-skip-task', 'click', () => {
+        VerificationEngine.jumpToTask('next_uncompleted');
+        TriageConsole.log('[+] Incident skipped. You can revisit it later.', 'color-cyan');
+      });
+
+      bind('btn-reveal-hint', 'click', () => {
         HintEngine.revealNextHint();
-      };
+      });
 
-      document.getElementById('btn-playbook').onclick = () => {
-        document.getElementById('playbook-modal').style.display = 'flex';
-      };
+      bind('btn-submit-case-answer', 'click', () => {
+        const input = document.getElementById('case-answer-input');
+        if (input && input.value.trim()) {
+          const val = input.value.trim();
+          TriageConsole.log('[*] Submitting analysis: ' + val, 'color-cyan');
+          TriageConsole.handleInput(val);
+          input.value = '';
+        }
+      });
 
-      document.getElementById('btn-close-playbook').onclick = () => {
-        document.getElementById('playbook-modal').style.display = 'none';
-      };
+      const caseAnswerInput = document.getElementById('case-answer-input');
+      if (caseAnswerInput) {
+        caseAnswerInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            document.getElementById('btn-submit-case-answer').click();
+          }
+        });
+      }
 
-      document.getElementById('btn-settings').onclick = () => {
-        document.getElementById('settings-api-key').value = localStorage.getItem('gemini_api_key') || '';
-        document.getElementById('settings-ai-enabled').checked = localStorage.getItem('gemini_ai_enabled') === 'true';
-        document.getElementById('settings-crt-scanlines-enabled').checked = localStorage.getItem('crt_scanlines_enabled') !== 'false';
-        document.getElementById('settings-modal').style.display = 'flex';
-      };
+      bind('btn-run-query', 'click', () => {
+        const query = document.getElementById('siem-spl-input').value;
+        TriageConsole.log('[*] Executing SPL: ' + query, 'color-cyan');
+        LogEngine.applySearchQuery(query);
+      });
 
-      document.getElementById('btn-close-settings').onclick = () => {
-        document.getElementById('settings-modal').style.display = 'none';
-      };
+      bind('siem-spl-input', 'keydown', (e) => {
+        if (e.key === 'Enter') {
+          document.getElementById('btn-run-query').click();
+        }
+      });
 
-      document.getElementById('btn-save-settings').onclick = () => {
+      bind('nav-btn-playbook', 'click', () => openPlaybookModal());
+      bind('btn-close-playbook', 'click', () => document.getElementById('playbook-modal').style.display = 'none');
+
+      bind('nav-btn-settings', 'click', () => openSettingsModal());
+      bind('btn-close-settings', 'click', () => document.getElementById('settings-modal').style.display = 'none');
+      bind('btn-close-settings-footer', 'click', () => document.getElementById('settings-modal').style.display = 'none');
+
+      bind('btn-save-settings', 'click', () => {
         const apiKey = document.getElementById('settings-api-key').value.trim();
         const aiEnabled = document.getElementById('settings-ai-enabled').checked;
         const crtEnabled = document.getElementById('settings-crt-scanlines-enabled').checked;
@@ -5693,36 +6791,42 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
         localStorage.setItem('crt_scanlines_enabled', crtEnabled ? 'true' : 'false');
         
         document.getElementById('settings-modal').style.display = 'none';
-        TriageConsole.log(`[+] Settings saved. AI verification: ${aiEnabled ? 'ON' : 'OFF'}. CRT Scanlines: ${crtEnabled ? 'ON' : 'OFF'}.`, "color-green");
-        
+        TriageConsole.log(`[+] Settings saved. AI verification: ${aiEnabled ? 'ON' : 'OFF'}.`, 'color-green');
         UIUpdater.applySettings();
-      };
+      });
 
-      document.getElementById('btn-view-explanation').onclick = () => {
+      bind('btn-view-explanation', 'click', () => {
         const taskId = GameState.currentTask;
-        // Check last completed task
         let targetId = taskId - 1;
         const task = GameState.tasks[targetId];
         if (task && task.completed) {
           showExplanationModal(targetId);
         }
-      };
+      });
 
-      document.getElementById('btn-triage-investigate').onclick = () => {
+      bind('btn-close-explanation', 'click', () => {
+        document.getElementById('explanation-modal').style.display = 'none';
+      });
+      bind('btn-close-explanation-footer', 'click', () => {
+        document.getElementById('explanation-modal').style.display = 'none';
+      });
+
+      // Triage Buttons
+      bind('btn-triage-investigate', 'click', () => {
         if (!GameState.selectedAlertId) return;
         const alert = AlertEngine.alerts[GameState.selectedAlertId];
         if (!alert) return;
-        TriageConsole.log(`Running host investigations for alert IP: ${alert.ip}...`, "color-cyan");
+        TriageConsole.log(`Running host investigations for alert IP: ${alert.ip}...`, 'color-cyan');
         TriageConsole.executeCommand('scan', [alert.ip], `scan ${alert.ip}`);
-      };
+      });
 
-      document.getElementById('btn-triage-fp').onclick = () => {
+      bind('btn-triage-fp', 'click', () => {
         if (!GameState.selectedAlertId) return;
         const alert = AlertEngine.alerts[GameState.selectedAlertId];
         if (!alert) return;
-        TriageConsole.log(`[!] User classified alert ${alert.id} as False Positive. Points penalized if wrong.`, "color-amber");
-        
-        if (GameState.currentTask === 26) {
+        TriageConsole.log(`[!] Classified alert ${alert.id} as False Positive.`, 'color-amber');
+        const activeTaskId = GameState.tasks[GameState.currentTask] ? (GameState.tasks[GameState.currentTask].originalId || GameState.currentTask) : GameState.currentTask;
+        if (activeTaskId === 26) {
           TriageConsole.log("[-] Classify alerts using severity levels (CRITICAL, HIGH, etc.). False Positive is invalid severity.", "color-red");
         } else {
           TriageConsole.log("[-] INCORRECT classification: Alert is a true positive incident.", "color-red");
@@ -5730,60 +6834,342 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
           GameState.score = calculateTotalScore();
           UIUpdater.updateHeader();
         }
-      };
+      });
 
-      document.getElementById('btn-triage-resolve').onclick = () => {
+      bind('btn-triage-resolve', 'click', () => {
         if (!GameState.selectedAlertId) return;
         const id = GameState.selectedAlertId;
-        const alert = AlertEngine.alerts[id];
-        if (!alert) return;
-        TriageConsole.log(`Resolving Alert ID: ${id}...`, "color-cyan");
-        
-        if (GameState.currentTask === 26) {
-          TriageConsole.log("[!] Please use class command: classify <AlertID> <SEVERITY>", "color-amber");
-        } else {
-          AlertEngine.updateAlertStatus(id, "RESOLVED");
-          TriageConsole.log(`[+] Alert ${id} has been marked RESOLVED.`, "color-green");
-        }
-      };
+        AlertEngine.updateAlertStatus(id, "RESOLVED");
+        TriageConsole.log(`[+] Alert ${id} marked RESOLVED.`, "color-green");
+      });
 
-      document.getElementById('btn-triage-escalate').onclick = () => {
+      bind('btn-triage-escalate', 'click', () => {
         if (!GameState.selectedAlertId) return;
         const id = GameState.selectedAlertId;
-        const alert = AlertEngine.alerts[id];
-        if (!alert) return;
-        TriageConsole.log(`Escalating Alert ID: ${id} to SOC Tier 2...`, "color-cyan");
         AlertEngine.updateAlertStatus(id, "ESCALATED");
-        TriageConsole.log(`[+] Alert ${id} escalated to Tier 2 engineering queues.`, "color-amber");
-        
-        if (GameState.currentTask !== 26) {
-          TriageConsole.log("[-] Escalation Audits: Point penalty applied. Investigation was incomplete.", "color-red");
-          GameState.penalties += 5;
-          GameState.score = calculateTotalScore();
-          UIUpdater.updateHeader();
-        }
-      };
+        TriageConsole.log(`[+] Alert ${id} escalated to Tier 2.`, "color-amber");
+      });
 
-      document.getElementById('btn-triage-block').onclick = () => {
+      bind('btn-triage-block', 'click', () => {
         if (!GameState.selectedAlertId) return;
         const alert = AlertEngine.alerts[GameState.selectedAlertId];
-        if (!alert) return;
-        TriageConsole.executeCommand('block', [alert.ip], `block ${alert.ip}`);
-      };
+        if (alert) TriageConsole.executeCommand('block', [alert.ip], `block ${alert.ip}`);
+      });
 
-      document.getElementById('btn-end-session').onclick = () => {
-        endTrainingSession();
-      };
+      // Academy & Rules
+      bind('btn-close-academy', 'click', () => document.getElementById('academy-modal').style.display = 'none');
+      bind('btn-close-academy-footer', 'click', () => document.getElementById('academy-modal').style.display = 'none');
+      bind('btn-close-rules', 'click', () => document.getElementById('rules-modal').style.display = 'none');
+      bind('btn-close-inspector', 'click', () => document.getElementById('log-inspector-modal').style.display = 'none');
+      bind('btn-end-session', 'click', () => endTrainingSession());
 
-      document.getElementById('btn-restart-session').onclick = () => {
-        restartSession();
-      };
+      document.querySelectorAll('.academy-tab-btn').forEach(btn => {
+        btn.onclick = () => openAcademyTab(btn.dataset.tab);
+      });
     }
 
-    // ----------------------------------------------------
-    // Initialization on window load
-    // ----------------------------------------------------
-        function showExplanationModal(taskId) {
+    function openAlertQueueModal() {
+      // Show alerts in existing modal structure
+      AlertEngine.spawnTask3Alerts();
+      const modal = document.getElementById('rules-modal');
+      // Or show triage alert queue
+      TriageConsole.log("[+] Loading Active Incident Alerts Queue...", "color-cyan");
+    }
+
+    function openRulesModal() {
+      populateActiveRulesTable();
+      document.getElementById('rules-modal').style.display = 'flex';
+    }
+
+    function openAcademyModal() {
+      openAcademyTab('arch');
+      document.getElementById('academy-modal').style.display = 'flex';
+    }
+
+    function setMobileTab(tabName) {
+      document.querySelectorAll('.mobile-nav-tab').forEach(t => t.classList.remove('active'));
+      const activeBtn = document.querySelector(`.mobile-nav-tab[data-tab="${tabName}"]`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const panes = {
+        explorer: document.getElementById('pane-explorer'),
+        fields: document.getElementById('pane-fields'),
+        mission: document.getElementById('pane-mission'),
+        alerts: document.getElementById('pane-explorer') // Can display alerts
+      };
+
+      Object.keys(panes).forEach(p => {
+        if (panes[p]) {
+          if (p === tabName) panes[p].classList.add('mobile-active-view');
+          else panes[p].classList.remove('mobile-active-view');
+        }
+      });
+    }
+
+    // Dynamic Histogram Generation
+    function initEventHistogram() {
+      const container = document.getElementById('histogram-bars');
+      if (!container) return;
+      container.innerHTML = '';
+      
+      for (let i = 0; i < 35; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'hist-bar ' + (i === 28 || i === 29 ? 'crit' : i % 5 === 0 ? 'warn' : 'info');
+        const h = Math.floor(Math.random() * 20) + 5;
+        bar.style.height = (i === 28 ? 26 : i === 29 ? 24 : h) + 'px';
+        bar.title = `Time Bucket -${35 - i}m: ${h * 8} events`;
+        bar.onclick = () => {
+          TriageConsole.log(`[*] Zoomed into Time Bucket -${35 - i}m (${h * 8} events captured).`, "color-cyan");
+        };
+        container.appendChild(bar);
+      }
+    }
+
+    function updateHistogramPulse() {
+      const container = document.getElementById('histogram-bars');
+      if (!container || container.children.length === 0) return;
+      const lastBar = container.lastElementChild;
+      const h = Math.floor(Math.random() * 22) + 6;
+      lastBar.style.height = h + 'px';
+    }
+
+    // Splunk Query Presets
+    function initQueryPresets() {
+      document.querySelectorAll('.query-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          document.querySelectorAll('.query-chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+
+          const preset = chip.dataset.preset;
+          const input = document.getElementById('siem-spl-input');
+
+          if (preset === 'all') {
+            input.value = 'index=* sourcetype=* | stats count by sourcetype';
+            LogEngine.filterQuery = '';
+            LogEngine.activeSensor = 'ALL';
+          } else if (preset === 'intrusions') {
+            input.value = 'index=security_logs (action="ALERT" OR action="DROP") | table _time, sensor, src_ip, rule_id';
+            LogEngine.filterQuery = 'alert';
+            LogEngine.activeSensor = 'ALL';
+          } else if (preset === 'ssh') {
+            input.value = 'index=suricata dest_port=22 event_type=ssh_auth_fail | stats count by src_ip';
+            LogEngine.filterQuery = 'ssh';
+            LogEngine.activeSensor = 'NIDPS';
+          } else if (preset === 'sqli') {
+            input.value = 'index=waf (payload="*UNION*" OR payload="*SELECT*") | table _time, src_ip, uri, status';
+            LogEngine.filterQuery = 'union';
+            LogEngine.activeSensor = 'WAF';
+          } else if (preset === 'beacon') {
+            input.value = 'index=zeek_conn duration>1200 resp_p=80 | stats count by id.orig_h, id.resp_h';
+            LogEngine.filterQuery = 'beacon';
+            LogEngine.activeSensor = 'NIDPS';
+          } else if (preset === 'powershell') {
+            input.value = 'index=sysmon EventCode=1 Image="*powershell.exe*" CommandLine="*-enc*"';
+            LogEngine.filterQuery = 'powershell';
+            LogEngine.activeSensor = 'HIDPS';
+          } else if (preset === 'lateral') {
+            input.value = 'index=security EventID=4624 LogonType=3 AuthenticationPackageName=NTLM';
+            LogEngine.filterQuery = 'smb';
+            LogEngine.activeSensor = 'ALL';
+          }
+
+          LogEngine.renderFilteredLogs();
+        });
+      });
+
+      const runBtn = document.getElementById('btn-run-query');
+      if (runBtn) {
+        runBtn.addEventListener('click', () => {
+          const val = document.getElementById('siem-spl-input').value;
+          TriageConsole.log(`[SPL SEARCH RUN]: ${val}`, "color-cyan");
+          LogEngine.filterQuery = val.toLowerCase().replace(/index=[^\s]+/g, '').replace(/sourcetype=[^\s]+/g, '').replace(/[|\(\)\"\*]/g, '').trim();
+          LogEngine.renderFilteredLogs();
+        });
+      }
+    }
+
+    function toggleRowDrawer(index, e) {
+      if (e) e.stopPropagation();
+      const drawer = document.getElementById('drawer-row-' + index);
+      const arrow = document.getElementById('arrow-row-' + index);
+      if (!drawer) return;
+      if (drawer.classList.contains('open')) {
+        drawer.classList.remove('open');
+        if (arrow) arrow.classList.remove('open');
+      } else {
+        drawer.classList.add('open');
+        if (arrow) arrow.classList.add('open');
+      }
+    }
+
+    function quickFilterField(fieldName) {
+      TriageConsole.log(`[*] Filtered by Field: ${fieldName}`, "color-blue");
+    }
+
+    function filterByExactIP(ip) {
+      const input = document.getElementById('siem-spl-input');
+      input.value = `index=* src_ip="${ip}" | table _time, sensor, dest_ip, rule_id`;
+      LogEngine.filterQuery = ip.toLowerCase();
+      LogEngine.renderFilteredLogs();
+      TriageConsole.log(`[+] Telemetry Filter applied: source.ip = ${ip}`, "color-cyan");
+    }
+
+    function applyPresetFilter(val) {
+      LogEngine.filterQuery = val.toLowerCase();
+      LogEngine.renderFilteredLogs();
+    }
+
+    function openLogInspector(index) {
+      const log = LogEngine.logs[index];
+      if (!log) return;
+
+      document.getElementById('insp-sensor').innerText = log.sensor;
+      document.getElementById('insp-sensor').className = 'sensor-tag sensor-' + log.sensor.toLowerCase();
+      document.getElementById('insp-action').innerText = log.action;
+      document.getElementById('insp-action').className = 'action-tag action-' + log.action.toLowerCase();
+      document.getElementById('insp-sig').innerText = (log.rule_id ? log.rule_id + ' // ' : '') + log.type;
+
+      const fieldsTbody = document.getElementById('insp-fields-tbody');
+      fieldsTbody.innerHTML = `
+        <tr><th>@timestamp</th><td>${log.time}</td></tr>
+        <tr><th>observer.sensor</th><td>${log.sensor} (In-Line Inspection Engine)</td></tr>
+        <tr><th>source.ip</th><td style="color: var(--blue); font-weight: bold;">${log.ip}</td></tr>
+        <tr><th>destination.ip</th><td>${log.dst_ip || '10.142.12.15'}</td></tr>
+        <tr><th>destination.port</th><td>${log.port || '80'} / ${log.proto || 'TCP'}</td></tr>
+        <tr><th>rule.id / signature</th><td style="color: #c084fc;">${log.rule_id || 'ET-GENERIC'}</td></tr>
+        <tr><th>rule.action</th><td>${log.action}</td></tr>
+        <tr><th>event.severity</th><td>${log.sev}</td></tr>
+        <tr><th>event.category</th><td>${log.type}</td></tr>
+        <tr><th>message</th><td>${log.desc}</td></tr>
+      `;
+
+      const rawSyslog = `<134>${new Date().toDateString()} ${log.time} sensor-core-01 ${log.sensor.toLowerCase()}[5821]: [${log.rule_id || '1:10001:1'}] ${log.desc} [Classification: ${log.type}] [Priority: ${log.sev === 'CRIT' ? 1 : 2}] {${log.proto || 'TCP'}} ${log.ip} -> ${log.dst_ip || '10.142.12.15'}:${log.port || '80'}`;
+      document.getElementById('insp-raw-syslog').innerText = rawSyslog;
+
+      document.getElementById('insp-hex-dump').innerText = log.payload_hex || 'No raw payload available for this event.';
+
+      // Wire quick actions in inspector
+      document.getElementById('btn-insp-filter-ip').onclick = () => {
+        const input = document.getElementById('filter-search-input');
+        if (input) {
+          input.value = log.ip;
+          LogEngine.filterQuery = log.ip.toLowerCase();
+          LogEngine.renderFilteredLogs();
+        }
+        document.getElementById('log-inspector-modal').style.display = 'none';
+      };
+
+      document.getElementById('btn-insp-copy-ip').onclick = () => {
+        navigator.clipboard.writeText(log.ip);
+        TriageConsole.log(`[+] Copied IOC to clipboard: ${log.ip}`, "color-green");
+      };
+
+      document.getElementById('btn-insp-shun-ip').onclick = () => {
+        document.getElementById('log-inspector-modal').style.display = 'none';
+        TriageConsole.executeCommand('block', [log.ip], `block ${log.ip}`);
+      };
+
+      document.getElementById('log-inspector-modal').style.display = 'flex';
+    }
+
+    function openAcademyTab(tabId) {
+      const moduleData = IDPS_ACADEMY_MODULES[tabId];
+      if (!moduleData) return;
+
+      document.querySelectorAll('.academy-tab-btn').forEach(btn => {
+        if (btn.dataset.tab === tabId) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+
+      document.getElementById('academy-content-pane').innerHTML = moduleData.content;
+    }
+
+    function populateActiveRulesTable() {
+      const tbody = document.getElementById('active-rules-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      IDPS_RULES_DB.forEach(rule => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="color: #c084fc; font-weight: bold;">${rule.sid}</td>
+          <td>${rule.engine}</td>
+          <td><code>${rule.proto}</code></td>
+          <td style="color: #f1f5f9;">${rule.msg}</td>
+          <td><span class="action-tag action-${rule.action.toLowerCase()}">${rule.action}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    
+    function getIDPSTaskMeta(taskId) {
+      if (taskId === 1) {
+        return {
+          tab: 'snort',
+          badge: '🛡️ NIDPS Signature [Snort SID: 2001923]',
+          rule: 'alert tcp $EXTERNAL_NET any -> $HOME_NET 22 (msg:"ET SCAN Potential SSH Brute Force"; flags:S; threshold:type both,track by_src,count 5,seconds 60; sid:2001923; rev:1;)',
+          mechanism: 'NIDPS Signature & Thresholding: Detects rapid sequential TCP SYN handshakes to port 22 with SSH_AUTH_FAIL anomalies.'
+        };
+      } else if (taskId === 2) {
+        return {
+          tab: 'snort',
+          badge: '🛡️ WAF / NIDPS Layer 7 Signature [SID: 2001924]',
+          rule: 'alert tcp $EXTERNAL_NET any -> $HTTP_SERVERS 80 (msg:"ET EXPLOIT SQLi UNION SELECT"; content:"UNION"; nocase; content:"SELECT"; distance:0; sid:2001924; rev:2;)',
+          mechanism: 'Deep Packet Inspection (DPI): The sensor searches the HTTP POST application layer payload for SQL syntax keywords.'
+        };
+      } else if (taskId === 3 || taskId === 4 || taskId === 5) {
+        return {
+          tab: 'methods',
+          badge: '🎯 NIDPS Stateful Reconnaissance Detection [SID: 2012887]',
+          rule: 'alert tcp $EXTERNAL_NET any -> $HOME_NET [23,502,8080] (msg:"ET SCAN Inbound Reconnaissance Probe"; flow:to_server; sid:2012887; rev:1;)',
+          mechanism: 'Stateful Protocol Analysis & Port Scanning: Scrutinizes inbound connection attempts targeting sensitive enterprise management ports.'
+        };
+      } else if (taskId >= 6 && taskId <= 15) {
+        return {
+          tab: 'hidps',
+          badge: '💻 HIDPS Host Process & Auth Auditing [Sysmon Event 1 / Event 3]',
+          rule: '<RuleGroup name="ProcessCreate"><ProcessCreate onmatch="include"><Image condition="contains">powershell.exe</Image><CommandLine condition="contains">-enc</CommandLine></ProcessCreate></RuleGroup>',
+          mechanism: 'Host-Based IDPS (Sysmon): Monitors the local process hierarchy and flag suspicious parent-child process executions.'
+        };
+      } else if (taskId >= 16 && taskId <= 25) {
+        return {
+          tab: 'siem',
+          badge: '📊 SIEM Multi-Sensor Correlation [APT Attack Chain]',
+          rule: 'CORRELATE (Sensor="NIDPS" AND Action="ALERT") -> WITHIN 5m (Sensor="HIDPS" AND EventID=4688) -> TRIGGER Incident',
+          mechanism: 'SIEM Correlation Engine: Aggregates disparate firewall and host telemetry into a unified chronological cybercrime kill chain.'
+        };
+      } else if (taskId >= 26 && taskId <= 50) {
+        return {
+          tab: 'tuning',
+          badge: '⚙️ SOC Triage & Alert Tuning [Severity & FP Classification]',
+          rule: 'suppress gen_id 1, sig_id 2001923, track by_src, ip 10.142.12.0/24',
+          mechanism: 'Detection Engineering: Validating True Positives against baseline noise and mitigating alert fatigue.'
+        };
+      } else if (taskId >= 51 && taskId <= 75) {
+        return {
+          tab: 'hidps',
+          badge: '🔬 Digital Forensics & Lateral Movement Tracing [Event 4624 Type 3]',
+          rule: 'EventCode=4624 LogonType=3 AuthenticationPackageName=NTLM',
+          mechanism: 'Host Integrity Monitoring & Event Auditing: Reconstructing attacker movement across internal workstation subnets.'
+        };
+      } else if (taskId >= 76 && taskId <= 100) {
+        return {
+          tab: 'ips',
+          badge: '⚡ IPS Active Response & Containment [Dynamic Firewall Shun]',
+          rule: 'action: drop | API Call: POST /firewall/v1/shun-list { "ip": "$ATTACKER_IP", "duration": 3600 }',
+          mechanism: 'Inline Intrusion Prevention: Dynamic firewall shunning blocks further lateral expansion and exfiltration.'
+        };
+      } else {
+        return {
+          tab: 'siem',
+          badge: '📊 Enterprise Incident Post-Mortem & SIEM Reporting',
+          rule: 'index=* | stats count by sourcetype, action, threat_level',
+          mechanism: 'Enterprise SIEM Forensics: Correlating root cause indicators and compiling post-incident technical documentation.'
+        };
+      }
+    }
+
+    function showExplanationModal(taskId) {
       const brief = taskBriefings[taskId];
       if (!brief) return;
       
@@ -5802,29 +7188,468 @@ Ensure you return ONLY valid JSON without markdown wrapping.`;
       document.getElementById('explanation-modal').style.display = 'flex';
     }
 
+    
+    // ====================================================
+    // MOBILE & TABLET RESPONSIVE WORKSPACE CONTROLLER
+    // ====================================================
+    function initMobileWorkspaceNav() {
+      const tabs = document.querySelectorAll('.mobile-nav-tab');
+      const panels = {
+        logs: document.getElementById('panel-logs'),
+        tasks: document.getElementById('panel-tasks'),
+        alerts: document.getElementById('panel-alerts'),
+        console: document.getElementById('panel-bottom-console')
+      };
+
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+
+          const view = tab.dataset.view;
+          Object.keys(panels).forEach(key => {
+            if (panels[key]) {
+              if (key === view) {
+                panels[key].classList.add('mobile-active-view');
+              } else {
+                panels[key].classList.remove('mobile-active-view');
+              }
+            }
+          });
+
+          // If switching to console, auto focus input
+          if (view === 'console') {
+            const inp = document.getElementById('console-input');
+            if (inp) inp.focus();
+          }
+        });
+      });
+    }
+
+    
+    // Workbench Navigation Controls
+    function switchWorkbenchTab(tab) {
+      document.querySelectorAll('.wb-tab-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('wb-tab-' + tab);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      document.getElementById('wb-content-dossier').style.display = tab === 'dossier' ? 'flex' : 'none';
+      document.getElementById('wb-content-terminal').style.display = tab === 'terminal' ? 'flex' : 'none';
+      document.getElementById('wb-content-alerts').style.display = tab === 'alerts' ? 'flex' : 'none';
+
+      if (tab === 'terminal') {
+        const inp = document.getElementById('console-input');
+        if (inp) inp.focus();
+      } else if (tab === 'alerts') {
+        AlertEngine.spawnTask3Alerts();
+      }
+    }
+
+    function switchNavSection(section) {
+      document.querySelectorAll('.siem-nav-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('nav-btn-' + section);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      if (section === 'hunting') {
+        // Return to main view
+      } else if (section === 'rules') {
+        openRulesModal();
+      } else if (section === 'academy') {
+        openAcademyModal();
+      }
+    }
+
+    function openRulesModal() {
+      populateActiveRulesTable();
+      document.getElementById('rules-modal').style.display = 'flex';
+    }
+
+    function openAcademyModal() {
+      openAcademyTab('arch');
+      document.getElementById('academy-modal').style.display = 'flex';
+    }
+
+    function openPlaybookModal() {
+      document.getElementById('playbook-modal').style.display = 'flex';
+    }
+
+    function openSettingsModal() {
+      document.getElementById('settings-api-key').value = localStorage.getItem('gemini_api_key') || '';
+      document.getElementById('settings-ai-enabled').checked = localStorage.getItem('gemini_ai_enabled') === 'true';
+      document.getElementById('settings-crt-scanlines-enabled').checked = localStorage.getItem('crt_scanlines_enabled') !== 'false';
+      document.getElementById('settings-modal').style.display = 'flex';
+    }
+
+    // Toggle row drawer in Log Table
+    function toggleRowDrawer(index) {
+      const drawer = document.getElementById('drawer-row-' + index);
+      const arrow = document.getElementById('arrow-row-' + index);
+      if (!drawer) return;
+      const isOpen = drawer.classList.contains('open');
+      if (isOpen) {
+        drawer.classList.remove('open');
+        if (arrow) arrow.classList.remove('open');
+      } else {
+        drawer.classList.add('open');
+        if (arrow) arrow.classList.add('open');
+      }
+    }
+
+    // Toggle Field facets in left sidebar
+    function toggleFieldFacet(facetId) {
+      const list = document.getElementById('facet-' + facetId);
+      if (list) {
+        list.style.display = list.style.display === 'none' ? 'flex' : 'none';
+      }
+    }
+
+    function filterBySensor(sensor) {
+      document.getElementById('siem-spl-input').value = `index=security_logs observer.sensor="${sensor}"`;
+      LogEngine.applyFilter(log => log.sensor === sensor);
+      TriageConsole.log(`[+] Filter applied: observer.sensor="${sensor}"`, 'color-cyan');
+    }
+
+    function filterByAction(action) {
+      document.getElementById('siem-spl-input').value = `index=security_logs rule.action="${action}"`;
+      LogEngine.applyFilter(log => log.action === action);
+      TriageConsole.log(`[+] Filter applied: rule.action="${action}"`, 'color-cyan');
+    }
+
+    function filterByExactIP(ip) {
+      document.getElementById('siem-spl-input').value = `index=security_logs source.ip="${ip}"`;
+      LogEngine.applyFilter(log => log.ip === ip || log.dst_ip === ip);
+      TriageConsole.log(`[+] Filter applied: source.ip="${ip}"`, 'color-cyan');
+    }
+
+    function filterByPort(port) {
+      document.getElementById('siem-spl-input').value = `index=security_logs dest_port=${port}`;
+      LogEngine.applyFilter(log => log.port == port || (log.desc && log.desc.includes(':' + port)));
+      TriageConsole.log(`[+] Filter applied: destination.port=${port}`, 'color-cyan');
+    }
+
+    function applySPLPreset(type) {
+      document.querySelectorAll('.query-chip').forEach(c => c.classList.remove('active'));
+      const input = document.getElementById('siem-spl-input');
+      
+      if (type === 'all') {
+        input.value = "index=security_logs sourcetype=* | head 50";
+        LogEngine.resetFilters();
+      } else if (type === 'intrusions') {
+        input.value = 'index=security_logs (rule.action="ALERT" OR rule.action="DROP")';
+        LogEngine.applyFilter(log => log.action === 'ALERT' || log.action === 'DROP');
+      } else if (type === 'ssh_brute') {
+        input.value = 'index=security_logs observer.sensor="NIDPS" dest_port=22 | stats count by source.ip';
+        LogEngine.applyFilter(log => log.port === 22 || (log.desc && log.desc.toLowerCase().includes('ssh')));
+      } else if (type === 'web_exploits') {
+        input.value = 'index=security_logs observer.sensor="WAF" (rule_id="RULE-SQLI" OR rule_id="RULE-XSS")';
+        LogEngine.applyFilter(log => log.sensor === 'WAF' || (log.desc && (log.desc.includes('SQL') || log.desc.includes('XSS'))));
+      } else if (type === 'c2_beacon') {
+        input.value = 'index=security_logs (rule_id="RULE-C2" OR desc="*beacon*")';
+        LogEngine.applyFilter(log => (log.desc && log.desc.toLowerCase().includes('c2')) || log.rule_id === 'RULE-C2');
+      } else if (type === 'sysmon_lolbins') {
+        input.value = 'index=security_logs observer.sensor="HIDPS" (EventID=1 OR LOLBin=*)';
+        LogEngine.applyFilter(log => log.sensor === 'HIDPS');
+      } else if (type === 'lateral_smb') {
+        input.value = 'index=security_logs dest_port=445 | stats count by dest_ip';
+        LogEngine.applyFilter(log => log.port === 445 || (log.desc && log.desc.includes('445')));
+      }
+      TriageConsole.log(`[SPL] Executed search query: ${input.value}`, 'color-cyan');
+    }
+
+    function toggleStreamPause() {
+      const btn = document.getElementById('btn-toggle-stream');
+      const status = document.getElementById('log-stream-status');
+      GameState.logFeedPaused = !GameState.logFeedPaused;
+      if (GameState.logFeedPaused) {
+        if (btn) btn.innerText = '▶ Resume';
+        if (status) { status.innerText = '⏸ PAUSED'; status.className = 'color-amber'; }
+      } else {
+        if (btn) btn.innerText = '⏸ Pause';
+        if (status) { status.innerText = '• STREAMING'; status.className = 'color-green'; }
+        if (LogEngine.releaseBuffer) LogEngine.releaseBuffer();
+      }
+    }
+
+    // Dynamic Histogram Generation
+    function initEventHistogram() {
+      const container = document.getElementById('histogram-bars');
+      if (!container) return;
+      container.innerHTML = '';
+      
+      for (let i = 0; i < 40; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'histo-bar';
+        const heightPct = Math.floor(Math.random() * 75) + 15;
+        bar.style.height = heightPct + '%';
+        
+        if (i % 7 === 0) {
+          bar.className += ' histo-alert';
+        } else if (i % 4 === 0) {
+          bar.className += ' histo-warn';
+        } else {
+          bar.className += ' histo-normal';
+        }
+        container.appendChild(bar);
+      }
+    }
+
+    function updateHistogramPulse() {
+      const bars = document.querySelectorAll('.histo-bar');
+      if (!bars || bars.length === 0) return;
+      const lastBar = bars[bars.length - 1];
+      const newHeight = Math.floor(Math.random() * 85) + 15;
+      lastBar.style.height = newHeight + '%';
+      if (Math.random() > 0.8) {
+        lastBar.className = 'histo-bar histo-alert';
+      } else if (Math.random() > 0.5) {
+        lastBar.className = 'histo-bar histo-warn';
+      } else {
+        lastBar.className = 'histo-bar histo-normal';
+      }
+    }
+
+    function switchMobileTab(tab) {
+      document.querySelectorAll('.mobile-tab-btn').forEach(b => b.classList.remove('active'));
+      if (event && event.currentTarget) event.currentTarget.classList.add('active');
+
+      const telemetry = document.getElementById('pane-telemetry');
+      const fields = document.getElementById('fields-sidebar');
+      const mission = document.getElementById('pane-mission');
+
+      if (telemetry) telemetry.classList.remove('mobile-active-view');
+      if (fields) fields.classList.remove('mobile-active-view');
+      if (mission) mission.classList.remove('mobile-active-view');
+
+      if (tab === 'telemetry' && telemetry) telemetry.classList.add('mobile-active-view');
+      if (tab === 'fields' && fields) fields.classList.add('mobile-active-view');
+      if (tab === 'mission' && mission) {
+        mission.classList.add('mobile-active-view');
+        switchWorkbenchTab('dossier');
+      }
+      if (tab === 'terminal' && mission) {
+        mission.classList.add('mobile-active-view');
+        switchWorkbenchTab('terminal');
+      }
+    }
+
+    
+    // Workbench Navigation Controls
+    function switchWorkbenchTab(tab) {
+      document.querySelectorAll('.wb-tab-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('wb-tab-' + tab);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      document.getElementById('wb-content-dossier').style.display = tab === 'dossier' ? 'flex' : 'none';
+      document.getElementById('wb-content-terminal').style.display = tab === 'terminal' ? 'flex' : 'none';
+      document.getElementById('wb-content-alerts').style.display = tab === 'alerts' ? 'flex' : 'none';
+
+      if (tab === 'terminal') {
+        const inp = document.getElementById('console-input');
+        if (inp) inp.focus();
+      } else if (tab === 'alerts') {
+        AlertEngine.spawnTask3Alerts();
+      }
+    }
+
+    function switchNavSection(section) {
+      document.querySelectorAll('.siem-nav-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('nav-btn-' + section);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      if (section === 'hunting') {
+        // Return to main view
+      } else if (section === 'rules') {
+        openRulesModal();
+      } else if (section === 'academy') {
+        openAcademyModal();
+      }
+    }
+
+    function openRulesModal() {
+      populateActiveRulesTable();
+      document.getElementById('rules-modal').style.display = 'flex';
+    }
+
+    function openAcademyModal() {
+      openAcademyTab('arch');
+      document.getElementById('academy-modal').style.display = 'flex';
+    }
+
+    function openPlaybookModal() {
+      document.getElementById('playbook-modal').style.display = 'flex';
+    }
+
+    function openSettingsModal() {
+      document.getElementById('settings-api-key').value = localStorage.getItem('gemini_api_key') || '';
+      document.getElementById('settings-ai-enabled').checked = localStorage.getItem('gemini_ai_enabled') === 'true';
+      document.getElementById('settings-crt-scanlines-enabled').checked = localStorage.getItem('crt_scanlines_enabled') !== 'false';
+      document.getElementById('settings-modal').style.display = 'flex';
+    }
+
+    // Toggle row drawer in Log Table
+    function toggleRowDrawer(index) {
+      const drawer = document.getElementById('drawer-row-' + index);
+      const arrow = document.getElementById('arrow-row-' + index);
+      if (!drawer) return;
+      const isOpen = drawer.classList.contains('open');
+      if (isOpen) {
+        drawer.classList.remove('open');
+        if (arrow) arrow.classList.remove('open');
+      } else {
+        drawer.classList.add('open');
+        if (arrow) arrow.classList.add('open');
+      }
+    }
+
+    // Toggle Field facets in left sidebar
+    function toggleFieldFacet(facetId) {
+      const list = document.getElementById('facet-' + facetId);
+      if (list) {
+        list.style.display = list.style.display === 'none' ? 'flex' : 'none';
+      }
+    }
+
+    function filterBySensor(sensor) {
+      document.getElementById('siem-spl-input').value = `index=security_logs observer.sensor="${sensor}"`;
+      LogEngine.applyFilter(log => log.sensor === sensor);
+      TriageConsole.log(`[+] Filter applied: observer.sensor="${sensor}"`, 'color-cyan');
+    }
+
+    function filterByAction(action) {
+      document.getElementById('siem-spl-input').value = `index=security_logs rule.action="${action}"`;
+      LogEngine.applyFilter(log => log.action === action);
+      TriageConsole.log(`[+] Filter applied: rule.action="${action}"`, 'color-cyan');
+    }
+
+    function filterByExactIP(ip) {
+      document.getElementById('siem-spl-input').value = `index=security_logs source.ip="${ip}"`;
+      LogEngine.applyFilter(log => log.ip === ip || log.dst_ip === ip);
+      TriageConsole.log(`[+] Filter applied: source.ip="${ip}"`, 'color-cyan');
+    }
+
+    function filterByPort(port) {
+      document.getElementById('siem-spl-input').value = `index=security_logs dest_port=${port}`;
+      LogEngine.applyFilter(log => log.port == port || (log.desc && log.desc.includes(':' + port)));
+      TriageConsole.log(`[+] Filter applied: destination.port=${port}`, 'color-cyan');
+    }
+
+    function applySPLPreset(type) {
+      document.querySelectorAll('.query-chip').forEach(c => c.classList.remove('active'));
+      const input = document.getElementById('siem-spl-input');
+      
+      if (type === 'all') {
+        input.value = "index=security_logs sourcetype=* | head 50";
+        LogEngine.resetFilters();
+      } else if (type === 'intrusions') {
+        input.value = 'index=security_logs (rule.action="ALERT" OR rule.action="DROP")';
+        LogEngine.applyFilter(log => log.action === 'ALERT' || log.action === 'DROP');
+      } else if (type === 'ssh_brute') {
+        input.value = 'index=security_logs observer.sensor="NIDPS" dest_port=22 | stats count by source.ip';
+        LogEngine.applyFilter(log => log.port === 22 || (log.desc && log.desc.toLowerCase().includes('ssh')));
+      } else if (type === 'web_exploits') {
+        input.value = 'index=security_logs observer.sensor="WAF" (rule_id="RULE-SQLI" OR rule_id="RULE-XSS")';
+        LogEngine.applyFilter(log => log.sensor === 'WAF' || (log.desc && (log.desc.includes('SQL') || log.desc.includes('XSS'))));
+      } else if (type === 'c2_beacon') {
+        input.value = 'index=security_logs (rule_id="RULE-C2" OR desc="*beacon*")';
+        LogEngine.applyFilter(log => (log.desc && log.desc.toLowerCase().includes('c2')) || log.rule_id === 'RULE-C2');
+      } else if (type === 'sysmon_lolbins') {
+        input.value = 'index=security_logs observer.sensor="HIDPS" (EventID=1 OR LOLBin=*)';
+        LogEngine.applyFilter(log => log.sensor === 'HIDPS');
+      } else if (type === 'lateral_smb') {
+        input.value = 'index=security_logs dest_port=445 | stats count by dest_ip';
+        LogEngine.applyFilter(log => log.port === 445 || (log.desc && log.desc.includes('445')));
+      }
+      TriageConsole.log(`[SPL] Executed search query: ${input.value}`, 'color-cyan');
+    }
+
+    function toggleStreamPause() {
+      const btn = document.getElementById('btn-toggle-stream');
+      const status = document.getElementById('log-stream-status');
+      GameState.logFeedPaused = !GameState.logFeedPaused;
+      if (GameState.logFeedPaused) {
+        if (btn) btn.innerText = '▶ Resume';
+        if (status) { status.innerText = '⏸ PAUSED'; status.className = 'color-amber'; }
+      } else {
+        if (btn) btn.innerText = '⏸ Pause';
+        if (status) { status.innerText = '• STREAMING'; status.className = 'color-green'; }
+        if (LogEngine.releaseBuffer) LogEngine.releaseBuffer();
+      }
+    }
+
+    // Dynamic Histogram Generation
+    function initEventHistogram() {
+      const container = document.getElementById('histogram-bars');
+      if (!container) return;
+      container.innerHTML = '';
+      
+      for (let i = 0; i < 40; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'histo-bar';
+        const heightPct = Math.floor(Math.random() * 75) + 15;
+        bar.style.height = heightPct + '%';
+        
+        if (i % 7 === 0) {
+          bar.className += ' histo-alert';
+        } else if (i % 4 === 0) {
+          bar.className += ' histo-warn';
+        } else {
+          bar.className += ' histo-normal';
+        }
+        container.appendChild(bar);
+      }
+    }
+
+    function updateHistogramPulse() {
+      const bars = document.querySelectorAll('.histo-bar');
+      if (!bars || bars.length === 0) return;
+      const lastBar = bars[bars.length - 1];
+      const newHeight = Math.floor(Math.random() * 85) + 15;
+      lastBar.style.height = newHeight + '%';
+      if (Math.random() > 0.8) {
+        lastBar.className = 'histo-bar histo-alert';
+      } else if (Math.random() > 0.5) {
+        lastBar.className = 'histo-bar histo-warn';
+      } else {
+        lastBar.className = 'histo-bar histo-normal';
+      }
+    }
+
+    function switchMobileTab(tab) {
+      document.querySelectorAll('.mobile-tab-btn').forEach(b => b.classList.remove('active'));
+      if (event && event.currentTarget) event.currentTarget.classList.add('active');
+
+      const telemetry = document.getElementById('pane-telemetry');
+      const fields = document.getElementById('fields-sidebar');
+      const mission = document.getElementById('pane-mission');
+
+      if (telemetry) telemetry.classList.remove('mobile-active-view');
+      if (fields) fields.classList.remove('mobile-active-view');
+      if (mission) mission.classList.remove('mobile-active-view');
+
+      if (tab === 'telemetry' && telemetry) telemetry.classList.add('mobile-active-view');
+      if (tab === 'fields' && fields) fields.classList.add('mobile-active-view');
+      if (tab === 'mission' && mission) {
+        mission.classList.add('mobile-active-view');
+        switchWorkbenchTab('dossier');
+      }
+      if (tab === 'terminal' && mission) {
+        mission.classList.add('mobile-active-view');
+        switchWorkbenchTab('terminal');
+      }
+    }
+
     window.onload = () => {
-      document.getElementById('btn-close-explanation').onclick = () => {
-        document.getElementById('explanation-modal').style.display = 'none';
-      };
-      document.getElementById('btn-close-explanation-footer').onclick = () => {
-        document.getElementById('explanation-modal').style.display = 'none';
-      };
+      initEventHistogram();
+      setInterval(updateHistogramPulse, 3000);
 
       initSessionConfig();
       const loaded = loadProgress();
       TriageConsole.init();
-      setupGUIActions();
-
-      // Auto-focus console on click anywhere, unless clicking on interactive GUI controls or modal elements
-      document.addEventListener('click', (e) => {
-        if (!e.target.closest('button, select, input, option, a, textarea')) {
-          const inp = document.getElementById('console-input');
-          if (inp) inp.focus();
-        }
-      });
-
-      UIUpdater.init(loaded);
       LogEngine.init();
+      UIUpdater.init(loaded);
+      setupGUIActions();
+      UIUpdater.init(loaded);
+      setupGUIActions();
 
       if (loaded) {
         TriageConsole.log(`[+] PROGRESS RESTORED: Resuming at Task ${GameState.currentTask}/150.`, "color-green");
